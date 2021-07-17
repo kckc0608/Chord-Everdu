@@ -28,7 +28,7 @@ class NewSheetState extends State<NewSheet> {
 
   List<List<Widget>> sheet = [
     [ChordCell(key: UniqueKey(), lyric: "가사테스트",),ChordCell(key: UniqueKey(), ), ChordCell(key: UniqueKey(), ), ChordCell(key: UniqueKey(), ),],
-    [ChordCell(key: UniqueKey(), lyric: "가사테스트",), ChordCell(key: UniqueKey(), ), ChordCell(key: UniqueKey(), ),],
+    [ChordCell(key: UniqueKey(), lyric: "가사테스트",), ChordCell(key: UniqueKey(), )],
   ];
 
   var _formKey = GlobalKey<FormState>(); // 새 탭 추가시 띄우는 다이어로그의 폼 키
