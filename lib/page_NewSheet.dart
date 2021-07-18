@@ -25,19 +25,28 @@ class NewSheetState extends State<NewSheet> {
 
   int songKey = 0;
 
-  List<String> data = ['전체', 'page1',];
+  List<String> pageList = ['전체', 'page1',];
 
   List<List<Widget>> sheet = [
-    [ChordCell(key: UniqueKey(), lyric: "가사테스트",),ChordCell(key: UniqueKey(), ), ChordCell(key: UniqueKey(), ), ChordCell(key: UniqueKey(), ),],
-    [ChordCell(key: UniqueKey(), lyric: "가사테스트",), ChordCell(key: UniqueKey(), )],
+    [ChordCell(key: UniqueKey(), pageIndex: 0,), ChordCell(key: UniqueKey(), pageIndex: 0,) ],
+    [ChordCell(key: UniqueKey(), pageIndex: 1,), ChordCell(key: UniqueKey(), pageIndex: 1,) ],
+  ];
+
+  List<List<Chord?>> chord = [
+    [Chord(root: 0), Chord()],
+    [Chord(), Chord()],
+  ];
+
+  List<List<String?>> lyric = [
+    ["", ""],
+    ["", ""]
   ];
 
   var _formKey = GlobalKey<FormState>(); // 새 탭 추가시 띄우는 다이어로그의 폼 키
-  int _initPosition = 0;
+  int nowPage = 0;
 
   ChordCell? currentCell;
   TextEditingController? cellTextController;
-  Chord? currentChord;
 
   bool isChordInput = false;
 
@@ -65,9 +74,9 @@ class NewSheetState extends State<NewSheet> {
       ),
       body: SafeArea(
         child: global.CustomTabView(
-          initPosition: _initPosition,
-          itemCount: data.length,
-          tabBuilder: (context, index) => Tab(text: data[index]),
+          initPosition: nowPage,
+          itemCount: pageList.length,
+          tabBuilder: (context, index) => Tab(text: pageList[index]),
           pageBuilder: (context, index) {
             print("Builder called $index");
             List<Widget> pageSheet = sheet[index];
@@ -80,7 +89,7 @@ class NewSheetState extends State<NewSheet> {
           },
           onPositionChange: (index) {
             print('current position: $index');
-            _initPosition = index;
+            nowPage = index;
           },
           onScroll: (position) => print('$position'),
         ),
@@ -122,8 +131,8 @@ class NewSheetState extends State<NewSheet> {
             ),
           ).then((pageTitle) {
             setState(() {
-              data.add(pageTitle);
-              List<ChordCell> list = [ChordCell(key: UniqueKey(), lyric: "가사")];
+              pageList.add(pageTitle);
+              List<ChordCell> list = [ChordCell(key: UniqueKey(), pageIndex: pageList.length-1,)];
               sheet.add(list);
               //_initPosition = sheet.length-1; // 탭만 바뀌고 탭뷰가 안바뀌는 문제 존재
             });
@@ -141,9 +150,11 @@ class NewSheetState extends State<NewSheet> {
                 child: Text("코드 추가"),
                 onPressed: () {
                   if (currentCell != null) {
-                    String _lyric = "가사";
-                    int selectedIndex = sheet[_initPosition].indexOf(currentCell!);
-                    sheet[_initPosition].insert(selectedIndex+1, ChordCell(key: UniqueKey(),lyric: _lyric));
+                    int selectedIndex = sheet[nowPage].indexOf(currentCell!);
+                    if (selectedIndex == -1) throw Exception("선택한 셀을 시트에서 찾을 수 없습니다.");
+                    sheet[nowPage].insert(selectedIndex+1, ChordCell(key: UniqueKey(), pageIndex: nowPage,));
+                    chord[nowPage].insert(selectedIndex+1, Chord());
+                    lyric[nowPage].insert(selectedIndex+1, "가사");
                   }
                   else {
                     print("Line 147 in page_NewSheet.dart, currentCell is null");
@@ -157,7 +168,10 @@ class NewSheetState extends State<NewSheet> {
                   // 현재 선택한 코드 셀 삭제
                   if (currentCell != null) {
                     setState(() {
-                      sheet[_initPosition].remove(currentCell);
+                      int selectedIndex = sheet[nowPage].indexOf(currentCell!);
+                      sheet[nowPage].removeAt(selectedIndex);
+                      chord[nowPage].removeAt(selectedIndex);
+                      lyric[nowPage].removeAt(selectedIndex);
                     });
                   }
                 },
@@ -166,10 +180,13 @@ class NewSheetState extends State<NewSheet> {
                 onPressed: () {
                   // 현재 선택한 코드셀 이후의 셀들을 다음 줄로 넘김
                   if (currentCell != null) {
-                    int selectedIndex = sheet[_initPosition].indexOf(currentCell!);
-                    if (!(sheet[_initPosition][selectedIndex+1] is Container)) {
-                      sheet[_initPosition].insert(selectedIndex+1, Container(width: 1000, key: UniqueKey()));
-                      setState(() {});
+                    int selectedIndex = sheet[nowPage].indexOf(currentCell!);
+                    if (!(sheet[nowPage][selectedIndex+1] is Container)) {
+                      setState(() {
+                        sheet[nowPage].insert(selectedIndex+1, Container(width: 1000, key: UniqueKey()));
+                        chord[nowPage].insert(selectedIndex+1, null);
+                        lyric[nowPage].insert(selectedIndex+1, null);
+                      });
                     }
                   }
                   else {
@@ -181,9 +198,11 @@ class NewSheetState extends State<NewSheet> {
               TextButton(
                 onPressed: () {
                   if (currentCell != null) {
-                    int selectedIndex = sheet[_initPosition].indexOf(currentCell!);
-                    if (sheet[_initPosition][selectedIndex-1] is Container ) {
-                      sheet[_initPosition].removeAt(selectedIndex-1);
+                    int selectedIndex = sheet[nowPage].indexOf(currentCell!);
+                    if (sheet[nowPage][selectedIndex-1] is Container ) {
+                      sheet[nowPage].removeAt(selectedIndex-1);
+                      chord[nowPage].removeAt(selectedIndex-1);
+                      lyric[nowPage].removeAt(selectedIndex-1);
                       setState(() {});
                     }
                   }
@@ -197,12 +216,21 @@ class NewSheetState extends State<NewSheet> {
           ),
           isChordInput ? ChordKeyboard(onButtonTap: () {
             setState(() {
-              cellTextController!.text = currentChord.toString();
+              if (cellTextController != null) cellTextController!.text = getChordOf(currentCell).toString();
+              else throw Exception("cellTextController 가 null 이기 때문에 코드 키보드를 불러오지 못했습니다.");
             });
           }) : Container(),
         ],
       ),
     );
+  }
+
+  Chord getChordOf(ChordCell? cell) {
+    if (cell == null) throw Exception("[f][getChordOf] 인자로 null 이 들어왔습니다.");
+    int _index = sheet[nowPage].indexOf(currentCell!);
+    if (_index == -1) throw Exception("[f][getChordOf] sheet 에서 cell 을 찾지 못했습니다.");
+    if (chord[nowPage][_index] == null) throw Exception("[f][getChordOf] chord 가 없습니다.");
+    return chord[nowPage][_index]!;
   }
 
   Future<http.Response> createSheet() async {

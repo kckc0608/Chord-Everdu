@@ -6,11 +6,9 @@ import 'package:flutter/rendering.dart';
 
 
 class ChordCell extends StatefulWidget {
-  final String? lyric;
-  final Chord? chord;
   final bool readOnly;
-
-  const ChordCell({Key? key, this.lyric, this.chord, this.readOnly = false}) : super(key: key);
+  final int pageIndex;
+  const ChordCell({Key? key, required this.pageIndex, this.readOnly = false}) : super(key: key);
 
   @override
   _ChordCellState createState() => _ChordCellState();
@@ -22,24 +20,24 @@ class _ChordCellState extends State<ChordCell>
   var lyricController = TextEditingController();
   var chordController = TextEditingController();
 
-  var chord = Chord();
-
-  String? lyric = "hi";
+  Chord? chord;
 
   bool isSelected = false;
 
   @override
-  void initState() {
-    super.initState();
-    if (widget.lyric != null) lyricController.text = widget.lyric!;
-    if (widget.chord != null) chord = widget.chord!;
-  }
-
-  @override
   // ignore: must_call_super
   Widget build(BuildContext context) {
-    dynamic parent = context.findAncestorStateOfType<NewSheetState>();
-    if (parent == null) parent = context.findAncestorStateOfType<SheetViewerState>();
+    NewSheetState? parent = context.findAncestorStateOfType<NewSheetState>();
+    // TODO: 테스트 용으로 자료형 고정해둠. SheetViewerState로 자료형 바뀔 수 있음에 주의
+    //if (parent == null) parent = context.findAncestorStateOfType<SheetViewerState>();
+
+    int cellIndex = parent!.sheet[widget.pageIndex].indexOf(widget);
+
+    chord = parent.chord[widget.pageIndex][cellIndex];
+    lyricController.text = parent.lyric[widget.pageIndex][cellIndex]!;
+    chordController.text = chord.toString();
+
+    print("build call from chord " + chord.toString());
 
     return Container(
       decoration: BoxDecoration(
@@ -52,11 +50,13 @@ class _ChordCellState extends State<ChordCell>
             isSelected = hasFocus;
             if (hasFocus) {
               print("has Focus of sheet Cell called");
-              parent!.setState(() {
+              parent.setState(() {
                 parent.currentCell = this.widget;
                 parent.cellTextController = this.chordController;
-                parent.currentChord = this.chord;
               });
+            }
+            else { // 포커스가 꺼졌을 때, 현재 가사를 저장
+              parent.lyric[widget.pageIndex][cellIndex] = lyricController.text;
             }
           });
         },
@@ -69,8 +69,10 @@ class _ChordCellState extends State<ChordCell>
               child: IntrinsicWidth(
                 child: TextField(
                   onTap: () {
-                    parent!.isChordInput = true;
-                    parent.setState(() {});
+                    parent.setState(() {
+                      // 코드용 키보드 띄우기 - 부모 재빌드
+                      parent.isChordInput = true;
+                    });
                   },
                   style: TextStyle(fontWeight: FontWeight.bold),
                   controller: chordController,
@@ -90,15 +92,16 @@ class _ChordCellState extends State<ChordCell>
               child: IntrinsicWidth(
                 child: TextField(
                   onTap: () {
-                    parent!.setState(() {
+                    parent.setState(() {
+                      // 코드용 키보드 지우기 - 부모 재빌드
                       parent.isChordInput = false;
                     });
                   },
                   onEditingComplete: () {
-                    lyric = lyricController.text;
-                    FocusScope.of(context).unfocus();
-                    parent!.currentCell = null;
-                    parent.setState(() {});
+                    setState(() {
+                      FocusScope.of(context).unfocus();
+                      parent.currentCell = null;
+                    });
                   },
                   controller: lyricController,
                   decoration: InputDecoration(

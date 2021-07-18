@@ -35,10 +35,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   Widget build(BuildContext context) {
     NewSheetState? parent = context.findAncestorStateOfType<NewSheetState>();
     _songKey = parent!.songKey;
-    chord = parent.currentChord;
+    chord = parent.getChordOf(parent.currentCell);
     print("Now Input is " + nowInput.toString());
-
-    //if (chord!["root"] > -1) _rootSelection[chord!["root"]][0] = true;
 
     return Container(
       height: 360,

@@ -116,7 +116,7 @@ class SheetViewerState extends State<SheetViewer> {
         String? lyric = json[i]["lyric"];
         var cell = ChordCell(
           key: UniqueKey(),
-          lyric: lyric,
+          pageIndex: 0, // TODO : 수정
           readOnly: true,
         );
         sheet[data.length-1].add(cell);
