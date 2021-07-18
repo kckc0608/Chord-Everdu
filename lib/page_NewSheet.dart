@@ -1,4 +1,5 @@
 import 'package:chord_everdu/chord_input_keyboard.dart';
+import 'package:chord_everdu/custom_data_structure.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:chord_everdu/chord_cell.dart';
@@ -36,7 +37,7 @@ class NewSheetState extends State<NewSheet> {
 
   ChordCell? currentCell;
   TextEditingController? cellTextController;
-  Map<String, dynamic>? currentChord;
+  Chord? currentChord;
 
   bool isChordInput = false;
 
@@ -197,49 +198,49 @@ class NewSheetState extends State<NewSheet> {
           isChordInput ? ChordKeyboard(onButtonTap: () {
             setState(() {
               String chord = "";
-              if (currentChord!["root"] > -1) {
-                int rootKey = (currentChord!["root"] + currentChord!["rootSharp"] + 12)%12;
+              if (currentChord!.root > -1) {
+                int rootKey = (currentChord!.root + currentChord!.rootSharp + 12)%12;
                 if (rootKey == 1 || rootKey == 3 || rootKey == 6 || rootKey == 8 || rootKey == 10) {
-                  if (currentChord!["rootSharp"] == 1)
+                  if (currentChord!.rootSharp == 1)
                     chord += global.keyList[rootKey][0];
-                  else if (currentChord!["rootSharp"] == -1)
+                  else if (currentChord!.rootSharp == -1)
                     chord += global.keyList[rootKey][1];
                 }
                 else {
                   chord += global.keyList[rootKey];
                 }
 
-                if (currentChord!["rootTension"] > -1)
-                  chord += global.tensionList[currentChord!["rootTension"]];
+                if (currentChord!.rootTension > -1)
+                  chord += global.tensionList[currentChord!.rootTension];
 
-                chord += currentChord!["minor"];
-                if (currentChord!["minorTension"] > -1)
-                  chord += global.tensionList[currentChord!["minorTension"]];
+                chord += currentChord!.minor;
+                if (currentChord!.minorTension > -1)
+                  chord += global.tensionList[currentChord!.minorTension];
 
-                chord += currentChord!["major"];
-                if (currentChord!["majorTension"] > -1)
-                  chord += global.tensionList[currentChord!["majorTension"]];
+                chord += currentChord!.major;
+                if (currentChord!.majorTension > -1)
+                  chord += global.tensionList[currentChord!.majorTension];
 
-                if (currentChord!["tensionSharp"] == 1)
+                if (currentChord!.tensionSharp == 1)
                   chord += '#';
-                else if (currentChord!["tensionSharp"] == -1)
+                else if (currentChord!.tensionSharp == -1)
                   chord += "b";
 
-                if (currentChord!["tension"] > -1)
-                  chord += global.tensionList[currentChord!["tension"]];
+                if (currentChord!.tension > -1)
+                  chord += global.tensionList[currentChord!.tension];
 
-                chord += currentChord!["asda"];
-                if (currentChord!["asdaTension"] > -1)
-                  chord += global.tensionList[currentChord!["asdaTension"]];
+                chord += currentChord!.asda;
+                if (currentChord!.asdaTension > -1)
+                  chord += global.tensionList[currentChord!.asdaTension];
               }
 
-              if (currentChord!["base"] > -1) {
+              if (currentChord!.base > -1) {
                 chord += "/";
-                int baseKey = (currentChord!["base"] + currentChord!["baseSharp"] + 12)%12;
+                int baseKey = (currentChord!.base + currentChord!.baseSharp + 12)%12;
                 if (baseKey == 1 || baseKey == 3 || baseKey == 6 || baseKey == 8 || baseKey == 10) {
-                  if (currentChord!["baseSharp"] == 1)
+                  if (currentChord!.baseSharp == 1)
                     chord += global.keyList[baseKey][0];
-                  else if (currentChord!["baseSharp"] == -1)
+                  else if (currentChord!.baseSharp == -1)
                     chord += global.keyList[baseKey][1];
                 }
                 else {

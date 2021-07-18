@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/page_NewSheet.dart';
+import 'custom_data_structure.dart';
 import 'global.dart' as global;
 
 class ChordKeyboard extends StatefulWidget {
@@ -28,7 +29,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   String? nowInput; // 현재 입력중인 부분체크
   bool isRootInput = true;
 
-  Map<String, dynamic>? chord;
+  Chord? chord;
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +142,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
           bool isInSharp = (_key == 1 || _key == 3 || _key == 6 || _key == 8 || _key == 10);
           // #, b이 들어가는 노트인 경우
-            if (_key == chord!["root"]) { // 현재 루트를 입력하는 상태인 경우
+            if (_key == chord!.root) { // 현재 루트를 입력하는 상태인 경우
               return buildToggleButton(
                 isInSharp ? [global.keyList[_key][_sharp]] : [global.keyList[_key]],
                 _rootSelection[index],
@@ -149,7 +150,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 type: 1,
               );
             }
-            else if (_key == chord!["base"]) {
+            else if (_key == chord!.base) {
               return buildToggleButton(
                 isInSharp ? [global.keyList[_key][_sharp]] : [global.keyList[_key]],
                 _rootSelection[index],
@@ -184,55 +185,55 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                     nowInput = "asda";
                     switch (index) {
                       case 0:
-                        chord!["asda"] = "add";
+                        chord!.asda = "add";
                         break;
                       case 1:
-                        chord!["asda"] = "sus";
+                        chord!.asda = "sus";
                         break;
                       case 2:
-                        chord!["asda"] = "dim";
+                        chord!.asda = "dim";
                         // 마이너/메이저/루트텐션/asda텐션 해제
-                        chord!["minor"] = "";
+                        chord!.minor = "";
                         _middleSelection1[0] = false;
-                        if (chord!["minorTension"] > -1) _numberSelection[chord!["minorTension"]][0] = false;
-                        chord!["major"] = "";
+                        if (chord!.minorTension > -1) _numberSelection[chord!.minorTension][0] = false;
+                        chord!.major = "";
                         _middleSelection1[1] = false;
-                        if (chord!["majorTension"] > -1) _numberSelection[chord!["majorTension"]][0] = false;
-                        if (chord!["rootTension"] > -1) _numberSelection[chord!["rootTension"]][0] = false;
-                        chord!["minorTension"] = -1;
-                        chord!["majorTension"] = -1;
-                        chord!["rootTension"] = -1;
-                        if (chord!["asdaTension"] > -1) _numberSelection[chord!["asdaTension"]][0] = false;
+                        if (chord!.majorTension > -1) _numberSelection[chord!.majorTension][0] = false;
+                        if (chord!.rootTension > -1) _numberSelection[chord!.rootTension][0] = false;
+                        chord!.minorTension = -1;
+                        chord!.majorTension = -1;
+                        chord!.rootTension = -1;
+                        if (chord!.asdaTension > -1) _numberSelection[chord!.asdaTension][0] = false;
                         // 디폴트로 7에 텐션 넣어주고, 7을 해제할 수 있도록, 하지만 다른 텐션은 넣을 수 없도록 설정.
-                        chord!["asdaTension"] = 7;
+                        chord!.asdaTension = 7;
                         _numberSelection[7][0] = true;
                         nowInput = null;
                         break;
                       case 3:
-                        chord!["asda"] = "aug";
+                        chord!.asda = "aug";
                         // 마이너/메이저/루트텐션/asda텐션 해제
-                        chord!["minor"] = "";
+                        chord!.minor = "";
                         _middleSelection1[0] = false;
-                        if (chord!["minorTension"] > -1) _numberSelection[chord!["minorTension"]][0] = false;
-                        chord!["major"] = "";
+                        if (chord!.minorTension > -1) _numberSelection[chord!.minorTension][0] = false;
+                        chord!.major = "";
                         _middleSelection1[1] = false;
-                        if (chord!["majorTension"] > -1) _numberSelection[chord!["majorTension"]][0] = false;
-                        if (chord!["rootTension"] > -1) _numberSelection[chord!["rootTension"]][0] = false;
-                        chord!["minorTension"] = -1;
-                        chord!["majorTension"] = -1;
-                        chord!["rootTension"] = -1;
-                        if (chord!["asdaTension"] > -1) _numberSelection[chord!["asdaTension"]][0] = false;
+                        if (chord!.majorTension > -1) _numberSelection[chord!.majorTension][0] = false;
+                        if (chord!.rootTension > -1) _numberSelection[chord!.rootTension][0] = false;
+                        chord!.minorTension = -1;
+                        chord!.majorTension = -1;
+                        chord!.rootTension = -1;
+                        if (chord!.asdaTension > -1) _numberSelection[chord!.asdaTension][0] = false;
                         // 디폴트로 7에 텐션 넣어주고, 7을 해제할 수 있도록, 하지만 다른 텐션은 넣을 수 없도록 설정.
-                        chord!["asdaTension"] = 7;
+                        chord!.asdaTension = 7;
                         _numberSelection[7][0] = true;
                         nowInput = null;
                         break;
                     }
                   }
                   else {
-                    chord!["asda"] = "";
-                    if (chord!["asdaTension"] > -1) _numberSelection[chord!["asdaTension"]][0] = false;
-                    chord!["asdaTension"] = -1;
+                    chord!.asda = "";
+                    if (chord!.asdaTension > -1) _numberSelection[chord!.asdaTension][0] = false;
+                    chord!.asdaTension = -1;
                     nowInput = null;
                   }
                 }
@@ -246,74 +247,74 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             setState(() {
               _middleSelection1[index] = !_middleSelection1[index];
               if (_middleSelection1[0]) {
-                chord!["minor"] = "m";
+                chord!.minor = "m";
                 // dim / aug 해제 및 딸려있는 텐션이 있다면 같이 해제
-                if (chord!["asda"] == "dim" || chord!["asda"] == "aug") {
-                  if (chord!["asdaTension"] > -1) {
-                    _numberSelection[chord!["asdaTension"]][0] = false;
-                    chord!["asdaTension"] = -1;
+                if (chord!.asda == "dim" || chord!.asda == "aug") {
+                  if (chord!.asdaTension > -1) {
+                    _numberSelection[chord!.asdaTension][0] = false;
+                    chord!.asdaTension = -1;
                   }
-                  chord!["asda"] = "";
+                  chord!.asda = "";
                   _middleSelection2[2] = false;
                   _middleSelection2[3] = false;
                 }
                 // 설정
                 if (_middleSelection1[1]) {
                   // dim / aug 해제 및 딸려있는 텐션이 있다면 같이 해제
-                  if (chord!["asda"] == "dim" || chord!["asda"] == "aug") {
-                    if (chord!["asdaTension"] > -1) {
-                      _numberSelection[chord!["asdaTension"]][0] = false;
-                      chord!["asdaTension"] = -1;
+                  if (chord!.asda == "dim" || chord!.asda == "aug") {
+                    if (chord!.asdaTension > -1) {
+                      _numberSelection[chord!.asdaTension][0] = false;
+                      chord!.asdaTension = -1;
                     }
-                    chord!["asda"] = "";
+                    chord!.asda = "";
                     _middleSelection2[2] = false;
                     _middleSelection2[3] = false;
                   }
-                  chord!["major"] = "M";
+                  chord!.major = "M";
                   nowInput = "M";
                 }
                 else {
-                  chord!["major"] = "";
+                  chord!.major = "";
                   nowInput = "m";
                 }
               }
               else {
-                chord!["minor"] = "";
+                chord!.minor = "";
                 if (_middleSelection1[1]) {
                   // dim / aug 해제 및 딸려있는 텐션이 있다면 같이 해제
-                  if (chord!["asda"] == "dim" || chord!["asda"] == "aug") {
-                    if (chord!["asdaTension"] > -1) {
-                      _numberSelection[chord!["asdaTension"]][0] = false;
-                      chord!["asdaTension"] = -1;
+                  if (chord!.asda == "dim" || chord!.asda == "aug") {
+                    if (chord!.asdaTension > -1) {
+                      _numberSelection[chord!.asdaTension][0] = false;
+                      chord!.asdaTension = -1;
                     }
-                    chord!["asda"] = "";
+                    chord!.asda = "";
                     _middleSelection2[2] = false;
                     _middleSelection2[3] = false;
                   }
-                  chord!["major"] = "M";
+                  chord!.major = "M";
                   nowInput = "M";
                 }
                 else {
-                  chord!["major"] = "";
+                  chord!.major = "";
                   nowInput = null;
                 }
               }
             widget.onButtonTap.call();
             });
           }),
-          (nowInput == "asda" && ((chord!["rootTension"] != 7) && (chord!["minorTension"] != 7) && (chord!["majorTension"] != 7)) || chord!["asdaTension"] == 7) ?
+          (nowInput == "asda" && ((chord!.rootTension != 7) && (chord!.minorTension != 7) && (chord!.majorTension != 7)) || chord!.asdaTension == 7) ?
           buildToggleButton([global.tensionList[7]],  _numberSelection[7], (i) {
             setState(() {
               _numberSelection[7][0] = !_numberSelection[7][0];
               if (_numberSelection[7][0]) {
-                if (chord!["asdaTension"] > -1) {
-                  _numberSelection[chord!["asdaTension"]][0] = false;
-                  chord!["asdaTension"] = -1;
+                if (chord!.asdaTension > -1) {
+                  _numberSelection[chord!.asdaTension][0] = false;
+                  chord!.asdaTension = -1;
                 }
-                if (nowInput == "asda") chord!["asdaTension"] = 7;
+                if (nowInput == "asda") chord!.asdaTension = 7;
               }
               else
-                chord!["asdaTension"] = -1;
+                chord!.asdaTension = -1;
               widget.onButtonTap.call();
             });
           }, type: 2) : buildToggleButton([global.tensionList[7]],  _numberSelection[7], (i) {
@@ -321,25 +322,25 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               _numberSelection[7][0] = !_numberSelection[7][0];
               if (_numberSelection[7][0]) {
                 // 기존 값 모두 초기화
-                if (chord!["rootTension"] > -1) {
-                  _numberSelection[chord!["rootTension"]][0] = false;
-                  chord!["rootTension"] = -1;
+                if (chord!.rootTension > -1) {
+                  _numberSelection[chord!.rootTension][0] = false;
+                  chord!.rootTension = -1;
                 }
-                else if (chord!["minorTension"] > -1) {
-                  _numberSelection[chord!["minorTension"]][0] = false;
-                  chord!["minorTension"] = -1;
+                else if (chord!.minorTension > -1) {
+                  _numberSelection[chord!.minorTension][0] = false;
+                  chord!.minorTension = -1;
                 }
-                else if (chord!["majorTension"] > -1) {
-                  _numberSelection[chord!["majorTension"]][0] = false;
-                  chord!["majorTension"] = -1;
+                else if (chord!.majorTension > -1) {
+                  _numberSelection[chord!.majorTension][0] = false;
+                  chord!.majorTension = -1;
                 }
                 // nowInput에 맞게 값 재세팅
-                if (nowInput == "root") chord!["rootTension"] = 7;
-                else if (nowInput == "m") chord!["minorTension"] = 7;
-                else if (nowInput == "M") chord!["majorTension"] = 7;
+                if (nowInput == "root") chord!.rootTension = 7;
+                else if (nowInput == "m") chord!.minorTension = 7;
+                else if (nowInput == "M") chord!.majorTension = 7;
               }
               else {
-                chord!["rootTension"] = -1; chord!["minorTension"] = -1; chord!["majorTension"] = -1;
+                chord!.rootTension = -1; chord!.minorTension = -1; chord!.majorTension = -1;
               }
               widget.onButtonTap.call();
             });
@@ -363,9 +364,9 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           else if (nowInput == "root" || nowInput == "m" || nowInput == "M")
             _type = 1;
 
-          if (index == chord!["tension"]) _type = 4;
-          else if (index == chord!["asdaTension"]) _type = 2;
-          else if (index == chord!["rootTension"] || index == chord!["minorTension"] || index == chord!["majorTension"]) _type = 1;
+          if (index == chord!.tension) _type = 4;
+          else if (index == chord!.asdaTension) _type = 2;
+          else if (index == chord!.rootTension || index == chord!.minorTension || index == chord!.majorTension) _type = 1;
 
           if (_type == 1) {
             return buildToggleButton([global.tensionList[index]], _numberSelection[index], (i) {
@@ -373,25 +374,25 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 _numberSelection[index][0] = !_numberSelection[index][0];
                 if (_numberSelection[index][0]) {
                   // 기존 값 모두 초기화
-                  if (chord!["rootTension"] > -1) {
-                    _numberSelection[chord!["rootTension"]][0] = false;
-                    chord!["rootTension"] = -1;
+                  if (chord!.rootTension > -1) {
+                    _numberSelection[chord!.rootTension][0] = false;
+                    chord!.rootTension = -1;
                   }
-                  else if (chord!["minorTension"] > -1) {
-                    _numberSelection[chord!["minorTension"]][0] = false;
-                    chord!["minorTension"] = -1;
+                  else if (chord!.minorTension > -1) {
+                    _numberSelection[chord!.minorTension][0] = false;
+                    chord!.minorTension = -1;
                   }
-                  else if (chord!["majorTension"] > -1) {
-                    _numberSelection[chord!["majorTension"]][0] = false;
-                    chord!["majorTension"] = -1;
+                  else if (chord!.majorTension > -1) {
+                    _numberSelection[chord!.majorTension][0] = false;
+                    chord!.majorTension = -1;
                   }
                   // nowInput에 맞게 값 재세팅
-                  if (nowInput == "root") chord!["rootTension"] = index;
-                  else if (nowInput == "m") chord!["minorTension"] = index;
-                  else if (nowInput == "M") chord!["majorTension"] = index;
+                  if (nowInput == "root") chord!.rootTension = index;
+                  else if (nowInput == "m") chord!.minorTension = index;
+                  else if (nowInput == "M") chord!.majorTension = index;
                 }
                 else {
-                  chord!["rootTension"] = -1; chord!["minorTension"] = -1; chord!["majorTension"] = -1;
+                  chord!.rootTension = -1; chord!.minorTension = -1; chord!.majorTension = -1;
                 }
                 widget.onButtonTap.call();
               });
@@ -402,14 +403,14 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               setState(() {
                 _numberSelection[index][0] = !_numberSelection[index][0];
                 if (_numberSelection[index][0]) {
-                  if (chord!["asdaTension"] > -1) {
-                    _numberSelection[chord!["asdaTension"]][0] = false;
-                    chord!["asdaTension"] = -1;
+                  if (chord!.asdaTension > -1) {
+                    _numberSelection[chord!.asdaTension][0] = false;
+                    chord!.asdaTension = -1;
                   }
-                  if (nowInput == "asda") chord!["asdaTension"] = index;
+                  if (nowInput == "asda") chord!.asdaTension = index;
                 }
                 else
-                  chord!["asdaTension"] = -1;
+                  chord!.asdaTension = -1;
                 widget.onButtonTap.call();
               });
             }, type: _type);
@@ -419,14 +420,14 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             setState(() {
               _numberSelection[index][0] = !_numberSelection[index][0];
               if (_numberSelection[index][0]) {
-                if (chord!["tension"] > -1) {
-                  _numberSelection[chord!["tension"]][0] = false;
-                  chord!["tension"] = -1;
+                if (chord!.tension > -1) {
+                  _numberSelection[chord!.tension][0] = false;
+                  chord!.tension = -1;
                 }
-                if (nowInput == "tension" || nowInput == null) chord!["tension"] = index;
+                if (nowInput == "tension" || nowInput == null) chord!.tension = index;
               }
               else
-                chord!["tension"] = -1;
+                chord!.tension = -1;
               widget.onButtonTap.call();
             });
           }, type: _type);
@@ -446,9 +447,9 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               else _rootAddSelection[0] = false;
               _rootAddSelection[index] = !_rootAddSelection[index];
 
-              if (_rootAddSelection[0]) chord!["rootSharp"] = 1;
-              else if (_rootAddSelection[1]) chord!["rootSharp"] = -1;
-              else chord!["rootSharp"] = 0;
+              if (_rootAddSelection[0]) chord!.rootSharp = 1;
+              else if (_rootAddSelection[1]) chord!.rootSharp = -1;
+              else chord!.rootSharp = 0;
               widget.onButtonTap.call();
             });
           }),
@@ -459,15 +460,15 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               _middleAddSelection[index] = !_middleAddSelection[index];
 
               if (_middleAddSelection[0]) {
-                chord!["tensionSharp"] = 1;
+                chord!.tensionSharp = 1;
                 nowInput = "tension";
               }
               else if (_middleAddSelection[1]) {
-                chord!["tensionSharp"] = -1;
+                chord!.tensionSharp = -1;
                 nowInput = "tension";
               }
               else {
-                chord!["tensionSharp"] = 0;
+                chord!.tensionSharp = 0;
               }
               widget.onButtonTap.call();
             });
@@ -479,9 +480,9 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               else if (index == 2) {_baseAddSelection[1] = false;}
               _baseAddSelection[index] = !_baseAddSelection[index];
 
-              if (_baseAddSelection[1]) chord!["baseSharp"] = 1;
-              else if (_baseAddSelection[2]) chord!["baseSharp"] = -1;
-              else chord!["baseSharp"] = 0;
+              if (_baseAddSelection[1]) chord!.baseSharp = 1;
+              else if (_baseAddSelection[2]) chord!.baseSharp = -1;
+              else chord!.baseSharp = 0;
               widget.onButtonTap.call();
             });
           }, type: 3),
@@ -546,19 +547,19 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             _rootSelection[index][0] = !_rootSelection[index][0];
             if (_rootSelection[index][0]) { // 비활성화 -> 활성화
               if (type == 1) { // 루트 코드를 활성화
-                chord!["root"] = selectedKey;
+                chord!.root = selectedKey;
                 nowInput = "root";
               }
               else { // 베이스 코드를 활성화
-                chord!["base"] = selectedKey;
+                chord!.base = selectedKey;
               }
             }
             else { // 활성화 -> 비활성화
               if (type == 1) { // 루트코드 비활성화
-                chord!["root"] = -1;
+                chord!.root = -1;
               }
               else { // 베이스 코드 비활성화
-                chord!["base"] = -1;
+                chord!.base = -1;
                 _baseAddSelection[1] = false; // 베이스 # 비활성화
                 _baseAddSelection[2] = false; // 베이스 b 비활성화
               }
@@ -566,10 +567,10 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             }
           }
           else { // 현재 체크하는 버튼이 선택한 버튼이 아닌 나머지 버튼들 중 하나 일 때
-            if (isRootInput && indexToKey(buttonIndex) == chord!["base"]) { // 루트를 입력중인데, 선택하지 않은 버튼이 base의 코드로 사용중이면
+            if (isRootInput && indexToKey(buttonIndex) == chord!.base) { // 루트를 입력중인데, 선택하지 않은 버튼이 base의 코드로 사용중이면
               continue;
             }
-            if (!isRootInput && indexToKey(buttonIndex) == chord!["root"]) {
+            if (!isRootInput && indexToKey(buttonIndex) == chord!.root) {
               continue;
             }
             _rootSelection[buttonIndex][0] = false;

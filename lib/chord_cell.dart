@@ -7,7 +7,7 @@ import 'package:flutter/rendering.dart';
 
 class ChordCell extends StatefulWidget {
   final String? lyric;
-  final Map<String, dynamic>? chord;
+  final Chord? chord;
   final bool readOnly;
 
   const ChordCell({Key? key, this.lyric, this.chord, this.readOnly = false}) : super(key: key);
@@ -22,23 +22,7 @@ class _ChordCellState extends State<ChordCell>
   var lyricController = TextEditingController();
   var chordController = TextEditingController();
 
-  var chord_t = Chord();
-
-  Map<String, dynamic> chord = {
-    "root" : -1,
-    "rootSharp" : 0,
-    "rootTension" : -1,
-    "minor" : "",
-    "minorTension" : -1,
-    "major" : "",
-    "majorTension" : -1,
-    "tension" : -1,
-    "tensionSharp" : 0,
-    "asda" : "",
-    "asdaTension" : -1,
-    "base" : -1,
-    "baseSharp" : 0
-  };
+  var chord = Chord();
 
   String? lyric = "hi";
 
@@ -48,6 +32,7 @@ class _ChordCellState extends State<ChordCell>
   void initState() {
     super.initState();
     if (widget.lyric != null) lyricController.text = widget.lyric!;
+    if (widget.chord != null) chord = widget.chord!;
   }
 
   @override
@@ -55,6 +40,7 @@ class _ChordCellState extends State<ChordCell>
   Widget build(BuildContext context) {
     dynamic parent = context.findAncestorStateOfType<NewSheetState>();
     if (parent == null) parent = context.findAncestorStateOfType<SheetViewerState>();
+
     return Container(
       decoration: BoxDecoration(
         color: isSelected ? Colors.amberAccent : Colors.white,
