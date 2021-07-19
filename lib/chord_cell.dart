@@ -1,5 +1,4 @@
 import 'package:chord_everdu/page_NewSheet.dart';
-import 'package:chord_everdu/sheet_viewer.dart';
 import 'custom_data_structure.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -27,9 +26,8 @@ class _ChordCellState extends State<ChordCell>
   @override
   // ignore: must_call_super
   Widget build(BuildContext context) {
-    NewSheetState? parent = context.findAncestorStateOfType<NewSheetState>();
-    // TODO: 테스트 용으로 자료형 고정해둠. SheetViewerState로 자료형 바뀔 수 있음에 주의
-    //if (parent == null) parent = context.findAncestorStateOfType<SheetViewerState>();
+    // TODO : 타입 변경
+    dynamic parent = context.findAncestorStateOfType<SheetEditorState>();
 
     int cellIndex = parent!.sheet[widget.pageIndex].indexOf(widget);
 

@@ -4,43 +4,34 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:chord_everdu/chord_cell.dart';
 import 'global.dart' as global;
+import 'dart:convert';
 
-class NewSheet extends StatefulWidget {
+class SheetEditor extends StatefulWidget {
+  final String? sheetID;
   final String title;
   final String singer;
   final int songKey;
 
-  const NewSheet(
+  const SheetEditor(
       {Key? key,
       required this.title,
       required this.singer,
-      required this.songKey})
+      required this.songKey,
+      this.sheetID})
       : super(key: key);
 
   @override
-  NewSheetState createState() => NewSheetState();
+  SheetEditorState createState() => SheetEditorState();
 }
 
-class NewSheetState extends State<NewSheet> {
+class SheetEditorState extends State<SheetEditor> {
 
   int songKey = 0;
 
-  List<String> pageList = ['전체', 'page1',];
-
-  List<List<Widget>> sheet = [
-    [ChordCell(key: UniqueKey(), pageIndex: 0,), ChordCell(key: UniqueKey(), pageIndex: 0,) ],
-    [ChordCell(key: UniqueKey(), pageIndex: 1,), ChordCell(key: UniqueKey(), pageIndex: 1,) ],
-  ];
-
-  List<List<Chord?>> chord = [
-    [Chord(root: 0), Chord()],
-    [Chord(), Chord()],
-  ];
-
-  List<List<String?>> lyric = [
-    ["", ""],
-    ["", ""]
-  ];
+  List<String> pageList = [];
+  List<List<Widget>> sheet = [];
+  List<List<Chord?>> chord = [];
+  List<List<String?>> lyric = [];
 
   var _formKey = GlobalKey<FormState>(); // 새 탭 추가시 띄우는 다이어로그의 폼 키
   int nowPage = 0;
@@ -52,6 +43,15 @@ class NewSheetState extends State<NewSheet> {
 
   @override
   void initState() {
+    if (widget.sheetID != null){
+      getSheet();
+    }
+    else {
+      pageList.add('전체');
+      chord.add([Chord()]);
+      lyric.add(['가사']);
+      sheet.add([ChordCell(key: UniqueKey(), pageIndex: 0,)]);
+    }
     super.initState();
   }
 
@@ -61,7 +61,7 @@ class NewSheetState extends State<NewSheet> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("새 악보 - " + widget.title),
+        title: Text(( (widget.sheetID == null) ? "새 악보 - " : "" ) + widget.title),
         actions: [
           IconButton(
             onPressed: () {
@@ -234,24 +234,106 @@ class NewSheetState extends State<NewSheet> {
   }
 
   Future<http.Response> createSheet() async {
-    print(widget.title + ", " + widget.singer);
+    List<dynamic> _sheet = [];
+    for (int i = 0; i < pageList.length; i++) {
+      Map<String, dynamic> _page = {};
+      _page["page"] = pageList[i];
+      List<dynamic> _chordList = [];
+      for (int j = 0; j < chord[i].length; j++) {
+        if (chord[i][j] == null) _chordList.add(null);
+        else _chordList.add({
+          "chord" : chord[i][j]!.toJson(),
+          "lyric" : lyric[i][j]!,
+        });
+      }
+      _page["chords"] = _chordList;
+      _sheet.add(_page);
+    }
+
+    print(_sheet.toString());
+
+    Map<String, dynamic> _body = {
+      'song_name': widget.title,
+      'singer': widget.singer,
+      'song_key': songKey,
+      'sheet' : _sheet,
+    };
+
     final response = await http.post(
         Uri.parse('http://193.122.123.213/sheet_insert.php'),
+        headers: <String, String>{
+          'Content-type': 'application/x-www-form-urlencoded',
+        },
+        body: <String, String>{
+          "data" : jsonEncode(_body),
+        });
+
+    if (response.statusCode == 200) {
+    } else {
+      throw Exception("failed to save data");
+    }
+
+    print(response.body);
+
+    return response;
+  }
+
+  Future<http.Response> getSheet() async {
+    final response = await http.post(
+        Uri.parse('http://193.122.123.213/chordEverdu/get_sheet.php'),
         headers: <String, String>{
           'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
         },
         body: <String, String>{
-          'song_name': widget.title,
-          'singer': widget.singer,
-          'song_key': songKey.toString(),
+          'sheet_id': widget.sheetID!,
         });
 
     if (response.statusCode == 200) {
-      print(response.body);
+      final result = utf8.decode(response.bodyBytes); print(result);
+      List<dynamic> json = jsonDecode(result)["qry_result"];
+      String _nowPage = "";
+      int _pageIndex = -1;
+      for (int i = 0; i < json.length; i++) {
+        String page = json[i]["page"];
+        if (page != _nowPage) {
+          sheet.add([]); lyric.add([]); chord.add([]);
+          pageList.add(page);
+          _nowPage = page;
+          _pageIndex += 1;
+        }
+        lyric[_pageIndex].add(json[i]["lyric"]);
+
+        chord[_pageIndex].add(Chord(
+          root: int.parse(json[i]["root"]),
+          rootSharp: int.parse(json[i]["root_s"]),
+          rootTension: int.parse(json[i]["root_t"]),
+          minor: json[i]["minor"],
+          minorTension: int.parse(json[i]["minor_t"]),
+          major: json[i]["major"],
+          majorTension: int.parse(json[i]["major_t"]),
+          tensionSharp: int.parse(json[i]["t_sharp"]),
+          tension: int.parse(json[i]["tension"]),
+          asda: json[i]["asda"],
+          asdaTension: int.parse(json[i]["asda_t"]),
+          base: int.parse(json[i]["base"]),
+          baseSharp: int.parse(json[i]["base_s"]),
+        ));
+
+        sheet[_pageIndex].add(ChordCell(
+          key: UniqueKey(),
+          pageIndex: _pageIndex,
+          readOnly: true,
+        ));
+
+        setState(() {});
+      }
+
     } else {
       throw Exception("failed to save data");
     }
 
     return response;
   }
+
+
 }

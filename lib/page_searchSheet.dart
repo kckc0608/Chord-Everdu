@@ -1,9 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:chord_everdu/page_NewSheet.dart';
-import 'package:chord_everdu/sheet_viewer.dart';
 
 class SearchSheet extends StatefulWidget {
   const SearchSheet({Key? key}) : super(key: key);
@@ -50,7 +48,7 @@ class _SearchSheetState extends State<SearchSheet> {
                 print("on Tap from page search Sheet. dart line 49");
                 Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) {
-                      return SheetViewer(
+                      return SheetEditor(
                         sheetID: item.sheetId,
                         title: item.title,
                         singer: item.singer.toString(),
@@ -321,7 +319,7 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
               Navigator.of(context).pop("OK");
               Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) {
-                    return NewSheet(
+                    return SheetEditor(
                       title: _controllerForTitle.text,
                       singer: _controllerForSinger.text,
                       songKey: _selectedKey,

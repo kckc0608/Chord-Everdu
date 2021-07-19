@@ -72,4 +72,21 @@ class Chord {
     }
     return chord;
   }
+  Map<String, dynamic> toJson() {
+    return {
+      "root" : root,
+      "rootSharp" : rootSharp,
+      "rootTension" : rootTension,
+      "minor" : minor,
+      "minorTension" : minorTension,
+      "major" : major,
+      "majorTension" : majorTension,
+      "tensionSharp" : tensionSharp,
+      "tension" : tension,
+      "asda" : asda,
+      "asdaTension" : asdaTension,
+      "base" : base,
+      "baseSharp" : baseSharp,
+    };
+  }
 }

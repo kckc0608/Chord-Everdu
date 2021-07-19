@@ -33,7 +33,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
   @override
   Widget build(BuildContext context) {
-    NewSheetState? parent = context.findAncestorStateOfType<NewSheetState>();
+    SheetEditorState? parent = context.findAncestorStateOfType<SheetEditorState>();
     _songKey = parent!.songKey;
     chord = parent.getChordOf(parent.currentCell);
     print("Now Input is " + nowInput.toString());
