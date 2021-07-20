@@ -1,4 +1,4 @@
-import 'package:chord_everdu/page_NewSheet.dart';
+import 'package:chord_everdu/sheet_editor.dart';
 import 'custom_data_structure.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -32,7 +32,7 @@ class _ChordCellState extends State<ChordCell>
 
     chord = parent.chord[widget.pageIndex][cellIndex];
     lyricController.text = parent.lyric[widget.pageIndex][cellIndex]!;
-    chordController.text = chord.toString();
+    chordController.text = chord!.toStringChord(songKey: parent.songKey);
 
     print("build call from chord " + chord.toString());
 

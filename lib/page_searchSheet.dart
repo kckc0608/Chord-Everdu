@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:chord_everdu/page_NewSheet.dart';
+import 'package:chord_everdu/sheet_editor.dart';
 
 class SearchSheet extends StatefulWidget {
   const SearchSheet({Key? key}) : super(key: key);
@@ -45,14 +45,14 @@ class _SearchSheetState extends State<SearchSheet> {
                 ],
               ),
               onTap: () {
-                print("on Tap from page search Sheet. dart line 49");
+                print("on Tap from page_searchSheet.dart line 49");
                 Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) {
                       return SheetEditor(
                         sheetID: item.sheetId,
                         title: item.title,
                         singer: item.singer.toString(),
-                        songKey: 0,
+                        songKey: int.parse(item.songKey),
                       );
                     })
                 );
@@ -98,11 +98,13 @@ class Sheet {
   //final int userID;
   final String sheetId;
   final String title;
+  final String songKey;
   String? singer;
 
   Sheet({
     required this.sheetId,
     required this.title,
+    required this.songKey,
     this.singer,
   });
 
@@ -111,10 +113,11 @@ class Sheet {
       sheetId: json['sheet_id'],
       title: json['song_name'],
       singer: json['singer'],
+      songKey: json['song_key'],
     );
   }
 }
-
+// TODO : 검색 기능 만들기
 // Search Function
 class MySearchDelegate extends SearchDelegate {
   @override
@@ -207,7 +210,7 @@ class NewSheetDialog extends StatefulWidget {
 
 class _NewSheetDialogState extends State<NewSheetDialog> {
 
-  var _keyList = ["C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "G#/Ab", "A", "A#/Bb", "B"];
+  var _keyList = ["C", "C#/Db", "D", "Eb", "E", "F", "F#/Gb", "G", "Ab", "A", "Bb", "B"];
   var _selectedKey = 0;
 
   var _controllerForTitle = TextEditingController();

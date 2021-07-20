@@ -11,14 +11,16 @@ class SheetEditor extends StatefulWidget {
   final String title;
   final String singer;
   final int songKey;
+  final bool readOnly;
 
-  const SheetEditor(
-      {Key? key,
-      required this.title,
-      required this.singer,
-      required this.songKey,
-      this.sheetID})
-      : super(key: key);
+  const SheetEditor({
+    Key? key,
+    required this.title,
+    required this.singer,
+    required this.songKey,
+    this.sheetID,
+    this.readOnly = false
+  }) : super(key: key);
 
   @override
   SheetEditorState createState() => SheetEditorState();
@@ -26,7 +28,7 @@ class SheetEditor extends StatefulWidget {
 
 class SheetEditorState extends State<SheetEditor> {
 
-  int songKey = 0;
+  late int songKey;
 
   List<String> pageList = [];
   List<List<Widget>> sheet = [];
@@ -43,6 +45,7 @@ class SheetEditorState extends State<SheetEditor> {
 
   @override
   void initState() {
+    songKey = widget.songKey;
     if (widget.sheetID != null){
       getSheet();
     }
@@ -57,9 +60,7 @@ class SheetEditorState extends State<SheetEditor> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO : widget.songKey 는 고정적인 값이므로, 나중에 임의로 키를 바꿔서 볼 경우 이게 작동을 하지 않음.
-    songKey = widget.songKey;
-
+    print(songKey);
     return Scaffold(
       appBar: AppBar(
         title: Text(( (widget.sheetID == null) ? "새 악보 - " : "" ) + widget.title),
@@ -114,7 +115,7 @@ class SheetEditorState extends State<SheetEditor> {
                       lyric[nowPage].insert(selectedIndex+1, "가사");
                     }
                     else {
-                      print("Line 147 in page_NewSheet.dart, currentCell is null");
+                      print("Line 147 in sheet_editor.dart, currentCell is null");
                     }
                     setState(() {});
                   },
@@ -147,7 +148,7 @@ class SheetEditorState extends State<SheetEditor> {
                       }
                     }
                     else {
-                      print("Line 173 in page_NewSheet.dart, currentCell is null");
+                      print("Line 173 in sheet_editor.dart, currentCell is null");
                     }
                   },
                   child: Text("줄넘김"),
@@ -164,7 +165,7 @@ class SheetEditorState extends State<SheetEditor> {
                       }
                     }
                     else {
-                      print("Line 190 in page_NewSheet.dart, currentCell is null");
+                      print("Line 190 in sheet_editor.dart, currentCell is null");
                     }
                   },
                   child: Text("줄넘김 취소"),
@@ -173,7 +174,7 @@ class SheetEditorState extends State<SheetEditor> {
             ),
             isChordInput ? ChordKeyboard(onButtonTap: () {
               setState(() {
-                if (cellTextController != null) cellTextController!.text = getChordOf(currentCell).toString(songKey: songKey);
+                if (cellTextController != null) cellTextController!.text = getChordOf(currentCell).toStringChord(songKey: songKey);
                 else throw Exception("cellTextController 가 null 이기 때문에 코드 키보드를 불러오지 못했습니다.");
               });
             }) : Container(),
@@ -276,7 +277,9 @@ class SheetEditorState extends State<SheetEditor> {
         });
 
     if (response.statusCode == 200) {
-    } else {
+      // TODO : 악보 저장 성공시 기능 있으면 구현.
+    }
+    else {
       throw Exception("failed to save data");
     }
 
@@ -296,7 +299,7 @@ class SheetEditorState extends State<SheetEditor> {
         });
 
     if (response.statusCode == 200) {
-      final result = utf8.decode(response.bodyBytes); print(result);
+      final result = utf8.decode(response.bodyBytes);
       List<dynamic> json = jsonDecode(result)["qry_result"];
       String _nowPage = "";
       int _pageIndex = -1;

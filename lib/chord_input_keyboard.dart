@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:chord_everdu/page_NewSheet.dart';
+import 'package:chord_everdu/sheet_editor.dart';
 import 'custom_data_structure.dart';
 import 'global.dart' as global;
 
@@ -7,6 +7,11 @@ class ChordKeyboard extends StatefulWidget {
   const ChordKeyboard({Key? key, required this.onButtonTap}) : super(key: key);
 
   final VoidCallback onButtonTap;
+
+  static const typeRoot = 1;
+  static const typeASDA = 2;
+  static const typeBase = 3;
+  static const typeTens = 4;
 
   @override
   _ChordKeyboardState createState() => _ChordKeyboardState();
@@ -41,10 +46,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     chord = parent.getChordOf(parent.currentCell);
 
     setButton();
-    print(chord.root);
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
-    // TODO : _type 변수 값을 숫자보다는 상수 변수로 만들어서 직관적으로 수정
     print("Now Input is " + nowInput.toString());
 
     return Container(
@@ -150,24 +153,24 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           if (index == chord.root) {
             // 현재 루트를 입력하는 상태인 경우
             return buildToggleButton(
-              [Chord(root: index).toString(songKey: _songKey)],
+              [Chord(root: index).toStringChord(songKey: _songKey)],
               _rootSelection[index],
-              _onPressedRoot(index, type: 1),
+              _onPressedRoot(index, type: ChordKeyboard.typeRoot),
               type: 1,
             );
           } else if (index == chord.base) {
             return buildToggleButton(
-              [Chord(root: index).toString(songKey: _songKey)],
+              [Chord(root: index).toStringChord(songKey: _songKey)],
               _rootSelection[index],
-              _onPressedRoot(index, type: 3),
+              _onPressedRoot(index, type: ChordKeyboard.typeBase),
               type: 3,
             );
           } else {
             return buildToggleButton(
-              [Chord(root: index).toString(songKey: _songKey)],
+              [Chord(root: index).toStringChord(songKey: _songKey)],
               _rootSelection[index],
-              _onPressedRoot(index, type: isRootInput ? 1 : 3),
-              type: isRootInput ? 1 : 3,
+              _onPressedRoot(index, type: isRootInput ? ChordKeyboard.typeRoot : ChordKeyboard.typeBase),
+              type: isRootInput ? ChordKeyboard.typeRoot : ChordKeyboard.typeBase,
             );
           }
         }),
@@ -254,7 +257,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               }
               widget.onButtonTap.call();
             });
-          }, type: 2),
+          }, type: ChordKeyboard.typeASDA),
           buildToggleButton(['m', 'M'], _minorMajorSelection, (index) {
             setState(() {
               _minorMajorSelection[index] = !_minorMajorSelection[index];
@@ -330,7 +333,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                       chord.asdaTension = -1;
                     widget.onButtonTap.call();
                   });
-                }, type: 2)
+                }, type: ChordKeyboard.typeASDA)
               : buildToggleButton([global.tensionList[7]], _numberSelection[7],
                   (i) {
                   setState(() {
@@ -360,7 +363,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                     }
                     widget.onButtonTap.call();
                   });
-                }, type: 1),
+                }, type: ChordKeyboard.typeRoot),
         ],
       ),
     );
@@ -371,24 +374,23 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(7, (index) {
-          int _type = 4;
+          int _type = ChordKeyboard.typeTens;
           // now input에 따라 비활성화 된 버튼의 활성화 색을 결정
           if (nowInput == "tension" || nowInput == null)
-            _type = 4;
+            _type = ChordKeyboard.typeTens;
           else if (nowInput == "asda")
-            _type = 2;
+            _type = ChordKeyboard.typeASDA;
           else if (nowInput == "root" || nowInput == "m" || nowInput == "M")
-            _type = 1;
+            _type = ChordKeyboard.typeRoot;
 
           if (index == chord.tension)
-            _type = 4;
+            _type = ChordKeyboard.typeTens;
           else if (index == chord.asdaTension)
-            _type = 2;
-          else if (index == chord.rootTension ||
-              index == chord.minorTension ||
-              index == chord.majorTension) _type = 1;
+            _type = ChordKeyboard.typeASDA;
+          else if (index == chord.rootTension || index == chord.minorTension || index == chord.majorTension)
+            _type = ChordKeyboard.typeRoot;
 
-          if (_type == 1) {
+          if (_type == ChordKeyboard.typeRoot) {
             return buildToggleButton(
                 [global.tensionList[index]], _numberSelection[index], (i) {
               setState(() {
@@ -420,7 +422,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               });
             }, type: _type);
           }
-          if (_type == 2) {
+          if (_type == ChordKeyboard.typeASDA) {
             return buildToggleButton(
                 [global.tensionList[index]], _numberSelection[index], (i) {
               setState(() {
@@ -437,7 +439,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               });
             }, type: _type);
           }
-          // type 4
+          // type ChordKeyboard.typeTens
           return buildToggleButton(
               [global.tensionList[index]], _numberSelection[index], (i) {
             setState(() {
@@ -497,7 +499,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
               widget.onButtonTap.call();
             });
-          }, type: 4),
+          }, type: ChordKeyboard.typeTens),
           buildToggleButton(['/', '#', 'b'], _baseAddSelection, (index) {
             setState(() {
               _baseAddSelection[index] = !_baseAddSelection[index];
@@ -512,7 +514,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
               widget.onButtonTap.call();
             });
-          }, type: 3),
+          }, type: ChordKeyboard.typeBase),
         ],
       ),
     );
@@ -523,20 +525,20 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
       throw FormatException("keyList's length must be same with _isSelected's length.");
 
     Color? setFillColor() {
-      if (type == 1) {return Colors.blue[300];}
-      else if (type == 2) {return Colors.green[300];}
-      else if (type == 3) {return Colors.amber[300];}
-      else if (type == 4) {return Colors.deepOrange[300];}
+      if (type == ChordKeyboard.typeRoot) {return Colors.blue[300];}
+      else if (type == ChordKeyboard.typeASDA) {return Colors.green[300];}
+      else if (type == ChordKeyboard.typeBase) {return Colors.amber[300];}
+      else if (type == ChordKeyboard.typeTens) {return Colors.deepOrange[300];}
     }
 
     Color? setSelectedBorderColor() {
-      if (type == 1) {
+      if (type == ChordKeyboard.typeRoot) {
         return Colors.blue[600];
-      } else if (type == 2) {
+      } else if (type == ChordKeyboard.typeASDA) {
         return Colors.green[600];
-      } else if (type == 3) {
+      } else if (type == ChordKeyboard.typeBase) {
         return Colors.amber[600];
-      } else if (type == 4) {
+      } else if (type == ChordKeyboard.typeTens) {
         return Colors.deepOrange[600];
       }
     }
@@ -566,7 +568,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             _rootSelection[index][0] = !_rootSelection[index][0];
             if (_rootSelection[index][0]) {
               // 비활성화 -> 활성화
-              if (type == 1) {
+              if (type == ChordKeyboard.typeRoot) {
                 // 루트 코드를 활성화
                 chord.root = index;
                 nowInput = "root";
@@ -576,7 +578,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               }
             } else {
               // 활성화 -> 비활성화
-              if (type == 1) {
+              if (type == ChordKeyboard.typeRoot) {
                 // 루트코드 비활성화
                 chord.root = -1;
               } else {
