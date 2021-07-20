@@ -220,6 +220,8 @@ class SheetEditorState extends State<SheetEditor> {
               pageList.add(pageTitle);
               List<ChordCell> list = [ChordCell(key: UniqueKey(), pageIndex: pageList.length-1,)];
               sheet.add(list);
+              chord.add([Chord()]);
+              lyric.add(["가사"]);
               //_initPosition = sheet.length-1; // 탭만 바뀌고 탭뷰가 안바뀌는 문제 존재
             });
           });
