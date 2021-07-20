@@ -19,10 +19,10 @@ class Chord {
     this.baseSharp = 0
   });
 
-  String toString() {
+  String toString({int songKey = 0}) { // TODO : 인자로 song Key 를 입력받아서 이걸 기준으로 변환하도록!
     String chord = "";
     if (root > -1) {
-      int rootKey = (root + rootSharp + 12)%12;
+      int rootKey = (songKey + global.indexToKeyOffset[root] + rootSharp + 12)%12;
       if (rootKey == 1 || rootKey == 3 || rootKey == 6 || rootKey == 8 || rootKey == 10) {
         if (rootSharp == 1)
           chord += global.keyList[rootKey][0];
@@ -61,7 +61,7 @@ class Chord {
 
     if (base > -1) {
       chord += "/";
-      int baseKey = (base + baseSharp + 12)%12;
+      int baseKey = (songKey + global.indexToKeyOffset[base] + baseSharp + 12)%12;
       if (baseKey == 1 || baseKey == 3 || baseKey == 6 || baseKey == 8 || baseKey == 10) {
         if (baseSharp == 1)
           chord += global.keyList[baseKey][0];

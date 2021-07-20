@@ -26,8 +26,7 @@ class _ChordCellState extends State<ChordCell>
   @override
   // ignore: must_call_super
   Widget build(BuildContext context) {
-    // TODO : 타입 변경
-    dynamic parent = context.findAncestorStateOfType<SheetEditorState>();
+    SheetEditorState? parent = context.findAncestorStateOfType<SheetEditorState>();
 
     int cellIndex = parent!.sheet[widget.pageIndex].indexOf(widget);
 

@@ -57,6 +57,7 @@ class SheetEditorState extends State<SheetEditor> {
 
   @override
   Widget build(BuildContext context) {
+    // TODO : widget.songKey 는 고정적인 값이므로, 나중에 임의로 키를 바꿔서 볼 경우 이게 작동을 하지 않음.
     songKey = widget.songKey;
 
     return Scaffold(
@@ -172,7 +173,7 @@ class SheetEditorState extends State<SheetEditor> {
             ),
             isChordInput ? ChordKeyboard(onButtonTap: () {
               setState(() {
-                if (cellTextController != null) cellTextController!.text = getChordOf(currentCell).toString();
+                if (cellTextController != null) cellTextController!.text = getChordOf(currentCell).toString(songKey: songKey);
                 else throw Exception("cellTextController 가 null 이기 때문에 코드 키보드를 불러오지 못했습니다.");
               });
             }) : Container(),
