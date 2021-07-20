@@ -82,8 +82,10 @@ class SheetEditorState extends State<SheetEditor> {
             List<Widget> pageSheet = sheet[index];
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Wrap(
-                children: pageSheet,
+              child: SingleChildScrollView(
+                child: Wrap(
+                  children: pageSheet,
+                ),
               ),
             );
           },
@@ -141,7 +143,7 @@ class SheetEditorState extends State<SheetEditor> {
         },
         child: Icon(Icons.add),
       ),
-      bottomSheet: (currentCell == null) ? null : Column(
+      bottomSheet: (currentCell == null) ? null : Column( // TODO : 바텀 시트를 사용하면, 코드셀이 쌓일 경우 뒤에 묻히는 문제 발생.
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(

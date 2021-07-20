@@ -28,6 +28,8 @@ class Chord {
           chord += global.keyList[rootKey][0];
         else if (rootSharp == -1)
           chord += global.keyList[rootKey][1];
+        else
+          chord += global.keyList[rootKey][1]; // TODO : 이거 1, 0 선택할 수 있는 방법 고안하기..
       }
       else {
         chord += global.keyList[rootKey];
@@ -65,6 +67,8 @@ class Chord {
           chord += global.keyList[baseKey][0];
         else if (baseSharp == -1)
           chord += global.keyList[baseKey][1];
+        else
+          chord += global.keyList[baseKey][1]; // TODO : 이거 1, 0 선택할 수 있는 방법 고안하기..
       }
       else {
         chord += global.keyList[baseKey];
