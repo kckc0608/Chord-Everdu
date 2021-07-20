@@ -73,27 +73,110 @@ class SheetEditorState extends State<SheetEditor> {
         ],
       ),
       body: SafeArea(
-        child: global.CustomTabView(
-          initPosition: nowPage,
-          itemCount: pageList.length,
-          tabBuilder: (context, index) => Tab(text: pageList[index]),
-          pageBuilder: (context, index) {
-            print("Builder called $index");
-            List<Widget> pageSheet = sheet[index];
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: SingleChildScrollView(
-                child: Wrap(
-                  children: pageSheet,
-                ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: global.CustomTabView(
+                initPosition: nowPage,
+                itemCount: pageList.length,
+                tabBuilder: (context, index) => Tab(text: pageList[index]),
+                pageBuilder: (context, index) {
+                  print("Builder called $index");
+                  List<Widget> pageSheet = sheet[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: SingleChildScrollView(
+                      child: Wrap(
+                        children: pageSheet,
+                      ),
+                    ),
+                  );
+                },
+                onPositionChange: (index) {
+                  print('current position: $index');
+                  nowPage = index;
+                },
+                onScroll: (position) => print('$position'),
               ),
-            );
-          },
-          onPositionChange: (index) {
-            print('current position: $index');
-            nowPage = index;
-          },
-          onScroll: (position) => print('$position'),
+            ),
+            Row(
+              children: [
+                TextButton(
+                  child: Text("코드 추가"),
+                  onPressed: () {
+                    if (currentCell != null) {
+                      int selectedIndex = sheet[nowPage].indexOf(currentCell!);
+                      if (selectedIndex == -1) throw Exception("선택한 셀을 시트에서 찾을 수 없습니다.");
+                      sheet[nowPage].insert(selectedIndex+1, ChordCell(key: UniqueKey(), pageIndex: nowPage,));
+                      chord[nowPage].insert(selectedIndex+1, Chord());
+                      lyric[nowPage].insert(selectedIndex+1, "가사");
+                    }
+                    else {
+                      print("Line 147 in page_NewSheet.dart, currentCell is null");
+                    }
+                    setState(() {});
+                  },
+                ),
+                TextButton(
+                  child: Text("코드 삭제"),
+                  onPressed: () {
+                    // 현재 선택한 코드 셀 삭제
+                    if (currentCell != null) {
+                      setState(() {
+                        int selectedIndex = sheet[nowPage].indexOf(currentCell!);
+                        sheet[nowPage].removeAt(selectedIndex);
+                        chord[nowPage].removeAt(selectedIndex);
+                        lyric[nowPage].removeAt(selectedIndex);
+                      });
+                    }
+                  },
+                ),
+                TextButton(
+                  onPressed: () {
+                    // 현재 선택한 코드셀 이후의 셀들을 다음 줄로 넘김
+                    if (currentCell != null) {
+                      int selectedIndex = sheet[nowPage].indexOf(currentCell!);
+                      if (!(sheet[nowPage][selectedIndex+1] is Container)) {
+                        setState(() {
+                          sheet[nowPage].insert(selectedIndex+1, Container(width: 1000, key: UniqueKey()));
+                          chord[nowPage].insert(selectedIndex+1, null);
+                          lyric[nowPage].insert(selectedIndex+1, null);
+                        });
+                      }
+                    }
+                    else {
+                      print("Line 173 in page_NewSheet.dart, currentCell is null");
+                    }
+                  },
+                  child: Text("줄넘김"),
+                ),
+                TextButton(
+                  onPressed: () {
+                    if (currentCell != null) {
+                      int selectedIndex = sheet[nowPage].indexOf(currentCell!);
+                      if (sheet[nowPage][selectedIndex-1] is Container ) {
+                        sheet[nowPage].removeAt(selectedIndex-1);
+                        chord[nowPage].removeAt(selectedIndex-1);
+                        lyric[nowPage].removeAt(selectedIndex-1);
+                        setState(() {});
+                      }
+                    }
+                    else {
+                      print("Line 190 in page_NewSheet.dart, currentCell is null");
+                    }
+                  },
+                  child: Text("줄넘김 취소"),
+                ),
+              ],
+            ),
+            isChordInput ? ChordKeyboard(onButtonTap: () {
+              setState(() {
+                if (cellTextController != null) cellTextController!.text = getChordOf(currentCell).toString();
+                else throw Exception("cellTextController 가 null 이기 때문에 코드 키보드를 불러오지 못했습니다.");
+              });
+            }) : Container(),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -142,87 +225,6 @@ class SheetEditorState extends State<SheetEditor> {
 
         },
         child: Icon(Icons.add),
-      ),
-      bottomSheet: (currentCell == null) ? null : Column( // TODO : 바텀 시트를 사용하면, 코드셀이 쌓일 경우 뒤에 묻히는 문제 발생.
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              TextButton(
-                child: Text("코드 추가"),
-                onPressed: () {
-                  if (currentCell != null) {
-                    int selectedIndex = sheet[nowPage].indexOf(currentCell!);
-                    if (selectedIndex == -1) throw Exception("선택한 셀을 시트에서 찾을 수 없습니다.");
-                    sheet[nowPage].insert(selectedIndex+1, ChordCell(key: UniqueKey(), pageIndex: nowPage,));
-                    chord[nowPage].insert(selectedIndex+1, Chord());
-                    lyric[nowPage].insert(selectedIndex+1, "가사");
-                  }
-                  else {
-                    print("Line 147 in page_NewSheet.dart, currentCell is null");
-                  }
-                  setState(() {});
-                },
-              ),
-              TextButton(
-                child: Text("코드 삭제"),
-                onPressed: () {
-                  // 현재 선택한 코드 셀 삭제
-                  if (currentCell != null) {
-                    setState(() {
-                      int selectedIndex = sheet[nowPage].indexOf(currentCell!);
-                      sheet[nowPage].removeAt(selectedIndex);
-                      chord[nowPage].removeAt(selectedIndex);
-                      lyric[nowPage].removeAt(selectedIndex);
-                    });
-                  }
-                },
-              ),
-              TextButton(
-                onPressed: () {
-                  // 현재 선택한 코드셀 이후의 셀들을 다음 줄로 넘김
-                  if (currentCell != null) {
-                    int selectedIndex = sheet[nowPage].indexOf(currentCell!);
-                    if (!(sheet[nowPage][selectedIndex+1] is Container)) {
-                      setState(() {
-                        sheet[nowPage].insert(selectedIndex+1, Container(width: 1000, key: UniqueKey()));
-                        chord[nowPage].insert(selectedIndex+1, null);
-                        lyric[nowPage].insert(selectedIndex+1, null);
-                      });
-                    }
-                  }
-                  else {
-                    print("Line 173 in page_NewSheet.dart, currentCell is null");
-                  }
-                },
-                child: Text("줄넘김"),
-              ),
-              TextButton(
-                onPressed: () {
-                  if (currentCell != null) {
-                    int selectedIndex = sheet[nowPage].indexOf(currentCell!);
-                    if (sheet[nowPage][selectedIndex-1] is Container ) {
-                      sheet[nowPage].removeAt(selectedIndex-1);
-                      chord[nowPage].removeAt(selectedIndex-1);
-                      lyric[nowPage].removeAt(selectedIndex-1);
-                      setState(() {});
-                    }
-                  }
-                  else {
-                    print("Line 190 in page_NewSheet.dart, currentCell is null");
-                  }
-                },
-                child: Text("줄넘김 취소"),
-              ),
-            ],
-          ),
-          isChordInput ? ChordKeyboard(onButtonTap: () {
-            setState(() {
-              if (cellTextController != null) cellTextController!.text = getChordOf(currentCell).toString();
-              else throw Exception("cellTextController 가 null 이기 때문에 코드 키보드를 불러오지 못했습니다.");
-            });
-          }) : Container(),
-        ],
       ),
     );
   }
