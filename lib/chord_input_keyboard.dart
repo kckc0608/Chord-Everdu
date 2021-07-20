@@ -19,7 +19,9 @@ class ChordKeyboard extends StatefulWidget {
 
 class _ChordKeyboardState extends State<ChordKeyboard> {
   int _songKey = 0;
-  int _sharp = 0; // #을 붙일지 b을 붙일지 결정, 0일때 #
+
+  // TODO : b을 사용하는 스케일과 #을 사용하는 스케일의 구분.
+  //int _sharp = 0; // #을 붙일지 b을 붙일지 결정, 0일때 #
 
   late List<List<bool>> _rootSelection;
   late List<bool> _minorMajorSelection;

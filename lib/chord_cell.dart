@@ -39,24 +39,23 @@ class _ChordCellState extends State<ChordCell>
     return Container(
       decoration: BoxDecoration(
         color: isSelected ? Colors.amberAccent : Colors.white,
-        border: Border.all(),
+        border: (!widget.readOnly) ? Border.all() : null,
       ),
       child: Focus(
-        onFocusChange: (hasFocus) {
+        onFocusChange: (!widget.readOnly) ? (hasFocus) {
           setState(() {
             isSelected = hasFocus;
             if (hasFocus) {
               print("has Focus of sheet Cell called");
               parent.setState(() {
                 parent.currentCell = this.widget;
-                parent.cellTextController = this.chordController;
               });
             }
             else { // 포커스가 꺼졌을 때, 현재 가사를 저장
               parent.lyric[widget.pageIndex][cellIndex] = lyricController.text;
             }
           });
-        },
+        } : null,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -65,17 +64,17 @@ class _ChordCellState extends State<ChordCell>
               constraints: BoxConstraints(minWidth: 24.0),
               child: IntrinsicWidth(
                 child: TextField(
-                  onTap: () {
+                  onTap: (!widget.readOnly) ? () {
                     parent.setState(() {
-                      // 코드용 키보드 띄우기 - 부모 재빌드
                       parent.isChordInput = true;
+                      parent.cellTextController = this.chordController;
                     });
-                  },
+                  } : null,
                   style: TextStyle(fontWeight: FontWeight.bold),
                   controller: chordController,
                   readOnly: true,
                   decoration: InputDecoration(
-                    //border: InputBorder.none,
+                    border: (widget.readOnly) ? InputBorder.none : null,
                     isCollapsed: true,
                     contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
                   ),
@@ -88,12 +87,12 @@ class _ChordCellState extends State<ChordCell>
               ),
               child: IntrinsicWidth(
                 child: TextField(
-                  onTap: () {
+                  onTap: (!widget.readOnly) ? () {
                     parent.setState(() {
-                      // 코드용 키보드 지우기 - 부모 재빌드
                       parent.isChordInput = false;
+                      parent.cellTextController = this.lyricController;
                     });
-                  },
+                  } : null,
                   onEditingComplete: () {
                     setState(() {
                       FocusScope.of(context).unfocus();
@@ -107,6 +106,7 @@ class _ChordCellState extends State<ChordCell>
                     isCollapsed: true,
                     contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 2),
                   ),
+                  readOnly: widget.readOnly,
                 ),
               ),
             ),

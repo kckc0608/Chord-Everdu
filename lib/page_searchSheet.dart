@@ -53,6 +53,7 @@ class _SearchSheetState extends State<SearchSheet> {
                         title: item.title,
                         singer: item.singer.toString(),
                         songKey: int.parse(item.songKey),
+                        readOnly: true,
                       );
                     })
                 );

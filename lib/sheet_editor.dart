@@ -67,7 +67,7 @@ class SheetEditorState extends State<SheetEditor> {
     return Scaffold(
       appBar: AppBar(
         title: Text(( (widget.sheetID == null) ? "새 악보 - " : "" ) + widget.title),
-        actions: [
+        actions: (!widget.readOnly) ? [
           IconButton(
             onPressed: () {
               createSheet();
@@ -75,7 +75,7 @@ class SheetEditorState extends State<SheetEditor> {
             },
             icon: Icon(Icons.check),
           )
-        ],
+        ] : null,
       ),
       body: SafeArea(
         child: Column(
@@ -105,36 +105,32 @@ class SheetEditorState extends State<SheetEditor> {
                 onScroll: (position) => print('$position'),
               ),
             ),
-            Row(
+            (!widget.readOnly) ? Row(
               children: [
                 IconButton(
-                  icon: Icon(Icons.add, color: Colors.green, size: 28),
-                  onPressed: () {
-                    if (currentCell != null) {
-                      setState(() {
-                        if (selectedIndex == -1) throw Exception("선택한 셀을 시트에서 찾을 수 없습니다.");
-                        sheet[nowPage].insert(selectedIndex+1, ChordCell(key: UniqueKey(), pageIndex: nowPage,));
-                        chord[nowPage].insert(selectedIndex+1, Chord());
-                        lyric[nowPage].insert(selectedIndex+1, "");
-                      });
-                    }
-                    else {throw Exception("currentCell is null");}
-                  },
+                  icon: Icon(Icons.add, size: 28),
+                  color: Colors.green,
+                  disabledColor: Colors.grey,
+                  onPressed: (currentCell != null && selectedIndex > -1) ? () {
+                    setState(() {
+                      sheet[nowPage].insert(selectedIndex+1, ChordCell(key: UniqueKey(), pageIndex: nowPage,));
+                      chord[nowPage].insert(selectedIndex+1, Chord());
+                      lyric[nowPage].insert(selectedIndex+1, "");
+                    });
+                  } : null,
                 ),
                 IconButton(
                   // TODO : 한칸 남았을 때 삭제 안되게, 한칸 만들고 -> 한칸 만들고 -> 두번째 칸 둘째 줄로 -> 첫번째 칸 지울 때 컨테이너가 맨 처음으로 오는 문제 해결해야 함.
-                  icon: Icon(Icons.remove, color: Colors.red, size: 28),
-                  onPressed: () {
-                    // 현재 선택한 코드 셀 삭제
-                    if (currentCell != null) {
-                      setState(() {
-                        sheet[nowPage].removeAt(selectedIndex);
-                        chord[nowPage].removeAt(selectedIndex);
-                        lyric[nowPage].removeAt(selectedIndex);
-                      });
-                    }
-                    else {throw Exception("currentCell is null");}
-                  },
+                  icon: Icon(Icons.remove, size: 28),
+                  color: Colors.red,
+                  disabledColor: Colors.grey,
+                  onPressed: (currentCell != null && selectedIndex > -1) ? () {
+                    setState(() {
+                      sheet[nowPage].removeAt(selectedIndex);
+                      chord[nowPage].removeAt(selectedIndex);
+                      lyric[nowPage].removeAt(selectedIndex);
+                    });
+                  } : null,
                 ),
                 IconButton(
                   icon: Icon(Icons.arrow_downward_outlined),
@@ -162,8 +158,19 @@ class SheetEditorState extends State<SheetEditor> {
                     });
                   } : null,
                 ),
+                IconButton(
+                  icon: Icon(Icons.text_rotation_none),
+                  color: Colors.black,
+                  disabledColor: Colors.grey,
+                  onPressed: (currentCell != null && !isChordInput) ? () {
+                    setState(() {
+                      // TODO : 가사만 옆의 셀 또는 새로운 셀을 생성하여 옮기는 기능 구현.
+                      //cellTextController.selection.
+                    });
+                  } : null,
+                ),
               ],
-            ),
+            ) : Container(),
             isChordInput ? ChordKeyboard(onButtonTap: () {
               setState(() {
                 if (cellTextController != null) cellTextController!.text = getChordOf(currentCell).toStringChord(songKey: songKey);
@@ -173,7 +180,8 @@ class SheetEditorState extends State<SheetEditor> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
+      // TODO : 플로팅 버튼이 커스텀 키보드 가리는 문제 해결해야 함.
+      floatingActionButton: (!widget.readOnly) ? FloatingActionButton(
         onPressed: () {
           var controller = TextEditingController();
           showDialog (
@@ -221,7 +229,7 @@ class SheetEditorState extends State<SheetEditor> {
 
         },
         child: Icon(Icons.add),
-      ),
+      ) : null,
     );
   }
 
@@ -334,7 +342,7 @@ class SheetEditorState extends State<SheetEditor> {
         sheet[_pageIndex].add(ChordCell(
           key: UniqueKey(),
           pageIndex: _pageIndex,
-          readOnly: true,
+          readOnly: widget.readOnly,
         ));
       }
       setState(() {});
