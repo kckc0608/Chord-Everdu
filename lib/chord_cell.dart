@@ -98,6 +98,7 @@ class _ChordCellState extends State<ChordCell>
                     setState(() {
                       FocusScope.of(context).unfocus();
                       parent.currentCell = null;
+                      parent.selectedIndex = -1;
                     });
                   },
                   controller: lyricController,

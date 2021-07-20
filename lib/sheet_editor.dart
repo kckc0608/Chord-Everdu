@@ -40,6 +40,7 @@ class SheetEditorState extends State<SheetEditor> {
 
   ChordCell? currentCell;
   TextEditingController? cellTextController;
+  int selectedIndex = -1;
 
   bool isChordInput = false;
 
@@ -60,7 +61,9 @@ class SheetEditorState extends State<SheetEditor> {
 
   @override
   Widget build(BuildContext context) {
-    print(songKey);
+    if (currentCell == null) selectedIndex = -1;
+    else selectedIndex = sheet[nowPage].indexOf(currentCell!);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(( (widget.sheetID == null) ? "새 악보 - " : "" ) + widget.title),
@@ -104,71 +107,60 @@ class SheetEditorState extends State<SheetEditor> {
             ),
             Row(
               children: [
-                TextButton(
-                  child: Text("코드 추가"),
+                IconButton(
+                  icon: Icon(Icons.add, color: Colors.green, size: 28),
                   onPressed: () {
                     if (currentCell != null) {
-                      int selectedIndex = sheet[nowPage].indexOf(currentCell!);
-                      if (selectedIndex == -1) throw Exception("선택한 셀을 시트에서 찾을 수 없습니다.");
-                      sheet[nowPage].insert(selectedIndex+1, ChordCell(key: UniqueKey(), pageIndex: nowPage,));
-                      chord[nowPage].insert(selectedIndex+1, Chord());
-                      lyric[nowPage].insert(selectedIndex+1, "가사");
+                      setState(() {
+                        if (selectedIndex == -1) throw Exception("선택한 셀을 시트에서 찾을 수 없습니다.");
+                        sheet[nowPage].insert(selectedIndex+1, ChordCell(key: UniqueKey(), pageIndex: nowPage,));
+                        chord[nowPage].insert(selectedIndex+1, Chord());
+                        lyric[nowPage].insert(selectedIndex+1, "");
+                      });
                     }
-                    else {
-                      print("Line 147 in sheet_editor.dart, currentCell is null");
-                    }
-                    setState(() {});
+                    else {throw Exception("currentCell is null");}
                   },
                 ),
-                TextButton(
-                  child: Text("코드 삭제"),
+                IconButton(
+                  // TODO : 한칸 남았을 때 삭제 안되게, 한칸 만들고 -> 한칸 만들고 -> 두번째 칸 둘째 줄로 -> 첫번째 칸 지울 때 컨테이너가 맨 처음으로 오는 문제 해결해야 함.
+                  icon: Icon(Icons.remove, color: Colors.red, size: 28),
                   onPressed: () {
                     // 현재 선택한 코드 셀 삭제
                     if (currentCell != null) {
                       setState(() {
-                        int selectedIndex = sheet[nowPage].indexOf(currentCell!);
                         sheet[nowPage].removeAt(selectedIndex);
                         chord[nowPage].removeAt(selectedIndex);
                         lyric[nowPage].removeAt(selectedIndex);
                       });
                     }
+                    else {throw Exception("currentCell is null");}
                   },
                 ),
-                TextButton(
-                  onPressed: () {
-                    // 현재 선택한 코드셀 이후의 셀들을 다음 줄로 넘김
+                IconButton(
+                  icon: Icon(Icons.arrow_downward_outlined),
+                  disabledColor: Colors.grey,
+                  onPressed: (selectedIndex > 0) ? () {
                     if (currentCell != null) {
-                      int selectedIndex = sheet[nowPage].indexOf(currentCell!);
-                      if (!(sheet[nowPage][selectedIndex+1] is Container)) {
-                        setState(() {
-                          sheet[nowPage].insert(selectedIndex+1, Container(width: 1000, key: UniqueKey()));
-                          chord[nowPage].insert(selectedIndex+1, null);
-                          lyric[nowPage].insert(selectedIndex+1, null);
-                        });
-                      }
+                      setState(() {
+                        sheet[nowPage].insert(selectedIndex, Container(width: 1000, key: UniqueKey()));
+                        chord[nowPage].insert(selectedIndex, null);
+                        lyric[nowPage].insert(selectedIndex, null);
+                      });
                     }
-                    else {
-                      print("Line 173 in sheet_editor.dart, currentCell is null");
-                    }
-                  },
-                  child: Text("줄넘김"),
+                    else {throw Exception("currentCell is null");}
+                  } : null,
                 ),
-                TextButton(
-                  onPressed: () {
-                    if (currentCell != null) {
-                      int selectedIndex = sheet[nowPage].indexOf(currentCell!);
-                      if (sheet[nowPage][selectedIndex-1] is Container ) {
-                        sheet[nowPage].removeAt(selectedIndex-1);
-                        chord[nowPage].removeAt(selectedIndex-1);
-                        lyric[nowPage].removeAt(selectedIndex-1);
-                        setState(() {});
-                      }
-                    }
-                    else {
-                      print("Line 190 in sheet_editor.dart, currentCell is null");
-                    }
-                  },
-                  child: Text("줄넘김 취소"),
+                IconButton(
+                  icon: Icon(Icons.arrow_back),
+                  color: Colors.red,
+                  disabledColor: Colors.grey,
+                  onPressed: (currentCell != null && selectedIndex > 0) ? () {
+                    setState(() {
+                      sheet[nowPage].removeAt(selectedIndex-1);
+                      chord[nowPage].removeAt(selectedIndex-1);
+                      lyric[nowPage].removeAt(selectedIndex-1);
+                    });
+                  } : null,
                 ),
               ],
             ),
@@ -248,7 +240,10 @@ class SheetEditorState extends State<SheetEditor> {
       _page["page"] = pageList[i];
       List<dynamic> _chordList = [];
       for (int j = 0; j < chord[i].length; j++) {
-        if (chord[i][j] == null) _chordList.add(null);
+        if (chord[i][j] == null) _chordList.add({
+          "chord" : Chord().toJson(),
+          "lyric" : "<!br!>",
+        });
         else _chordList.add({
           "chord" : chord[i][j]!.toJson(),
           "lyric" : lyric[i][j]!,
@@ -311,8 +306,15 @@ class SheetEditorState extends State<SheetEditor> {
           _nowPage = page;
           _pageIndex += 1;
         }
-        lyric[_pageIndex].add(json[i]["lyric"]);
 
+        if (json[i]["lyric"] == "<!br!>") {
+          sheet[_pageIndex].add(Container(width: 1000));
+          lyric[_pageIndex].add(null);
+          chord[_pageIndex].add(null);
+          continue;
+        }
+
+        lyric[_pageIndex].add(json[i]["lyric"]);
         chord[_pageIndex].add(Chord(
           root: int.parse(json[i]["root"]),
           rootSharp: int.parse(json[i]["root_s"]),
@@ -334,12 +336,10 @@ class SheetEditorState extends State<SheetEditor> {
           pageIndex: _pageIndex,
           readOnly: true,
         ));
-
-        setState(() {});
       }
-
+      setState(() {});
     } else {
-      throw Exception("failed to save data");
+      throw Exception("[f][getSheet()] failed to get data");
     }
 
     return response;
