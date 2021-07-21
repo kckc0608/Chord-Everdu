@@ -29,12 +29,13 @@ class _ChordCellState extends State<ChordCell>
     SheetEditorState? parent = context.findAncestorStateOfType<SheetEditorState>();
 
     int cellIndex = parent!.sheet[widget.pageIndex].indexOf(widget);
-
+    print("build called cell of " + cellIndex.toString());
     chord = parent.chord[widget.pageIndex][cellIndex];
-    lyricController.text = parent.lyric[widget.pageIndex][cellIndex]!;
     chordController.text = chord!.toStringChord(songKey: parent.songKey);
 
-    print("build call from chord " + chord.toString());
+    // 이 조건 체크를 안하면 포커스를 받을 때마다 가사를 바꿔서 항상 커서가 앞으로 감.
+    if (lyricController.text != parent.lyric[widget.pageIndex][cellIndex]!)
+      lyricController.text = parent.lyric[widget.pageIndex][cellIndex]!;
 
     return Container(
       decoration: BoxDecoration(
@@ -46,8 +47,8 @@ class _ChordCellState extends State<ChordCell>
           setState(() {
             isSelected = hasFocus;
             if (hasFocus) {
-              print("has Focus of sheet Cell called");
               parent.setState(() {
+                parent.from = "on focus change to has";
                 parent.currentCell = this.widget;
               });
             }
@@ -66,6 +67,7 @@ class _ChordCellState extends State<ChordCell>
                 child: TextField(
                   onTap: (!widget.readOnly) ? () {
                     parent.setState(() {
+                      parent.from = "chord on tap";
                       parent.isChordInput = true;
                       parent.cellTextController = this.chordController;
                     });
@@ -89,6 +91,7 @@ class _ChordCellState extends State<ChordCell>
                 child: TextField(
                   onTap: (!widget.readOnly) ? () {
                     parent.setState(() {
+                      parent.from = "lyric on tap";
                       parent.isChordInput = false;
                       parent.cellTextController = this.lyricController;
                     });

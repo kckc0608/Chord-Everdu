@@ -30,6 +30,8 @@ class SheetEditorState extends State<SheetEditor> {
 
   late int songKey;
 
+  late String from;
+
   List<String> pageList = [];
   List<List<Widget>> sheet = [];
   List<List<Chord?>> chord = [];
@@ -47,6 +49,10 @@ class SheetEditorState extends State<SheetEditor> {
   @override
   void initState() {
     songKey = widget.songKey;
+
+    // test
+    from = "";
+
     if (widget.sheetID != null){
       getSheet();
     }
@@ -63,6 +69,8 @@ class SheetEditorState extends State<SheetEditor> {
   Widget build(BuildContext context) {
     if (currentCell == null) selectedIndex = -1;
     else selectedIndex = sheet[nowPage].indexOf(currentCell!);
+
+    print("sheet editor build called by " + from);
 
     return Scaffold(
       appBar: AppBar(
@@ -87,7 +95,7 @@ class SheetEditorState extends State<SheetEditor> {
                 itemCount: pageList.length,
                 tabBuilder: (context, index) => Tab(text: pageList[index]),
                 pageBuilder: (context, index) {
-                  print("Builder called $index");
+                  print("tab view page builder called $index");
                   List<Widget> pageSheet = sheet[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -113,6 +121,7 @@ class SheetEditorState extends State<SheetEditor> {
                   disabledColor: Colors.grey,
                   onPressed: (currentCell != null && selectedIndex > -1) ? () {
                     setState(() {
+                      from = "icon button 1st on pressed";
                       sheet[nowPage].insert(selectedIndex+1, ChordCell(key: UniqueKey(), pageIndex: nowPage,));
                       chord[nowPage].insert(selectedIndex+1, Chord());
                       lyric[nowPage].insert(selectedIndex+1, "");
@@ -162,10 +171,20 @@ class SheetEditorState extends State<SheetEditor> {
                   icon: Icon(Icons.text_rotation_none),
                   color: Colors.black,
                   disabledColor: Colors.grey,
-                  onPressed: (currentCell != null && !isChordInput) ? () {
+                  onPressed: (!isChordInput) ? () {
                     setState(() {
                       // TODO : 가사만 옆의 셀 또는 새로운 셀을 생성하여 옮기는 기능 구현.
-                      //cellTextController.selection.
+                      from = "icon button 5th on pressed";
+                      if (selectedIndex == lyric[nowPage].length-1) {
+                        sheet[nowPage].add(ChordCell(key: UniqueKey(), pageIndex: nowPage, readOnly: widget.readOnly));
+                        chord[nowPage].add(Chord());
+                        lyric[nowPage].add("");
+                      }
+                      String text = cellTextController!.text;
+                      int start = cellTextController!.selection.end;
+
+                      lyric[nowPage][selectedIndex + 1] = cellTextController!.selection.textAfter(text);
+                      cellTextController!.text = text.replaceRange(start, null, "");
                     });
                   } : null,
                 ),
