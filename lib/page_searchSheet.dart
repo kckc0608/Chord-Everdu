@@ -11,7 +11,7 @@ class SearchSheet extends StatefulWidget {
 }
 
 class _SearchSheetState extends State<SearchSheet> {
-  late Future<List<Sheet>> futureSheet;
+  late Future<List<SheetInfo>> futureSheet;
   var _maxItem;
 
   @override
@@ -29,7 +29,7 @@ class _SearchSheetState extends State<SearchSheet> {
   }
 
   Widget _getSheet(index) {
-    return FutureBuilder<List<Sheet>>(
+    return FutureBuilder<List<SheetInfo>>(
         future: futureSheet,
         builder: (context, snapshot) {
           if (snapshot.hasData) {
@@ -74,8 +74,8 @@ class _SearchSheetState extends State<SearchSheet> {
     futureSheet = fetchSheet();
   }
 
-  Future<List<Sheet>> fetchSheet() async {
-    List<Sheet> list = [];
+  Future<List<SheetInfo>> fetchSheet() async {
+    List<SheetInfo> list = [];
     final response =
     await http.get(Uri.parse('http://193.122.123.213/SheetSelect.php'));
 
@@ -85,7 +85,7 @@ class _SearchSheetState extends State<SearchSheet> {
       _maxItem = json.length;
 
       for (int i = 0; i < json.length; i++) {
-        list.add(Sheet.fromJson(json[i]));
+        list.add(SheetInfo.fromJson(json[i]));
       }
       setState(() {});
       return list;
@@ -95,22 +95,22 @@ class _SearchSheetState extends State<SearchSheet> {
   }
 }
 
-class Sheet {
+class SheetInfo {
   //final int userID;
   final String sheetId;
   final String title;
   final String songKey;
   String? singer;
 
-  Sheet({
+  SheetInfo({
     required this.sheetId,
     required this.title,
     required this.songKey,
     this.singer,
   });
 
-  factory Sheet.fromJson(Map<String, dynamic> json) {
-    return Sheet(
+  factory SheetInfo.fromJson(Map<String, dynamic> json) {
+    return SheetInfo(
       sheetId: json['sheet_id'],
       title: json['song_name'],
       singer: json['singer'],

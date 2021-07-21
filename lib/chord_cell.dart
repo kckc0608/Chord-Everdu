@@ -2,6 +2,8 @@ import 'package:chord_everdu/sheet_editor.dart';
 import 'custom_data_structure.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:provider/provider.dart';
+import 'package:chord_everdu/sheet.dart';
 
 
 class ChordCell extends StatefulWidget {
@@ -30,12 +32,13 @@ class _ChordCellState extends State<ChordCell>
 
     int cellIndex = parent!.sheet[widget.pageIndex].indexOf(widget);
     print("build called cell of " + cellIndex.toString());
-    chord = parent.chord[widget.pageIndex][cellIndex];
+    print(isSelected.toString());
+    chord = context.watch<Sheet>().chords[widget.pageIndex][cellIndex];
     chordController.text = chord!.toStringChord(songKey: parent.songKey);
 
     // 이 조건 체크를 안하면 포커스를 받을 때마다 가사를 바꿔서 항상 커서가 앞으로 감.
-    if (lyricController.text != parent.lyric[widget.pageIndex][cellIndex]!)
-      lyricController.text = parent.lyric[widget.pageIndex][cellIndex]!;
+    if (!isSelected && (lyricController.text != context.watch<Sheet>().lyrics[widget.pageIndex][cellIndex]!))
+      lyricController.text = context.watch<Sheet>().lyrics[widget.pageIndex][cellIndex]!;
 
     return Container(
       decoration: BoxDecoration(
@@ -48,12 +51,11 @@ class _ChordCellState extends State<ChordCell>
             isSelected = hasFocus;
             if (hasFocus) {
               parent.setState(() {
-                parent.from = "on focus change to has";
                 parent.currentCell = this.widget;
               });
             }
             else { // 포커스가 꺼졌을 때, 현재 가사를 저장
-              parent.lyric[widget.pageIndex][cellIndex] = lyricController.text;
+              context.read<Sheet>().lyrics[widget.pageIndex][cellIndex] = lyricController.text;
             }
           });
         } : null,
@@ -67,7 +69,6 @@ class _ChordCellState extends State<ChordCell>
                 child: TextField(
                   onTap: (!widget.readOnly) ? () {
                     parent.setState(() {
-                      parent.from = "chord on tap";
                       parent.isChordInput = true;
                       parent.cellTextController = this.chordController;
                     });
@@ -91,7 +92,6 @@ class _ChordCellState extends State<ChordCell>
                 child: TextField(
                   onTap: (!widget.readOnly) ? () {
                     parent.setState(() {
-                      parent.from = "lyric on tap";
                       parent.isChordInput = false;
                       parent.cellTextController = this.lyricController;
                     });
@@ -100,7 +100,7 @@ class _ChordCellState extends State<ChordCell>
                     setState(() {
                       FocusScope.of(context).unfocus();
                       parent.currentCell = null;
-                      parent.selectedIndex = -1;
+                      context.read<Sheet>().selectedIndex = -1;
                     });
                   },
                   controller: lyricController,

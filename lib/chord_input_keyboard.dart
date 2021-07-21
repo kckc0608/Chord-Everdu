@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/sheet_editor.dart';
 import 'custom_data_structure.dart';
+import 'package:provider/provider.dart';
+import 'package:chord_everdu/sheet.dart';
 import 'global.dart' as global;
 
 class ChordKeyboard extends StatefulWidget {
@@ -18,8 +20,6 @@ class ChordKeyboard extends StatefulWidget {
 }
 
 class _ChordKeyboardState extends State<ChordKeyboard> {
-  int _songKey = 0;
-
   // TODO : b을 사용하는 스케일과 #을 사용하는 스케일의 구분.
   //int _sharp = 0; // #을 붙일지 b을 붙일지 결정, 0일때 #
 
@@ -30,6 +30,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   late List<bool> _tensionAddSelection;
   late List<bool> _baseAddSelection;
   late List<List<bool>> _numberSelection;
+
+  late int _songKey;
 
   TextStyle _toggleTextStyle =
       const TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
@@ -42,10 +44,9 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
   @override
   Widget build(BuildContext context) {
-    SheetEditorState? parent =
-        context.findAncestorStateOfType<SheetEditorState>();
-    _songKey = parent!.songKey;
-    chord = parent.getChordOf(parent.currentCell);
+    chord = context.watch<Sheet>().chords[context.watch<Sheet>().nowPage][context.watch<Sheet>().selectedIndex]!;
+    _songKey = context.watch<Sheet>().songKey;
+    print("songKey : " + _songKey.toString());
 
     setButton();
 
@@ -58,7 +59,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
       child: Column(
         children: [
           buildRowRecentChord(),
-          buildRowRoot(),
+          buildRowRoot(context),
           buildRowMiddle(),
           buildRowTension(),
           buildRowSharpFlat(),
@@ -146,7 +147,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     );
   }
 
-  Widget buildRowRoot() {
+  Widget buildRowRoot(BuildContext context) {
     return Expanded(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

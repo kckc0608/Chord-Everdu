@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/page_searchSheet.dart';
+import 'package:provider/provider.dart';
+import 'package:chord_everdu/sheet.dart';
 
 void main() {
-  runApp(ChordEverdu());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => Sheet()),
+      ],
+      child: ChordEverdu(),
+    ),
+  );
 }
 
 class ChordEverdu extends StatelessWidget {
