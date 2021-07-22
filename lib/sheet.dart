@@ -57,4 +57,8 @@ class Sheet with ChangeNotifier {
     if (index > lyrics[nowPage].length - 1) throw Exception("selected index is bigger than lyric list max index.");
     lyrics[nowPage][index] = newLyric;
   }
+
+  void changePageName(String name) {
+    pageList[nowPage] = name;
+  }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:chord_everdu/sheet_editor.dart';
 import 'custom_data_structure.dart';
 import 'package:provider/provider.dart';
 import 'package:chord_everdu/sheet.dart';
@@ -20,9 +19,6 @@ class ChordKeyboard extends StatefulWidget {
 }
 
 class _ChordKeyboardState extends State<ChordKeyboard> {
-  // TODO : b을 사용하는 스케일과 #을 사용하는 스케일의 구분.
-  //int _sharp = 0; // #을 붙일지 b을 붙일지 결정, 0일때 #
-
   late List<List<bool>> _rootSelection;
   late List<bool> _minorMajorSelection;
   late List<bool> _asdaSelection;
@@ -46,15 +42,15 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   Widget build(BuildContext context) {
     chord = context.watch<Sheet>().chords[context.watch<Sheet>().nowPage][context.watch<Sheet>().selectedIndex]!;
     _songKey = context.watch<Sheet>().songKey;
-    print("songKey : " + _songKey.toString());
-
-    setButton();
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
+    setButton();
+
     print("Now Input is " + nowInput.toString());
 
     return Container(
       height: 360,
+      padding: EdgeInsets.fromLTRB(0, 2, 0, 0),
       color: Colors.blue[200],
       child: Column(
         children: [
@@ -68,80 +64,23 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     );
   }
 
-  // TODO : 최근 입력한 코드 빠른 입력 기능 구현
   Widget buildRowRecentChord() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: TextButton(
-              onPressed: () {},
-              child: Text("CM7"),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.white),
-                foregroundColor: MaterialStateProperty.all(Colors.black),
-                shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0),
-                  side: BorderSide(
-                    color: Colors.black,
-                  ),
-                )),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: TextButton(
-              onPressed: () {},
-              child: Text("Am7"),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.white),
-                foregroundColor: MaterialStateProperty.all(Colors.black),
-                shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0),
-                  side: BorderSide(
-                    color: Colors.black,
-                  ),
-                )),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: TextButton(
-              onPressed: () {},
-              child: Text("F"),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.white),
-                foregroundColor: MaterialStateProperty.all(Colors.black),
-                shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0),
-                  side: BorderSide(
-                    color: Colors.black,
-                  ),
-                )),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: TextButton(
-              onPressed: () {},
-              child: Text("G7"),
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.white),
-                foregroundColor: MaterialStateProperty.all(Colors.black),
-                shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5.0),
-                  side: BorderSide(
-                    color: Colors.black,
-                  ),
-                )),
-              ),
-            ),
-          ),
+          buildRecentChordButton(text: "x4", onPressed: () {
+            // TODO : 최근 4개 코드 입력 구현
+          }),
+          buildRecentChordButton(text: "x8", onPressed: () {
+            // TODO : 최근 8개 코드 입력 구현
+          }),
+          buildRecentChordButton(chord: Chord(root: 0)),
+          buildRecentChordButton(chord: Chord(root: 4)),
+          buildRecentChordButton(chord: Chord(root: 3)),
+          buildRecentChordButton(chord: Chord(root: 0)),
+          buildRecentChordButton(chord: Chord(root: 0)),
+          buildRecentChordButton(chord: Chord(root: 0)),
         ],
       ),
     );
@@ -152,9 +91,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(7, (index) {
-          // #, b이 들어가는 노트인 경우
+          // 현재 루트를 입력하는 상태인 경우
           if (index == chord.root) {
-            // 현재 루트를 입력하는 상태인 경우
             return buildToggleButton(
               [Chord(root: index).toStringChord(songKey: _songKey)],
               _rootSelection[index],
@@ -561,31 +499,58 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     );
   }
 
-  ValueSetter<int> _onPressedRoot(int index, {int type = 1}) {
-    //type 은 현재 선택한 버튼의 타입.
+  Widget buildRecentChordButton({Chord? chord, String text = "", VoidCallback? onPressed}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6.0),
+      child: TextButton(
+        onPressed: (onPressed != null) ? onPressed : () {
+          // TODO : 최근 입력한 코드 빠른 입력 기능 구현
+        },
+        child: Text(
+          (chord != null) ? chord.toStringChord(songKey: context.read<Sheet>().songKey) : text,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        style: ButtonStyle(
+          minimumSize: MaterialStateProperty.all(Size(50.0, 30.0)),
+          backgroundColor: MaterialStateProperty.all(Colors.white),
+          foregroundColor: MaterialStateProperty.all(Colors.black),
+          shape: MaterialStateProperty.all(RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5.0),
+            side: BorderSide(
+              color: Colors.black,
+            ),
+          )),
+        ),
+      ),
+    );
+  }
+
+  ValueSetter<int> _onPressedRoot(int index, {int type = 1}) { //type 은 현재 선택한 버튼의 타입.
     return (i) {
       setState(() {
         for (int buttonIndex = 0; buttonIndex < 7; buttonIndex++) {
-          if (buttonIndex == index) {
-            // 현재 체크하는 버튼이 선택한 버튼일 때
+          if (buttonIndex == index) { // 현재 체크하는 버튼이 선택한 버튼일 때
             _rootSelection[index][0] = !_rootSelection[index][0];
-            if (_rootSelection[index][0]) {
-              // 비활성화 -> 활성화
-              if (type == ChordKeyboard.typeRoot) {
-                // 루트 코드를 활성화
+            if (_rootSelection[index][0]) { // 비활성화 -> 활성화
+              if (type == ChordKeyboard.typeRoot) { // 선택한 버튼 타입 = root
                 chord.root = index;
-                nowInput = "root";
-              } else {
-                // 베이스 코드를 활성화
+                if (index == 1 || index == 2 || index == 5 || index == 6) {
+                  chord.minor = 'm';
+                  _minorMajorSelection[0] = true; // 마이너(m) 활성화
+                  nowInput = "minor";
+                }
+                else {
+                  chord.minor = '';
+                  _minorMajorSelection[0] = false; // 마이너(m) 활성화
+                  nowInput = "root";
+                }
+              } else { // 선택한 버튼 타입 = base
                 chord.base = index;
               }
-            } else {
-              // 활성화 -> 비활성화
-              if (type == ChordKeyboard.typeRoot) {
-                // 루트코드 비활성화
+            } else { // 활성화 -> 비활성화
+              if (type == ChordKeyboard.typeRoot) { // 선택한 버튼 타입 = root
                 chord.root = -1;
-              } else {
-                // 베이스 코드 비활성화
+              } else { // 선택한 버튼 타입 = base
                 chord.base = -1;
                 _baseAddSelection[1] = false; // 베이스 # 비활성화
                 _baseAddSelection[2] = false; // 베이스 b 비활성화

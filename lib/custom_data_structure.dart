@@ -29,7 +29,7 @@ class Chord {
         else if (rootSharp == -1)
           chord += global.keyList[rootKey][1];
         else
-          chord += global.keyList[rootKey][1]; // TODO : 이거 1, 0 선택할 수 있는 방법 고안하기..
+          chord += global.keyList[rootKey][global.keyWithSharpOrFlat[songKey]]; // TODO : 각 key 별로 #/b 선택방법 (임시방편)
       }
       else {
         chord += global.keyList[rootKey];
@@ -68,7 +68,7 @@ class Chord {
         else if (baseSharp == -1)
           chord += global.keyList[baseKey][1];
         else
-          chord += global.keyList[baseKey][1]; // TODO : 이거 1, 0 선택할 수 있는 방법 고안하기..
+          chord += global.keyList[baseKey][global.keyWithSharpOrFlat[songKey]]; // TODO : #/b선택
       }
       else {
         chord += global.keyList[baseKey];

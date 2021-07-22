@@ -42,7 +42,7 @@ class _ChordCellState extends State<ChordCell>
 
     return Container(
       decoration: BoxDecoration(
-        color: isSelected ? Colors.amberAccent : Colors.white,
+        color: isSelected ? Colors.amberAccent : Color(0xfffafafa),
         border: (!widget.readOnly) ? Border.all() : null,
       ),
       child: Focus(
@@ -64,7 +64,9 @@ class _ChordCellState extends State<ChordCell>
           mainAxisSize: MainAxisSize.min,
           children: [
             ConstrainedBox(
-              constraints: BoxConstraints(minWidth: 24.0),
+              constraints: BoxConstraints(
+                minWidth: (widget.readOnly) ? 1.0 : 36.0,
+              ),
               child: IntrinsicWidth(
                 child: TextField(
                   onTap: (!widget.readOnly) ? () {
@@ -79,14 +81,14 @@ class _ChordCellState extends State<ChordCell>
                   decoration: InputDecoration(
                     border: (widget.readOnly) ? InputBorder.none : null,
                     isCollapsed: true,
-                    contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                    contentPadding: EdgeInsets.fromLTRB(2, 0, 0, 0),
                   ),
                 ),
               ),
             ),
             ConstrainedBox(
               constraints: BoxConstraints(
-                minWidth: 48.0,
+                minWidth: (widget.readOnly) ? 1.0 : 36.0,
               ),
               child: IntrinsicWidth(
                 child: TextField(
@@ -107,7 +109,7 @@ class _ChordCellState extends State<ChordCell>
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     isCollapsed: true,
-                    contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 2),
+                    contentPadding: EdgeInsets.fromLTRB(0, 0, 2, 2),
                   ),
                   readOnly: widget.readOnly,
                 ),
