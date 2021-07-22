@@ -4,11 +4,9 @@ this application helps edit, save, search chord
 
 ## Stack
 
-Server
+Server & DB
 
-- Oracle Cloud
-- OS : Ubuntu 18.04.5 LTS
-- Stack : LEMP
+- Firebase & FireStore
 
 Application
 
