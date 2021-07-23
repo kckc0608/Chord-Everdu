@@ -1,5 +1,6 @@
 import 'package:chord_everdu/chord_input_keyboard.dart';
 import 'package:chord_everdu/custom_data_structure.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/sheet.dart';
 import 'package:http/http.dart' as http;
@@ -41,11 +42,12 @@ class SheetEditorState extends State<SheetEditor> {
 
   @override
   void initState() {
+    super.initState();
     context.read<Sheet>().allClear();
     songKey = widget.songKey;
     context.read<Sheet>().songKey = widget.songKey;
 
-    print("init state of editor" + context.read<Sheet>().songKey.toString());
+    print("init state of editor");
     if (widget.sheetID != null){
       getSheet();
     }
@@ -55,7 +57,6 @@ class SheetEditorState extends State<SheetEditor> {
       context.read<Sheet>().lyrics.add(['가사']);
       sheet.add([ChordCell(key: UniqueKey(), pageIndex: 0,)]);
     }
-    super.initState();
   }
 
   @override
@@ -84,7 +85,7 @@ class SheetEditorState extends State<SheetEditor> {
           ),
           IconButton(
             onPressed: () {
-              createSheet();
+              _addSheet();
               Navigator.of(context).pop();
             },
             icon: Icon(Icons.check),
@@ -319,7 +320,7 @@ class SheetEditorState extends State<SheetEditor> {
     });
   }
 
-  Future<http.Response> createSheet() async {
+  void _addSheet() {
     List<dynamic> _sheet = [];
     for (int i = 0; i < context.read<Sheet>().pageList.length; i++) {
       Map<String, dynamic> _page = {};
@@ -342,82 +343,46 @@ class SheetEditorState extends State<SheetEditor> {
     print(_sheet.toString());
 
     Map<String, dynamic> _body = {
-      'song_name': widget.title,
+      'sheet_id' : 2,
+      'title': widget.title,
       'singer': widget.singer,
       'song_key': songKey,
       'sheet' : _sheet,
     };
 
-    final response = await http.post(
-        Uri.parse('http://193.122.123.213/sheet_insert.php'),
-        headers: <String, String>{
-          'Content-type': 'application/x-www-form-urlencoded',
-        },
-        body: <String, String>{
-          "data" : jsonEncode(_body),
-        });
-
-    if (response.statusCode == 200) {
-      // TODO : 악보 저장 성공시 기능 있으면 구현.
-    }
-    else {
-      throw Exception("failed to save data");
-    }
-
-    print(response.body);
-
-    return response;
+    FirebaseFirestore.instance.collection('sheet_list').add(_body);
   }
 
-  Future<http.Response> getSheet() async {
-    final response = await http.post(
-        Uri.parse('http://193.122.123.213/chordEverdu/get_sheet.php'),
-        headers: <String, String>{
-          'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        },
-        body: <String, String>{
-          'sheet_id': widget.sheetID!,
-        });
+  void getSheet() {
+    // initialize Sheet
+    context.read<Sheet>().allClear();
 
-    if (response.statusCode == 200) {
-      final result = utf8.decode(response.bodyBytes);
-      List<dynamic> json = jsonDecode(result)["qry_result"];
-      String _nowPage = "";
-      int _pageIndex = -1;
-      for (int i = 0; i < json.length; i++) {
-        String page = json[i]["page"];
-        if (page != _nowPage) {
-          sheet.add([]);
-          context.read<Sheet>().lyrics.add([]);
-          context.read<Sheet>().chords.add([]);
-          context.read<Sheet>().pageList.add(page);
-          _nowPage = page;
-          _pageIndex += 1;
+    FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).get().
+    then((snapshot) {
+      var data = snapshot.data();
+      print(data.toString());
+      var _sheet = data!['sheet'];
+      for (int _pageIndex = 0; _pageIndex < _sheet.length; _pageIndex++) {
+        var page = _sheet[_pageIndex];
+
+        sheet.add([]);
+        context.read<Sheet>().lyrics.add([]);
+        context.read<Sheet>().chords.add([]);
+        context.read<Sheet>().pageList.add(page["page"]);
+
+        var cells = page["chords"];
+
+        for (int j = 0; j < cells.length; j++) {
+          if (cells[j]["lyric"] == "<!br!>") {
+            sheet[_pageIndex].add(Container(width: 1000));
+            context.read<Sheet>().lyrics[_pageIndex].add(null);
+            context.read<Sheet>().chords[_pageIndex].add(null);
+            continue;
+          }
+
+          context.read<Sheet>().lyrics[_pageIndex].add(cells[j]["lyric"]);
+          context.read<Sheet>().chords[_pageIndex].add(Chord.fromMap(cells[j]["chord"]));
         }
-
-        if (json[i]["lyric"] == "<!br!>") {
-          sheet[_pageIndex].add(Container(width: 1000));
-          context.read<Sheet>().lyrics[_pageIndex].add(null);
-          context.read<Sheet>().chords[_pageIndex].add(null);
-          continue;
-        }
-
-        context.read<Sheet>().lyrics[_pageIndex].add(json[i]["lyric"]);
-        context.read<Sheet>().chords[_pageIndex].add(Chord(
-          root: int.parse(json[i]["root"]),
-          rootSharp: int.parse(json[i]["root_s"]),
-          rootTension: int.parse(json[i]["root_t"]),
-          minor: json[i]["minor"],
-          minorTension: int.parse(json[i]["minor_t"]),
-          major: json[i]["major"],
-          majorTension: int.parse(json[i]["major_t"]),
-          tensionSharp: int.parse(json[i]["t_sharp"]),
-          tension: int.parse(json[i]["tension"]),
-          asda: json[i]["asda"],
-          asdaTension: int.parse(json[i]["asda_t"]),
-          base: int.parse(json[i]["base"]),
-          baseSharp: int.parse(json[i]["base_s"]),
-        ));
 
         sheet[_pageIndex].add(ChordCell(
           key: UniqueKey(),
@@ -426,10 +391,6 @@ class SheetEditorState extends State<SheetEditor> {
         ));
       }
       setState(() {});
-    } else {
-      throw Exception("[f][getSheet()] failed to get data");
-    }
-
-    return response;
+    });
   }
 }

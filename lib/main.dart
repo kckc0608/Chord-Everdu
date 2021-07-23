@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:chord_everdu/page_searchSheet.dart';
 import 'package:provider/provider.dart';
 import 'package:chord_everdu/sheet.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() {
   runApp(
@@ -91,7 +92,18 @@ class _MainFrameState extends State<MainFrame> {
         onTap: onTapBottomNavigationItem,
       ),
       body: Center(
-        child: _bodyWidgets.elementAt(_selectedIndex),
+        child: FutureBuilder(
+          future: Firebase.initializeApp(),
+          builder: (context, snapshot) {
+            if (snapshot.hasError)
+              return Text("firebase load fail");
+
+            if (snapshot.connectionState == ConnectionState.done)
+              return _bodyWidgets.elementAt(_selectedIndex);
+
+            return CircularProgressIndicator();
+          },
+        ),
       ),
       floatingActionButton: _floatingButtonWidgets[_selectedIndex],
     );

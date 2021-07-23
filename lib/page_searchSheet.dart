@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:chord_everdu/sheet_editor.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SearchSheet extends StatefulWidget {
   const SearchSheet({Key? key}) : super(key: key);
@@ -16,107 +15,66 @@ class _SearchSheetState extends State<SearchSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      itemCount: _maxItem == null ? 0 : _maxItem * 2,
-      itemBuilder: (context, index) {
-        if (index.isOdd) {
-          return const Divider();
-        }
-        return _getSheet(index);
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('sheet_list').snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return CircularProgressIndicator();
+        final documents = snapshot.data!.docs;
+        return ListView.separated(
+          padding: EdgeInsets.symmetric(horizontal: 4),
+          itemBuilder: (context, index) {
+            return _buildItemWidget(documents[index]);
+          },
+          separatorBuilder: (context, index) {
+            return const Divider();
+          },
+          itemCount: snapshot.data!.size
+        );
       },
     );
   }
 
-  Widget _getSheet(index) {
-    return FutureBuilder<List<SheetInfo>>(
-        future: futureSheet,
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final item = snapshot.data![index ~/ 2];
+  Widget _buildItemWidget(doc) {
+    final sheet = SheetInfo(
+      title: doc['title'],
+      sheetId: doc['sheet_id'],
+      songKey: doc['song_key'],
+      singer: doc['singer'],
+    );
 
-            return ListTile(
-              title: Text(item.title),
-              subtitle: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(item.singer == null ? "없음" : item.singer.toString()),
-                ],
-              ),
-              onTap: () {
-                print("on Tap from page_searchSheet.dart line 49");
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) {
-                      return SheetEditor(
-                        sheetID: item.sheetId,
-                        title: item.title,
-                        singer: item.singer.toString(),
-                        songKey: int.parse(item.songKey),
-                        readOnly: true,
-                      );
-                    })
-                );
-              },
+    return ListTile(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) {
+            return SheetEditor(
+              title: sheet.title,
+              singer: sheet.singer,
+              songKey: sheet.songKey,
+              readOnly: true,
+              sheetID: doc.id,
             );
-          } else if (snapshot.hasError) {
-            print("${snapshot.error}");
-          }
-          return ListTile(
-            title: Center(child: CircularProgressIndicator()),
-          );
-        });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    futureSheet = fetchSheet();
-  }
-
-  Future<List<SheetInfo>> fetchSheet() async {
-    List<SheetInfo> list = [];
-    final response =
-    await http.get(Uri.parse('http://193.122.123.213/SheetSelect.php'));
-
-    if (response.statusCode == 200) {
-      final result = utf8.decode(response.bodyBytes);
-      List<dynamic> json = jsonDecode(result)['qry_result'];
-      _maxItem = json.length;
-
-      for (int i = 0; i < json.length; i++) {
-        list.add(SheetInfo.fromJson(json[i]));
-      }
-      setState(() {});
-      return list;
-    } else {
-      throw Exception('Failed to load sheet');
-    }
+          })
+        );
+      },
+      title: Text(sheet.title),
+      subtitle: Text(sheet.singer),
+    );
   }
 }
 
 class SheetInfo {
   //final int userID;
-  final String sheetId;
+  final int sheetId;
   final String title;
-  final String songKey;
-  String? singer;
+  final int songKey;
+  String singer;
 
   SheetInfo({
     required this.sheetId,
     required this.title,
     required this.songKey,
-    this.singer,
+    required this.singer,
   });
-
-  factory SheetInfo.fromJson(Map<String, dynamic> json) {
-    return SheetInfo(
-      sheetId: json['sheet_id'],
-      title: json['song_name'],
-      singer: json['singer'],
-      songKey: json['song_key'],
-    );
-  }
 }
 // TODO : 검색 기능 만들기
 // Search Function
@@ -320,7 +278,7 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
           child: Text("OK"),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              Navigator.of(context).pop("OK");
+              Navigator.of(context).pop();
               Navigator.of(context).push(
                   MaterialPageRoute(builder: (context) {
                     return SheetEditor(
@@ -336,7 +294,7 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
         TextButton(
           child: Text("Cancel"),
           onPressed: () {
-            Navigator.of(context).pop("Cancel");
+            Navigator.of(context).pop();
           },
         ),
       ],

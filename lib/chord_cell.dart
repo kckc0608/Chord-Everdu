@@ -123,4 +123,11 @@ class _ChordCellState extends State<ChordCell>
 
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void dispose() {
+    chordController.dispose();
+    lyricController.dispose();
+    super.dispose();
+  }
 }
