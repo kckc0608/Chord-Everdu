@@ -69,19 +69,22 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          buildRecentChordButton(text: "x4", onPressed: () {
-            // TODO : 최근 4개 코드 입력 구현
+          buildRecentChordButton(text: "x4", onPressed: (global.recentChord.length < 4) ? null : () {
+            /*int _select = context.read<Sheet>().selectedIndex;
+            int _page = context.read<Sheet>().nowPage;
+            for (int i = 0; i < 4; i++) {
+              // 현재 체크하는 셀이 널이거나 (공백) 코드가 들어 있다면
+              if (context.read<Sheet>().chords[_page][_select+i] == null || !context.read<Sheet>().chords[_page][_select+i]!.isEmpty()) {
+                context.read<Sheet>().chords[_page].insert(_select+i, global.recentChord[i]);
+                context.read<Sheet>().lyrics[_page].insert(_select+i, "");
+                parent.[_page].insert(_select+i, "");
+              }
+            }*/
           }),
-          buildRecentChordButton(text: "x8", onPressed: () {
+          buildRecentChordButton(text: "x8", onPressed: (global.recentChord.length < 8) ? null : () {
             // TODO : 최근 8개 코드 입력 구현
-          }),
-          buildRecentChordButton(chord: Chord(root: 0)),
-          buildRecentChordButton(chord: Chord(root: 4)),
-          buildRecentChordButton(chord: Chord(root: 3)),
-          buildRecentChordButton(chord: Chord(root: 0)),
-          buildRecentChordButton(chord: Chord(root: 0)),
-          buildRecentChordButton(chord: Chord(root: 0)),
-        ],
+          })
+        ] + global.recentChord.map((chord) => buildRecentChordButton(chord: chord)).toList()
       ),
     );
   }

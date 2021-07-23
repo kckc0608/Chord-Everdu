@@ -1,9 +1,10 @@
 import 'package:chord_everdu/page/sheet_editor.dart';
+import 'package:chord_everdu/custom_class/sheet.dart';
 import '../custom_class/chord.dart';
+import 'package:chord_everdu/environment/global.dart' as global;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:chord_everdu/custom_class/sheet.dart';
 
 
 class ChordCell extends StatefulWidget {
@@ -21,7 +22,7 @@ class _ChordCellState extends State<ChordCell>
   var lyricController = TextEditingController();
   var chordController = TextEditingController();
 
-  Chord? chord;
+  late Chord chord;
 
   bool isSelected = false;
 
@@ -33,8 +34,8 @@ class _ChordCellState extends State<ChordCell>
     int cellIndex = parent!.sheet[widget.pageIndex].indexOf(widget);
     print("build called cell of " + cellIndex.toString());
     print(isSelected.toString());
-    chord = context.watch<Sheet>().chords[widget.pageIndex][cellIndex];
-    chordController.text = chord!.toStringChord(songKey: parent.songKey);
+    chord = context.watch<Sheet>().chords[widget.pageIndex][cellIndex]!;
+    chordController.text = chord.toStringChord(songKey: parent.songKey);
 
     // 이 조건 체크를 안하면 포커스를 받을 때마다 가사를 바꿔서 항상 커서가 앞으로 감.
     if (!isSelected && (lyricController.text != context.watch<Sheet>().lyrics[widget.pageIndex][cellIndex]!))
@@ -56,6 +57,10 @@ class _ChordCellState extends State<ChordCell>
             }
             else { // 포커스가 꺼졌을 때, 현재 가사를 저장
               context.read<Sheet>().lyrics[widget.pageIndex][cellIndex] = lyricController.text;
+              if (!chord.isEmpty()) { // TODO : 가사만 수정하고 칸을 옮겨도 최근 코드에 추가되는 문제가 있지만, 코드를 추가하고나서 가사를 수정하고 넘기는 경우도 있을 수 있기에 수정 보류
+                global.recentChord.add(chord);
+                if (global.recentChord.length > 8) global.recentChord.removeAt(0);
+              }
             }
           });
         } : null,

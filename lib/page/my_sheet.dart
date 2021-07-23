@@ -59,11 +59,15 @@ class _MySheetState extends State<MySheet> {
                       ),
                       onPressed: signOutFromGoogle,
                     ),
+                    IconButton(icon: Icon(Icons.settings), onPressed: () {
+
+                    }),
                   ],
                 ),
               ),
               SizedBox(height: 5),
               Text("내가 만든 악보", style: _headerStyle),
+              // TODO: 내가 만든 악보가 없으면, '내가 만든 악보가 없어요' '첫 악보 만들러 가기' '악보 만들기 튜토리얼' 등 기능 넣기
               SizedBox(height: 240),
               Text("좋아요 표시한 악보", style: _headerStyle),
             ],

@@ -111,4 +111,8 @@ class Chord {
       "baseSharp": baseSharp,
     };
   }
+
+  bool isEmpty() {
+    return (root == -1 && base == -1);
+  }
 }

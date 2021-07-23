@@ -5,6 +5,7 @@ import 'package:chord_everdu/custom_widget/chord_cell.dart';
 import 'package:chord_everdu/custom_widget/dynamic_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 
 class SheetEditor extends StatefulWidget {
@@ -341,10 +342,11 @@ class SheetEditorState extends State<SheetEditor> {
     print(_sheet.toString());
 
     Map<String, dynamic> _body = {
-      'sheet_id' : 2,
       'title': widget.title,
       'singer': widget.singer,
       'song_key': songKey,
+      'editor_email' : FirebaseAuth.instance.currentUser!.email,
+      'editor' : FirebaseAuth.instance.currentUser!.displayName,
       'sheet' : _sheet,
     };
 
