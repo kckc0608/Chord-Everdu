@@ -1,4 +1,4 @@
-import 'package:chord_everdu/global.dart' as global;
+import 'package:chord_everdu/environment/global.dart' as global;
 
 class Chord {
   int root,

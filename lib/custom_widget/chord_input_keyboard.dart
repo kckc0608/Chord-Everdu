@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'custom_data_structure.dart';
+import '../custom_class/chord.dart';
 import 'package:provider/provider.dart';
-import 'package:chord_everdu/sheet.dart';
-import 'global.dart' as global;
+import 'package:chord_everdu/custom_class/sheet.dart';
+import '../environment/global.dart' as global;
 
 class ChordKeyboard extends StatefulWidget {
   const ChordKeyboard({Key? key, required this.onButtonTap}) : super(key: key);

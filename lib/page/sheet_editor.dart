@@ -1,13 +1,11 @@
-import 'package:chord_everdu/chord_input_keyboard.dart';
-import 'package:chord_everdu/custom_data_structure.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:chord_everdu/custom_widget/chord_input_keyboard.dart';
+import 'package:chord_everdu/custom_class/chord.dart';
+import 'package:chord_everdu/custom_class/sheet.dart';
+import 'package:chord_everdu/custom_widget/chord_cell.dart';
+import 'package:chord_everdu/custom_widget/dynamic_tab.dart';
 import 'package:flutter/material.dart';
-import 'package:chord_everdu/sheet.dart';
-import 'package:http/http.dart' as http;
-import 'package:chord_everdu/chord_cell.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import 'global.dart' as global;
-import 'dart:convert';
 
 class SheetEditor extends StatefulWidget {
   final String? sheetID;
@@ -101,7 +99,7 @@ class SheetEditorState extends State<SheetEditor> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(
-              child: global.CustomTabView(
+              child: CustomTabView(
                 initPosition: context.read<Sheet>().nowPage,
                 itemCount: context.read<Sheet>().pageList.length,
                 tabBuilder: (context, index) => Tab(text: context.read<Sheet>().pageList[index]),
@@ -262,7 +260,7 @@ class SheetEditorState extends State<SheetEditor> {
                   ),
                 ],
               ),
-            ) : Container(),
+            ) : SizedBox.shrink(),
             isChordInput ? ChordKeyboard(onButtonTap: () {
               setState(() {
                 // TODO : 만약 일본어, 영어처럼 원문과 번역이 같이 들어가는 가사의 경우 여러줄을 어떻게 입력할지 고민.
@@ -274,7 +272,7 @@ class SheetEditorState extends State<SheetEditor> {
                 else
                   throw Exception("cellTextController 가 null 이기 때문에 코드 키보드를 불러오지 못했습니다.");
               });
-            }) : Container(),
+            }) : SizedBox.shrink(),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:chord_everdu/sheet_editor.dart';
+import 'package:chord_everdu/page/sheet_editor.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:chord_everdu/custom_class/sheet_info.dart';
 
 class SearchSheet extends StatefulWidget {
   const SearchSheet({Key? key}) : super(key: key);
@@ -62,20 +63,6 @@ class _SearchSheetState extends State<SearchSheet> {
   }
 }
 
-class SheetInfo {
-  //final int userID;
-  final int sheetId;
-  final String title;
-  final int songKey;
-  String singer;
-
-  SheetInfo({
-    required this.sheetId,
-    required this.title,
-    required this.songKey,
-    required this.singer,
-  });
-}
 // TODO : 검색 기능 만들기
 // Search Function
 class MySearchDelegate extends SearchDelegate {

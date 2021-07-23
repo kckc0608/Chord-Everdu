@@ -1,9 +1,9 @@
-import 'package:chord_everdu/sheet_editor.dart';
-import 'custom_data_structure.dart';
+import 'package:chord_everdu/page/sheet_editor.dart';
+import '../custom_class/chord.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
-import 'package:chord_everdu/sheet.dart';
+import 'package:chord_everdu/custom_class/sheet.dart';
 
 
 class ChordCell extends StatefulWidget {

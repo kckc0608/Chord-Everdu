@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:chord_everdu/custom_data_structure.dart';
-import 'package:chord_everdu/chord_cell.dart';
+import 'package:chord_everdu/custom_class/chord.dart';
+import 'package:chord_everdu/custom_widget/chord_cell.dart';
 class Sheet with ChangeNotifier {
   int songKey = 0;
   int nowPage = 0;

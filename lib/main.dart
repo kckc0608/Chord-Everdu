@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:chord_everdu/page_searchSheet.dart';
+import 'package:chord_everdu/page/search_sheet.dart';
 import 'package:provider/provider.dart';
-import 'package:chord_everdu/sheet.dart';
+import 'package:chord_everdu/custom_class/sheet.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 void main() {
