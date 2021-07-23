@@ -380,13 +380,13 @@ class SheetEditorState extends State<SheetEditor> {
 
           context.read<Sheet>().lyrics[_pageIndex].add(cells[j]["lyric"]);
           context.read<Sheet>().chords[_pageIndex].add(Chord.fromMap(cells[j]["chord"]));
-        }
 
-        sheet[_pageIndex].add(ChordCell(
-          key: UniqueKey(),
-          pageIndex: _pageIndex,
-          readOnly: widget.readOnly,
-        ));
+          sheet[_pageIndex].add(ChordCell(
+            key: UniqueKey(),
+            pageIndex: _pageIndex,
+            readOnly: widget.readOnly,
+          ));
+        }
       }
       setState(() {});
     });

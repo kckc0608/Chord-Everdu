@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/page/sheet_editor.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:chord_everdu/custom_class/sheet_info.dart';
 
 class SearchSheet extends StatefulWidget {
@@ -22,12 +23,11 @@ class _SearchSheetState extends State<SearchSheet> {
         if (!snapshot.hasData) return CircularProgressIndicator();
         final documents = snapshot.data!.docs;
         return ListView.separated(
-          padding: EdgeInsets.symmetric(horizontal: 4),
           itemBuilder: (context, index) {
             return _buildItemWidget(documents[index]);
           },
           separatorBuilder: (context, index) {
-            return const Divider();
+            return const Divider(height: 4.0, thickness: 1.0);
           },
           itemCount: snapshot.data!.size
         );
@@ -43,22 +43,44 @@ class _SearchSheetState extends State<SearchSheet> {
       singer: doc['singer'],
     );
 
-    return ListTile(
+    return GestureDetector(
       onTap: () {
+        print("onTap event");
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) {
-            return SheetEditor(
-              title: sheet.title,
-              singer: sheet.singer,
-              songKey: sheet.songKey,
-              readOnly: true,
-              sheetID: doc.id,
-            );
-          })
+            MaterialPageRoute(builder: (context) {
+              return SheetEditor(
+                title: sheet.title,
+                singer: sheet.singer,
+                songKey: sheet.songKey,
+                readOnly: true,
+                sheetID: doc.id,
+              );
+            })
         );
       },
-      title: Text(sheet.title),
-      subtitle: Text(sheet.singer),
+      onLongPress: () {
+        print("long Press Event");
+        showDialog(context: context, builder: (context) {
+          return SimpleDialog(
+            children: [
+              TextButton(child: Text("악보 삭제"), onPressed: () {
+                Navigator.of(context).pop();
+              }),
+            ],
+          );
+        });
+      },
+      child: Container(
+        padding: EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(sheet.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            SizedBox(height: 4),
+            Text(sheet.singer, style: TextStyle(color: Colors.black54)),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -138,6 +160,12 @@ class SearchSheetFloatingButton extends StatelessWidget {
         showDialog(
           context: context,
           builder: (context) {
+            if (FirebaseAuth.instance.currentUser == null)
+              return AlertDialog(
+                title: Text("알림"),
+                content: Text("새 악보를 추가하려면 로그인을 해야합니다."),
+                actions: [TextButton(child: Text("확인"), onPressed: () {Navigator.of(context).pop();})],
+              );
             return NewSheetDialog();
           },
         );

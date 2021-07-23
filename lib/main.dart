@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:chord_everdu/page/search_sheet.dart';
-import 'package:provider/provider.dart';
 import 'package:chord_everdu/custom_class/sheet.dart';
+import 'package:chord_everdu/page/my_sheet.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+
 
 void main() {
   runApp(
@@ -39,7 +41,7 @@ class _MainFrameState extends State<MainFrame> {
   List<Widget> _bodyWidgets = [
     SearchSheet(),
     Text("1"),
-    Text("2"),
+    MySheet(),
   ];
 
   List<PreferredSizeWidget> _appBarWidgets = [
@@ -100,6 +102,9 @@ class _MainFrameState extends State<MainFrame> {
 
             if (snapshot.connectionState == ConnectionState.done)
               return _bodyWidgets.elementAt(_selectedIndex);
+
+            else if (snapshot.connectionState == ConnectionState.none)
+              return Text("No data");
 
             return CircularProgressIndicator();
           },
