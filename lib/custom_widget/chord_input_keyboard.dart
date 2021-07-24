@@ -37,11 +37,17 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
   // currentCell 이 null 이 아닐 때 이 위젯이 생성되기 때문에, 코드는 항상 존재함.
   late Chord chord;
+  late int _nowPage;
+  late int _selectedIndex;
 
   @override
   Widget build(BuildContext context) {
-    chord = context.watch<Sheet>().chords[context.watch<Sheet>().nowPage][context.watch<Sheet>().selectedIndex]!;
-    _songKey = context.watch<Sheet>().songKey;
+
+    _nowPage = context.watch<Sheet>().nowPage; // page가 바뀌면 리빌드
+    _selectedIndex = context.watch<Sheet>().selectedIndex; // 선택한 인덱스가 바뀌면 리빌드
+    _songKey = context.watch<Sheet>().songKey; // songKey가 바뀌면 리빌드
+
+    chord = context.watch<Sheet>().chords[_nowPage][_selectedIndex]!; // 선택한 코드구성이 바뀌면 리빌드
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
     setButton();
@@ -84,7 +90,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           buildRecentChordButton(text: "x8", onPressed: (global.recentChord.length < 8) ? null : () {
             // TODO : 최근 8개 코드 입력 구현
           })
-        ] + global.recentChord.map((chord) => buildRecentChordButton(chord: chord)).toList()
+        ] + global.recentChord.map((chord) => buildRecentChordButton(touchChord: chord)).toList()
       ),
     );
   }
@@ -134,7 +140,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 if (buttonIndex == index) {
                   _asdaSelection[buttonIndex] = !_asdaSelection[buttonIndex];
                   if (_asdaSelection[buttonIndex]) {
-                    nowInput = "asda";
+                    nowInput = global.NowInput.asda;
                     switch (index) {
                       case 0:
                         chord.asda = "add";
@@ -205,6 +211,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           buildToggleButton(['m', 'M'], _minorMajorSelection, (index) {
             setState(() {
               _minorMajorSelection[index] = !_minorMajorSelection[index];
+              // 마이너 활성화 시
               if (_minorMajorSelection[0]) {
                 chord.minor = "m";
                 // dim / aug 해제 및 딸려있는 텐션이 있다면 같이 해제
@@ -217,23 +224,13 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                   _asdaSelection[2] = false;
                   _asdaSelection[3] = false;
                 }
-                // 설정
+                // 메이저도 활성화 시
                 if (_minorMajorSelection[1]) {
-                  // dim / aug 해제 및 딸려있는 텐션이 있다면 같이 해제
-                  if (chord.asda == "dim" || chord.asda == "aug") {
-                    if (chord.asdaTension > -1) {
-                      _numberSelection[chord.asdaTension][0] = false;
-                      chord.asdaTension = -1;
-                    }
-                    chord.asda = "";
-                    _asdaSelection[2] = false;
-                    _asdaSelection[3] = false;
-                  }
                   chord.major = "M";
-                  nowInput = "M";
+                  nowInput = global.NowInput.major;
                 } else {
                   chord.major = "";
-                  nowInput = "m";
+                  nowInput = global.NowInput.minor;
                 }
               } else {
                 chord.minor = "";
@@ -249,7 +246,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                     _asdaSelection[3] = false;
                   }
                   chord.major = "M";
-                  nowInput = "M";
+                  nowInput = global.NowInput.major;
                 } else {
                   chord.major = "";
                   nowInput = null;
@@ -258,28 +255,28 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               widget.onButtonTap.call();
             });
           }),
-          (nowInput == "asda" &&
-                      ((chord.rootTension != 7) &&
-                          (chord.minorTension != 7) &&
-                          (chord.majorTension != 7)) ||
-                  chord.asdaTension == 7)
+          // 7 입력
+          // asda input인 상황에서, 루트텐션/mM텐션이 7이 아니거나, asda텐션이 7인 경우
+          (nowInput == global.NowInput.asda && ((chord.rootTension != 7) && (chord.minorTension != 7) && (chord.majorTension != 7)) || chord.asdaTension == 7)
               ? buildToggleButton([global.tensionList[7]], _numberSelection[7],
-                  (i) {
+                  (_) {
                   setState(() {
                     _numberSelection[7][0] = !_numberSelection[7][0];
-                    if (_numberSelection[7][0]) {
-                      if (chord.asdaTension > -1) {
+                    if (_numberSelection[7][0]) { // 7 활성화 했을 때
+                      if (chord.asdaTension > -1) { // 기존 asda 텐션 해제
                         _numberSelection[chord.asdaTension][0] = false;
                         chord.asdaTension = -1;
                       }
-                      if (nowInput == "asda") chord.asdaTension = 7;
-                    } else
+                      chord.asdaTension = 7; // aasda 텐션 할당
+                    } else { // 7 비활성화 하면
                       chord.asdaTension = -1;
+                    }
                     widget.onButtonTap.call();
                   });
                 }, type: ChordKeyboard.typeASDA)
               : buildToggleButton([global.tensionList[7]], _numberSelection[7],
-                  (i) {
+                  (_) {
+                print("7 코드 터치 - asda텐션 외");
                   setState(() {
                     _numberSelection[7][0] = !_numberSelection[7][0];
                     if (_numberSelection[7][0]) {
@@ -295,11 +292,12 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                         chord.majorTension = -1;
                       }
                       // nowInput에 맞게 값 재세팅
-                      if (nowInput == "root")
+                      if (nowInput == global.NowInput.root)
                         chord.rootTension = 7;
-                      else if (nowInput == "m")
+                      else if (nowInput == global.NowInput.minor)
                         chord.minorTension = 7;
-                      else if (nowInput == "M") chord.majorTension = 7;
+                      else if (nowInput == global.NowInput.major)
+                        chord.majorTension = 7;
                     } else {
                       chord.rootTension = -1;
                       chord.minorTension = -1;
@@ -320,11 +318,11 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
         children: List.generate(7, (index) {
           int _type = ChordKeyboard.typeTens;
           // now input에 따라 비활성화 된 버튼의 활성화 색을 결정
-          if (nowInput == "tension" || nowInput == null)
+          if (nowInput == global.NowInput.tension || nowInput == null)
             _type = ChordKeyboard.typeTens;
-          else if (nowInput == "asda")
+          else if (nowInput == global.NowInput.asda)
             _type = ChordKeyboard.typeASDA;
-          else if (nowInput == "root" || nowInput == "m" || nowInput == "M")
+          else
             _type = ChordKeyboard.typeRoot;
 
           if (index == chord.tension)
@@ -352,11 +350,11 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                     chord.majorTension = -1;
                   }
                   // nowInput에 맞게 값 재세팅
-                  if (nowInput == "root")
+                  if (nowInput == global.NowInput.root)
                     chord.rootTension = index;
-                  else if (nowInput == "m")
+                  else if (nowInput == global.NowInput.minor)
                     chord.minorTension = index;
-                  else if (nowInput == "M") chord.majorTension = index;
+                  else if (nowInput == global.NowInput.major) chord.majorTension = index;
                 } else {
                   chord.rootTension = -1;
                   chord.minorTension = -1;
@@ -376,9 +374,12 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                     _numberSelection[chord.asdaTension][0] = false;
                     chord.asdaTension = -1;
                   }
-                  if (nowInput == "asda") chord.asdaTension = index;
-                } else
+                  if (nowInput == global.NowInput.asda)
+                    chord.asdaTension = index;
+                }
+                else
                   chord.asdaTension = -1;
+
                 widget.onButtonTap.call();
               });
             }, type: _type);
@@ -393,7 +394,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                   _numberSelection[chord.tension][0] = false;
                   chord.tension = -1;
                 }
-                if (nowInput == "tension" || nowInput == null)
+                if (nowInput == global.NowInput.tension || nowInput == null)
                   chord.tension = index;
               } else
                 chord.tension = -1;
@@ -433,10 +434,10 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
               if (_tensionAddSelection[0]) {
                 chord.tensionSharp = 1;
-                nowInput = "tension";
+                nowInput = global.NowInput.tension;
               } else if (_tensionAddSelection[1]) {
                 chord.tensionSharp = -1;
-                nowInput = "tension";
+                nowInput = global.NowInput.tension;
               } else {
                 chord.tensionSharp = 0;
               }
@@ -502,15 +503,17 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     );
   }
 
-  Widget buildRecentChordButton({Chord? chord, String text = "", VoidCallback? onPressed}) {
+  Widget buildRecentChordButton({Chord? touchChord, String text = "", VoidCallback? onPressed}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 6.0),
       child: TextButton(
         onPressed: (onPressed != null) ? onPressed : () {
-          // TODO : 최근 입력한 코드 빠른 입력 기능 구현
+          print("recent Button tapped");
+          chord.setByMap(touchChord!.toMap());
+          widget.onButtonTap.call();
         },
         child: Text(
-          (chord != null) ? chord.toStringChord(songKey: context.read<Sheet>().songKey) : text,
+          (touchChord != null) ? touchChord.toStringChord(songKey: _songKey) : text,
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         style: ButtonStyle(
@@ -540,12 +543,12 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 if (index == 1 || index == 2 || index == 5 || index == 6) {
                   chord.minor = 'm';
                   _minorMajorSelection[0] = true; // 마이너(m) 활성화
-                  nowInput = "minor";
+                  nowInput = global.NowInput.minor;
                 }
                 else {
                   chord.minor = '';
-                  _minorMajorSelection[0] = false; // 마이너(m) 활성화
-                  nowInput = "root";
+                  _minorMajorSelection[0] = false; // 메이저(M) 활성화
+                  nowInput = global.NowInput.major;
                 }
               } else { // 선택한 버튼 타입 = base
                 chord.base = index;

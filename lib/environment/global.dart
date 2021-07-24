@@ -5,3 +5,11 @@ List<String> tensionList = const ['2', '4', '5', '6', '9', '11', '13', '7'];
 List<int> indexToKeyOffset = const [0, 2, 4, 5, 7, 9, 11];
 
 List<Chord> recentChord = [];
+
+class NowInput {
+  static const String root = "root";
+  static const String asda = "asda";
+  static const String minor = "minor";
+  static const String major = "major";
+  static const String tension = "tension";
+}

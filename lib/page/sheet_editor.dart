@@ -327,11 +327,11 @@ class SheetEditorState extends State<SheetEditor> {
       List<dynamic> _chordList = [];
       for (int j = 0; j < context.read<Sheet>().chords[i].length; j++) {
         if (context.read<Sheet>().chords[i][j] == null) _chordList.add({
-          "chord" : Chord().toJson(),
+          "chord" : Chord().toMap(),
           "lyric" : "<!br!>",
         });
         else _chordList.add({
-          "chord" : context.read<Sheet>().chords[i][j]!.toJson(),
+          "chord" : context.read<Sheet>().chords[i][j]!.toMap(),
           "lyric" : context.read<Sheet>().lyrics[i][j]!,
         });
       }

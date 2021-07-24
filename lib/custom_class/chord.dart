@@ -94,7 +94,7 @@ class Chord {
     return chord;
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toMap() {
     return {
       "root": root,
       "rootSharp": rootSharp,
@@ -114,5 +114,21 @@ class Chord {
 
   bool isEmpty() {
     return (root == -1 && base == -1);
+  }
+
+  void setByMap(Map<String, dynamic> chordMap) {
+    root = chordMap["root"];
+    rootSharp = chordMap["rootSharp"];
+    rootTension = chordMap["rootTension"];
+    minor = chordMap["minor"];
+    minorTension = chordMap["minorTension"];
+    major = chordMap["major"];
+    majorTension = chordMap["majorTension"];
+    tensionSharp = chordMap["tensionSharp"];
+    tension = chordMap["tension"];
+    asda = chordMap["asda"];
+    asdaTension = chordMap["asdaTension"];
+    base = chordMap["base"];
+    baseSharp = chordMap["baseSharp"];
   }
 }
