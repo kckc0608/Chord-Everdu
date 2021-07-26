@@ -30,16 +30,38 @@ class _ChordCellState extends State<ChordCell>
   // ignore: must_call_super
   Widget build(BuildContext context) {
     SheetEditorState? parent = context.findAncestorStateOfType<SheetEditorState>();
+    int cellIndex = context.select((Sheet s) => s.getIndexOfCell(widget));
 
-    int cellIndex = parent!.sheet[widget.pageIndex].indexOf(widget);
     print("build called cell of " + cellIndex.toString());
-    print(isSelected.toString());
-    chord = context.watch<Sheet>().chords[widget.pageIndex][cellIndex]!;
-    chordController.text = chord.toStringChord(songKey: parent.songKey);
+
+    // 현재 줄 넘김시 사이에 컨테이너를 끼어도
+
+    // selector는 객체의 변경을 기준으로 빌드를 호출한다.
+    // chord에 selector를 달면, chord의 속성이 변해도 빌드되지 않는다. chord라는 객체는 바뀌지 않았기 때문.
+    // chord의 속성값 자체에 selector를 달아야 빌드가 된다. int든 string 이든 속성값 '객체'가 변화했으므로.
+
+    // 해결책은 2가지가 있는데, 첫번째는 속성값이 변할 때마다 코드 객체를 갈아 치우는 것
+    // 두번째는 속성값마다 셀렉터를 달아주는 것이다.
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.root);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.rootSharp);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.rootTension);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.minor);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.minorTension);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.major);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.majorTension);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.tensionSharp);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.tension);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.asda);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.asdaTension);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.base);
+    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.baseSharp);
+
+    chord = context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!);
+    chordController.text = chord.toStringChord(songKey: context.select((Sheet s) => s.songKey));
 
     // 이 조건 체크를 안하면 포커스를 받을 때마다 가사를 바꿔서 항상 커서가 앞으로 감.
-    if (!isSelected && (lyricController.text != context.watch<Sheet>().lyrics[widget.pageIndex][cellIndex]!))
-      lyricController.text = context.watch<Sheet>().lyrics[widget.pageIndex][cellIndex]!;
+    if (!isSelected && (lyricController.text != context.select((Sheet s) => s.lyrics[widget.pageIndex][cellIndex]!)))
+      lyricController.text = context.select((Sheet s) => s.lyrics[widget.pageIndex][cellIndex]!);
 
     return Container(
       decoration: BoxDecoration(
@@ -51,9 +73,7 @@ class _ChordCellState extends State<ChordCell>
           setState(() {
             isSelected = hasFocus;
             if (hasFocus) {
-              parent.setState(() {
-                parent.currentCell = this.widget;
-              });
+              context.read<Sheet>().selectedIndex = context.read<Sheet>().pages[widget.pageIndex].indexOf(widget);
             }
             else { // 포커스가 꺼졌을 때, 현재 가사를 저장
               context.read<Sheet>().lyrics[widget.pageIndex][cellIndex] = lyricController.text;
@@ -75,7 +95,7 @@ class _ChordCellState extends State<ChordCell>
               child: IntrinsicWidth(
                 child: TextField(
                   onTap: (!widget.readOnly) ? () {
-                    parent.setState(() {
+                    parent!.setState(() {
                       parent.isChordInput = true;
                       parent.cellTextController = this.chordController;
                     });
@@ -98,7 +118,7 @@ class _ChordCellState extends State<ChordCell>
               child: IntrinsicWidth(
                 child: TextField(
                   onTap: (!widget.readOnly) ? () {
-                    parent.setState(() {
+                    parent!.setState(() {
                       parent.isChordInput = false;
                       parent.cellTextController = this.lyricController;
                     });
@@ -106,7 +126,6 @@ class _ChordCellState extends State<ChordCell>
                   onEditingComplete: () {
                     setState(() {
                       FocusScope.of(context).unfocus();
-                      parent.currentCell = null;
                       context.read<Sheet>().selectedIndex = -1;
                     });
                   },
