@@ -1,13 +1,11 @@
+import 'package:chord_everdu/custom_class/sheet.dart';
 import 'package:flutter/material.dart';
 import '../custom_class/chord.dart';
 import 'package:provider/provider.dart';
-import 'package:chord_everdu/custom_class/sheet.dart';
 import '../environment/global.dart' as global;
 
 class ChordKeyboard extends StatefulWidget {
-  const ChordKeyboard({Key? key, required this.onButtonTap}) : super(key: key);
-
-  final VoidCallback onButtonTap;
+  const ChordKeyboard({Key? key}) : super(key: key);
 
   static const typeRoot = 1;
   static const typeASDA = 2;
@@ -42,16 +40,16 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
   @override
   Widget build(BuildContext context) {
-
-    _nowPage = context.watch<Sheet>().nowPage; // page가 바뀌면 리빌드
-    _selectedIndex = context.watch<Sheet>().selectedIndex; // 선택한 인덱스가 바뀌면 리빌드
-    _songKey = context.watch<Sheet>().songKey; // songKey가 바뀌면 리빌드
+    _nowPage = context.select((Sheet s) => s.nowPage); // page가 바뀌면 리빌드
+    _selectedIndex = context.select((Sheet s) => s.selectedIndex); // 선택한 인덱스가 바뀌면 리빌드
+    _songKey = context.select((Sheet s) => s.songKey); // songKey가 바뀌면 리빌드
 
     chord = context.watch<Sheet>().chords[_nowPage][_selectedIndex]!; // 선택한 코드구성이 바뀌면 리빌드
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
     setButton();
 
+    print("keyboad builder Called");
     print("Now Input is " + nowInput.toString());
 
     return Container(
@@ -76,19 +74,23 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
       child: Row(
         children: [
           buildRecentChordButton(text: "x4", onPressed: (global.recentChord.length < 4) ? null : () {
-            /*int _select = context.read<Sheet>().selectedIndex;
-            int _page = context.read<Sheet>().nowPage;
+            int _select = context.read<Sheet>().selectedIndex;
             for (int i = 0; i < 4; i++) {
               // 현재 체크하는 셀이 널이거나 (공백) 코드가 들어 있다면
-              if (context.read<Sheet>().chords[_page][_select+i] == null || !context.read<Sheet>().chords[_page][_select+i]!.isEmpty()) {
-                context.read<Sheet>().chords[_page].insert(_select+i, global.recentChord[i]);
-                context.read<Sheet>().lyrics[_page].insert(_select+i, "");
-                parent.[_page].insert(_select+i, "");
-              }
-            }*/
+              //if (context.read<Sheet>().chords[_page][_select+i] == null || !context.read<Sheet>().chords[_page][_select+i]!.isEmpty()) {
+                context.read<Sheet>().addCell(index: _select + i, chord: global.recentChord[i]);
+              //}
+            }
           }),
+
           buildRecentChordButton(text: "x8", onPressed: (global.recentChord.length < 8) ? null : () {
-            // TODO : 최근 8개 코드 입력 구현
+            int _select = context.read<Sheet>().selectedIndex;
+            for (int i = 0; i < 8; i++) {
+              // 현재 체크하는 셀이 널이거나 (공백) 코드가 들어 있다면
+              //if (context.read<Sheet>().chords[_page][_select+i] == null || !context.read<Sheet>().chords[_page][_select+i]!.isEmpty()) {
+              context.read<Sheet>().addCell(index: _select + i, chord: global.recentChord[i]);
+              //}
+            }
           })
         ] + global.recentChord.map((chord) => buildRecentChordButton(touchChord: chord)).toList()
       ),
@@ -205,7 +207,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 } else
                   _asdaSelection[buttonIndex] = false;
               }
-              widget.onButtonTap.call();
+
+              context.read<Sheet>().setStateOfSheet();
             });
           }, type: ChordKeyboard.typeASDA),
           buildToggleButton(['m', 'M'], _minorMajorSelection, (index) {
@@ -252,7 +255,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                   nowInput = null;
                 }
               }
-              widget.onButtonTap.call();
+
+              context.read<Sheet>().setStateOfSheet();
             });
           }),
           // 7 입력
@@ -271,7 +275,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                     } else { // 7 비활성화 하면
                       chord.asdaTension = -1;
                     }
-                    widget.onButtonTap.call();
+
+                    context.read<Sheet>().setStateOfSheet();
                   });
                 }, type: ChordKeyboard.typeASDA)
               : buildToggleButton([global.tensionList[7]], _numberSelection[7],
@@ -303,7 +308,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                       chord.minorTension = -1;
                       chord.majorTension = -1;
                     }
-                    widget.onButtonTap.call();
+
+                    context.read<Sheet>().setStateOfSheet();
                   });
                 }, type: ChordKeyboard.typeRoot),
         ],
@@ -360,7 +366,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                   chord.minorTension = -1;
                   chord.majorTension = -1;
                 }
-                widget.onButtonTap.call();
+
+                context.read<Sheet>().setStateOfSheet();
               });
             }, type: _type);
           }
@@ -380,7 +387,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 else
                   chord.asdaTension = -1;
 
-                widget.onButtonTap.call();
+                context.read<Sheet>().setStateOfSheet();
               });
             }, type: _type);
           }
@@ -398,7 +405,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                   chord.tension = index;
               } else
                 chord.tension = -1;
-              widget.onButtonTap.call();
+
+              context.read<Sheet>().setStateOfSheet();
             });
           }, type: _type);
         }),
@@ -422,7 +430,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               else if (_rootAddSelection[1]) chord.rootSharp = -1;
               else chord.rootSharp = 0;
 
-              widget.onButtonTap.call();
+              context.read<Sheet>().setStateOfSheet();
             });
           }),
           buildToggleButton(['#', 'b'], _tensionAddSelection, (index) {
@@ -442,7 +450,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 chord.tensionSharp = 0;
               }
 
-              widget.onButtonTap.call();
+              context.read<Sheet>().setStateOfSheet();
             });
           }, type: ChordKeyboard.typeTens),
           buildToggleButton(['/', '#', 'b'], _baseAddSelection, (index) {
@@ -457,7 +465,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               else if (_baseAddSelection[2]) chord.baseSharp = -1;
               else chord.baseSharp = 0;
 
-              widget.onButtonTap.call();
+              context.read<Sheet>().setStateOfSheet();
             });
           }, type: ChordKeyboard.typeBase),
         ],
@@ -510,7 +518,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
         onPressed: (onPressed != null) ? onPressed : () {
           print("recent Button tapped");
           chord.setByMap(touchChord!.toMap());
-          widget.onButtonTap.call();
+          context.read<Sheet>().setStateOfSheet();
         },
         child: Text(
           (touchChord != null) ? touchChord.toStringChord(songKey: _songKey) : text,
@@ -575,7 +583,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             _rootSelection[buttonIndex][0] = false;
           }
         }
-        widget.onButtonTap.call();
+        context.read<Sheet>().setStateOfSheet();
       });
     };
   }

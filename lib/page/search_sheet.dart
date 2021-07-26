@@ -13,7 +13,6 @@ class SearchSheet extends StatefulWidget {
 
 class _SearchSheetState extends State<SearchSheet> {
   late Future<List<SheetInfo>> futureSheet;
-  var _maxItem;
 
   @override
   Widget build(BuildContext context) {
@@ -37,23 +36,22 @@ class _SearchSheetState extends State<SearchSheet> {
 
   Widget _buildItemWidget(doc) {
     final sheet = SheetInfo(
-      title: doc['title'],
-      sheetId: doc['sheet_id'],
+      title:   doc['title'],
       songKey: doc['song_key'],
-      singer: doc['singer'],
+      singer:  doc['singer'],
     );
 
-    return GestureDetector(
+    return InkWell(
       onTap: () {
         print("onTap event");
         Navigator.of(context).push(
             MaterialPageRoute(builder: (context) {
               return SheetEditor(
-                title: sheet.title,
-                singer: sheet.singer,
+                sheetID: doc.id,
+                title:   sheet.title,
+                singer:  sheet.singer,
                 songKey: sheet.songKey,
                 readOnly: true,
-                sheetID: doc.id,
               );
             })
         );
