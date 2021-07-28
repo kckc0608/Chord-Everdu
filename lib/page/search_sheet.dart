@@ -21,14 +21,17 @@ class _SearchSheetState extends State<SearchSheet> {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return CircularProgressIndicator();
         final documents = snapshot.data!.docs;
-        return ListView.separated(
-          itemBuilder: (context, index) {
-            return _buildItemWidget(documents[index]);
-          },
-          separatorBuilder: (context, index) {
-            return const Divider(height: 4.0, thickness: 1.0);
-          },
-          itemCount: snapshot.data!.size
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ListView.separated(
+            itemBuilder: (context, index) {
+              return _buildItemWidget(documents[index]);
+            },
+            separatorBuilder: (context, index) {
+              return const Divider(height: 4.0, thickness: 1.0);
+            },
+            itemCount: snapshot.data!.size
+          ),
         );
       },
     );

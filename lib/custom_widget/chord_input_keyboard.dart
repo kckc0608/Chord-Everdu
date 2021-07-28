@@ -44,7 +44,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     _selectedIndex = context.select((Sheet s) => s.selectedIndex); // 선택한 인덱스가 바뀌면 리빌드
     _songKey = context.select((Sheet s) => s.songKey); // songKey가 바뀌면 리빌드
 
-    chord = context.watch<Sheet>().chords[_nowPage][_selectedIndex]!; // 선택한 코드구성이 바뀌면 리빌드
+    if (_selectedIndex < context.select((Sheet s) => s.chords[_nowPage].length))
+      chord = context.select((Sheet s) => s.chords[_nowPage][_selectedIndex]!); // 선택한 코드구성이 바뀌면 리빌드
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
     setButton();
@@ -69,30 +70,55 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   }
 
   Widget buildRowRecentChord() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 3.0),
       child: Row(
         children: [
           buildRecentChordButton(text: "x4", onPressed: (global.recentChord.length < 4) ? null : () {
-            int _select = context.read<Sheet>().selectedIndex;
+            int _select = context.read<Sheet>().selectedIndex + 1;
             for (int i = 0; i < 4; i++) {
               // 현재 체크하는 셀이 널이거나 (공백) 코드가 들어 있다면
               //if (context.read<Sheet>().chords[_page][_select+i] == null || !context.read<Sheet>().chords[_page][_select+i]!.isEmpty()) {
-                context.read<Sheet>().addCell(index: _select + i, chord: global.recentChord[i]);
+              context.read<Sheet>().addCell(index: _select + i, chord: Chord.fromMap(global.recentChord[i].toMap()));
               //}
             }
           }),
 
-          buildRecentChordButton(text: "x8", onPressed: (global.recentChord.length < 8) ? null : () {
-            int _select = context.read<Sheet>().selectedIndex;
-            for (int i = 0; i < 8; i++) {
+          buildRecentChordButton(text: "all", onPressed: () {
+            int _select = context.read<Sheet>().selectedIndex + 1;
+            for (int i = 0; i < global.recentChord.length; i++) {
               // 현재 체크하는 셀이 널이거나 (공백) 코드가 들어 있다면
               //if (context.read<Sheet>().chords[_page][_select+i] == null || !context.read<Sheet>().chords[_page][_select+i]!.isEmpty()) {
-              context.read<Sheet>().addCell(index: _select + i, chord: global.recentChord[i]);
+              context.read<Sheet>().addCell(index: _select + i, chord: Chord.fromMap(global.recentChord[i].toMap()));
               //}
             }
-          })
-        ] + global.recentChord.map((chord) => buildRecentChordButton(touchChord: chord)).toList()
+          }),
+          buildRecentChordButton(text: "+", onPressed: () {
+            setState(() {
+              if (!chord.isEmpty()) {
+                global.recentChord.add(Chord.fromMap(chord.toMap()));
+                if (global.recentChord.length > 24) global.recentChord.removeAt(0);
+              }
+            });
+          }),
+          buildRecentChordButton(text: "ㅡ", onPressed: () {
+            setState(() {
+              if (global.recentChord.length > 0) global.recentChord.removeLast();
+            });
+          }),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(2, 0, 6.0, 0),
+            child: Container(width: 2, height: 35, color: Colors.black),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: global.recentChord.map((chord) => buildRecentChordButton(touchChord: chord)).toList()
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -297,13 +323,14 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                         chord.majorTension = -1;
                       }
                       // nowInput에 맞게 값 재세팅
-                      if (nowInput == global.NowInput.root)
-                        chord.rootTension = 7;
-                      else if (nowInput == global.NowInput.minor)
-                        chord.minorTension = 7;
-                      else if (nowInput == global.NowInput.major)
+                      if (chord.major == "M")
                         chord.majorTension = 7;
-                    } else {
+                      else if (chord.minor == "m")
+                        chord.minorTension = 7;
+                      else
+                        chord.rootTension = 7;
+                    }
+                    else {
                       chord.rootTension = -1;
                       chord.minorTension = -1;
                       chord.majorTension = -1;
@@ -513,26 +540,24 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
   Widget buildRecentChordButton({Chord? touchChord, String text = "", VoidCallback? onPressed}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 6.0),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
       child: TextButton(
-        onPressed: (onPressed != null) ? onPressed : () {
+        onPressed: onPressed ?? () {
           print("recent Button tapped");
           chord.setByMap(touchChord!.toMap());
           context.read<Sheet>().setStateOfSheet();
         },
         child: Text(
-          (touchChord != null) ? touchChord.toStringChord(songKey: _songKey) : text,
+          touchChord?.toStringChord(songKey: _songKey) ?? text,
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         style: ButtonStyle(
-          minimumSize: MaterialStateProperty.all(Size(50.0, 30.0)),
+          minimumSize: MaterialStateProperty.all(Size(40.0, 35.0)),
           backgroundColor: MaterialStateProperty.all(Colors.white),
           foregroundColor: MaterialStateProperty.all(Colors.black),
           shape: MaterialStateProperty.all(RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.0),
-            side: BorderSide(
-              color: Colors.black,
-            ),
+            side: BorderSide(color: Colors.black, width: 1.5),
           )),
         ),
       ),

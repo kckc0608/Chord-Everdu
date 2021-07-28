@@ -27,7 +27,7 @@ class Sheet with ChangeNotifier {
     index = index ?? selectedIndex;
 
     if (index >= chords[nowPage].length || index < 0)
-      throw Exception("[sheet.dart][addCell] 인덱스 범위를 벗어났습니다. index : " + index.toString());
+      throw Exception("[sheet.dart][removeCell] 인덱스 범위를 벗어났습니다. index : " + index.toString());
 
     pages[nowPage].removeAt(selectedIndex);
     chords[nowPage].removeAt(selectedIndex);
@@ -42,19 +42,26 @@ class Sheet with ChangeNotifier {
     chords[nowPage].insert(selectedIndex, null);
     lyrics[nowPage].insert(selectedIndex, null);
     pages[nowPage].insert(selectedIndex, Container(key: UniqueKey(), width: 1000));
+
+    selectedIndex += 1;
     notifyListeners();
   }
 
   void removeBefore() {
     if (selectedIndex == 0) return;
 
+    pages[nowPage].removeAt(selectedIndex-1);
     chords[nowPage].removeAt(selectedIndex-1);
     lyrics[nowPage].removeAt(selectedIndex-1);
-    pages[nowPage].removeAt(selectedIndex-1);
+
+    // 자신의 포커스를 유지한 채로 앞의 위젯들을 지우다보면 selectedIndex가 갱신이 안됨.
+    selectedIndex -= 1;
+
     notifyListeners();
   }
 
   void moveLyric() {
+    // TODO: 줄바꿈을 한 경우 가사 이동이 이상하게 되고 인덱스가 꼬임.
     if (selectedIndex == chords[nowPage].length -1) {
       chords[nowPage].add(Chord());
       lyrics[nowPage].add("");
