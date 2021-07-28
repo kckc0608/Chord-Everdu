@@ -1,7 +1,9 @@
 import 'package:chord_everdu/page/search_sheet.dart';
-import 'package:chord_everdu/custom_class/sheet.dart';
 import 'package:chord_everdu/page/my_sheet.dart';
+import 'package:chord_everdu/page/group.dart';
+import 'package:chord_everdu/custom_class/sheet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -40,24 +42,38 @@ class _MainFrameState extends State<MainFrame> {
 
   List<Widget> _bodyWidgets = [
     SearchSheet(),
-    Text("1"),
+    Group(),
     MySheet(),
   ];
 
   List<PreferredSizeWidget> _appBarWidgets = [
     AppBar(
-      title: Text("악보 검색"),
-      actions: [
-        Builder(builder: (context) {
-          return IconButton(
-            onPressed: () {
+      title: Builder(
+        builder: (context) {
+          return GestureDetector(
+            onTap: () {
               showSearch(context: context, delegate: MySearchDelegate())
                   .toString(); // MySearchDelegate is declared in page_searchSheet.dart
             },
-            icon: Icon(Icons.search),
+            child: Container(
+              padding: EdgeInsets.all(6.0),
+              decoration: BoxDecoration(
+                color: Colors.blue[700],
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Icon(Icons.search, color: Colors.white70,),
+                  SizedBox(width: 12),
+                  Text("악보를 검색하세요.", style: TextStyle(color: Colors.white60, fontSize: 18)),
+                ],
+              ),
+            ),
           );
-        })
-      ],
+        }
+      ),
+      centerTitle: true,
     ),
     AppBar(
       title: Text("그룹"),

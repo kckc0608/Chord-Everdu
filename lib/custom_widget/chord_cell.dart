@@ -1,7 +1,6 @@
 import 'package:chord_everdu/page/sheet_editor.dart';
 import 'package:chord_everdu/custom_class/sheet.dart';
 import '../custom_class/chord.dart';
-import 'package:chord_everdu/environment/global.dart' as global;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -33,35 +32,40 @@ class _ChordCellState extends State<ChordCell>
     int cellIndex = context.select((Sheet s) => s.getIndexOfCell(widget));
 
     print("build called cell of " + cellIndex.toString());
+    print(context.read<Sheet>().selectedIndex);
 
     // 현재 줄 넘김시 사이에 컨테이너를 끼어도
 
-    // selector는 객체의 변경을 기준으로 빌드를 호출한다.
-    // chord에 selector를 달면, chord의 속성이 변해도 빌드되지 않는다. chord라는 객체는 바뀌지 않았기 때문.
-    // chord의 속성값 자체에 selector를 달아야 빌드가 된다. int든 string 이든 속성값 '객체'가 변화했으므로.
+    if (cellIndex > -1) { /// 새로 페이지를 추가하면, 페이지를 추가할 때 생성해서 넣는 코드셀은 아직 sheet 없어서 cellIndex = -1 이 나옴.
 
-    // 해결책은 2가지가 있는데, 첫번째는 속성값이 변할 때마다 코드 객체를 갈아 치우는 것
-    // 두번째는 속성값마다 셀렉터를 달아주는 것이다.
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.root);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.rootSharp);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.rootTension);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.minor);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.minorTension);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.major);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.majorTension);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.tensionSharp);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.tension);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.asda);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.asdaTension);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.base);
-    context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.baseSharp);
+      /// selector는 객체의 변경을 기준으로 빌드를 호출한다.
+      /// chord에 selector를 달면, chord의 속성이 변해도 빌드되지 않는다. chord라는 객체는 바뀌지 않았기 때문.
+      /// chord의 속성값 자체에 selector를 달아야 빌드가 된다. int든 string 이든 속성값 '객체'가 변화했으므로.
+      /// 해결책은 2가지가 있는데, 첫번째는 속성값이 변할 때마다 코드 객체를 갈아 치우는 것
+      /// 두번째는 ""속성값마다 셀렉터를 달아주는 것""이다.
 
-    chord = context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!);
-    chordController.text = chord.toStringChord(songKey: context.select((Sheet s) => s.songKey));
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.root);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.rootSharp);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.rootTension);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.minor);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.minorTension);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.major);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.majorTension);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.tensionSharp);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.tension);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.asda);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.asdaTension);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.base);
+      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.baseSharp);
 
-    // 이 조건 체크를 안하면 포커스를 받을 때마다 가사를 바꿔서 항상 커서가 앞으로 감.
-    if (!isSelected && (lyricController.text != context.select((Sheet s) => s.lyrics[widget.pageIndex][cellIndex]!)))
-      lyricController.text = context.select((Sheet s) => s.lyrics[widget.pageIndex][cellIndex]!);
+      chord = context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!);
+
+      chordController.text = chord.toStringChord(songKey: context.select((Sheet s) => s.songKey));
+
+      /// 이 조건 체크를 안하면 포커스를 받을 때마다 가사를 새로 채워서 항상 커서가 앞으로 감.
+      if (!isSelected && (lyricController.text != context.select((Sheet s) => s.lyrics[widget.pageIndex][cellIndex]!)))
+        lyricController.text = context.select((Sheet s) => s.lyrics[widget.pageIndex][cellIndex]!);
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -74,13 +78,10 @@ class _ChordCellState extends State<ChordCell>
             isSelected = hasFocus;
             if (hasFocus) {
               context.read<Sheet>().selectedIndex = context.read<Sheet>().pages[widget.pageIndex].indexOf(widget);
+              print("now focus index : " + context.read<Sheet>().selectedIndex.toString());
             }
             else { // 포커스가 꺼졌을 때, 현재 가사를 저장
               context.read<Sheet>().lyrics[widget.pageIndex][cellIndex] = lyricController.text;
-              if (!chord.isEmpty()) { // TODO : 가사만 수정하고 칸을 옮겨도 최근 코드에 추가되는 문제가 있지만, 코드를 추가하고나서 가사를 수정하고 넘기는 경우도 있을 수 있기에 수정 보류
-                global.recentChord.add(chord);
-                if (global.recentChord.length > 8) global.recentChord.removeAt(0);
-              }
             }
           });
         } : null,
