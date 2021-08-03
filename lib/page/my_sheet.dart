@@ -81,7 +81,9 @@ class _MySheetState extends State<MySheet> {
                     ),
                     Expanded(
                       child: IconButton(icon: Icon(Icons.settings), onPressed: () {
-                        // TODO : 내 악보 설정 구현
+                        showDialog(context: context, builder: (context) => AlertDialog(
+
+                        ));
                       }),
                     ),
                   ],

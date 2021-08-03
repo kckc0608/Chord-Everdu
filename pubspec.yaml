@@ -36,6 +36,7 @@ dependencies:
   cloud_firestore: ^2.4.0
   firebase_auth: ^3.0.1
   google_sign_in: ^5.0.5
+  dotted_border: ^2.0.0
 
 dev_dependencies:
   flutter_test:

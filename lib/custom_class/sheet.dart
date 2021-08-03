@@ -112,12 +112,12 @@ class Sheet with ChangeNotifier {
 
   }
 
-  int getIndexOfCell(ChordCell? cell) {
+  int getIndexOfCell(ChordCell? cell, {int? pageIndex}) {
     if (cell == null) {
       print("[sheet.dart][getIndexOfCell] cell 이 null 입니다.");
       return selectedIndex = -1;
     }
-    return pages[nowPage].indexOf(cell);
+    return pages[pageIndex ?? nowPage].indexOf(cell);
   }
 
   void setStateOfSheet () {

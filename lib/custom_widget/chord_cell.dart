@@ -22,6 +22,7 @@ class _ChordCellState extends State<ChordCell>
   var chordController = TextEditingController();
 
   late Chord chord;
+  late int songKey;
 
   bool isSelected = false;
 
@@ -29,9 +30,9 @@ class _ChordCellState extends State<ChordCell>
   // ignore: must_call_super
   Widget build(BuildContext context) {
     SheetEditorState? parent = context.findAncestorStateOfType<SheetEditorState>();
-    int cellIndex = context.select((Sheet s) => s.getIndexOfCell(widget));
+    int cellIndex = context.select((Sheet s) => s.getIndexOfCell(widget, pageIndex: widget.pageIndex));
 
-    print("build called cell of " + cellIndex.toString());
+    print("build called cell of " + cellIndex.toString() + " from page " + widget.pageIndex.toString());
     print(context.read<Sheet>().selectedIndex);
 
     // 현재 줄 넘김시 사이에 컨테이너를 끼어도
@@ -59,8 +60,9 @@ class _ChordCellState extends State<ChordCell>
       context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.baseSharp);
 
       chord = context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!);
+      songKey = context.select((Sheet s) => s.songKey);
 
-      chordController.text = chord.toStringChord(songKey: context.select((Sheet s) => s.songKey));
+      chordController.text = chord.toStringChord(songKey: songKey);
 
       /// 이 조건 체크를 안하면 포커스를 받을 때마다 가사를 새로 채워서 항상 커서가 앞으로 감.
       if (!isSelected && (lyricController.text != context.select((Sheet s) => s.lyrics[widget.pageIndex][cellIndex]!)))

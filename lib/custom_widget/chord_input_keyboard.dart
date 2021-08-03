@@ -5,12 +5,17 @@ import 'package:provider/provider.dart';
 import '../environment/global.dart' as global;
 
 class ChordKeyboard extends StatefulWidget {
-  const ChordKeyboard({Key? key}) : super(key: key);
+  const ChordKeyboard({
+    Key? key,
+    required this.insertAllFunction,
+  }) : super(key: key);
 
   static const typeRoot = 1;
   static const typeASDA = 2;
   static const typeBase = 3;
   static const typeTens = 4;
+
+  final VoidCallback insertAllFunction;
 
   @override
   _ChordKeyboardState createState() => _ChordKeyboardState();
@@ -74,25 +79,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
       padding: const EdgeInsets.symmetric(horizontal: 3.0),
       child: Row(
         children: [
-          buildRecentChordButton(text: "x4", onPressed: (global.recentChord.length < 4) ? null : () {
-            int _select = context.read<Sheet>().selectedIndex + 1;
-            for (int i = 0; i < 4; i++) {
-              // 현재 체크하는 셀이 널이거나 (공백) 코드가 들어 있다면
-              //if (context.read<Sheet>().chords[_page][_select+i] == null || !context.read<Sheet>().chords[_page][_select+i]!.isEmpty()) {
-              context.read<Sheet>().addCell(index: _select + i, chord: Chord.fromMap(global.recentChord[i].toMap()));
-              //}
-            }
-          }),
-
-          buildRecentChordButton(text: "all", onPressed: () {
-            int _select = context.read<Sheet>().selectedIndex + 1;
-            for (int i = 0; i < global.recentChord.length; i++) {
-              // 현재 체크하는 셀이 널이거나 (공백) 코드가 들어 있다면
-              //if (context.read<Sheet>().chords[_page][_select+i] == null || !context.read<Sheet>().chords[_page][_select+i]!.isEmpty()) {
-              context.read<Sheet>().addCell(index: _select + i, chord: Chord.fromMap(global.recentChord[i].toMap()));
-              //}
-            }
-          }),
+          buildRecentChordButton(text: "all", onPressed: widget.insertAllFunction),
           buildRecentChordButton(text: "+", onPressed: () {
             setState(() {
               if (!chord.isEmpty()) {
