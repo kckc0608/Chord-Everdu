@@ -4,11 +4,13 @@ class DottedButton extends StatefulWidget {
   final VoidCallback onTap;
   final Widget child;
   final EdgeInsets? padding;
+  final Color? borderColor;
   const DottedButton({
     Key? key,
     required this.onTap,
     required this.child,
     this.padding,
+    this.borderColor,
   }) : super(key: key);
 
   @override
@@ -22,6 +24,7 @@ class _DottedButtonState extends State<DottedButton> {
       onTap: widget.onTap,
       child: DottedBorder(
         borderType: BorderType.RRect,
+        color: widget.borderColor ?? Colors.black,
         dashPattern: [3, 3],
         strokeWidth: 1.5,
         radius: Radius.circular(4.0),

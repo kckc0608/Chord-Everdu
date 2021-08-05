@@ -45,8 +45,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
   @override
   Widget build(BuildContext context) {
-    _nowPage = context.select((Sheet s) => s.nowPage); // page가 바뀌면 리빌드
-    _selectedIndex = context.select((Sheet s) => s.selectedIndex); // 선택한 인덱스가 바뀌면 리빌드
+    _nowPage = context.select((Sheet s) => s.nowBlock); // page가 바뀌면 리빌드
+    _selectedIndex = context.select((Sheet s) => s.selectedCellIndex); // 선택한 인덱스가 바뀌면 리빌드
     _songKey = context.select((Sheet s) => s.songKey); // songKey가 바뀌면 리빌드
 
     if (_selectedIndex < context.select((Sheet s) => s.chords[_nowPage].length))
@@ -59,7 +59,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     print("Now Input is " + nowInput.toString());
 
     return Container(
-      height: 360,
+      height: 340,
       padding: EdgeInsets.fromLTRB(0, 2, 0, 0),
       color: Colors.blue[200],
       child: Column(

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:chord_everdu/custom_widget/chord_input_keyboard.dart';
 import 'package:chord_everdu/custom_class/chord.dart';
 import 'package:chord_everdu/custom_class/sheet.dart';
+import 'package:chord_everdu/custom_widget/chord_block.dart';
 import 'package:chord_everdu/custom_widget/chord_cell.dart';
 import 'package:chord_everdu/environment/global.dart' as global;
 import 'package:flutter/material.dart';
@@ -36,8 +39,12 @@ class SheetEditorState extends State<SheetEditor> {
   var _formKey = GlobalKey<FormState>(); // 새 탭 추가시 띄우는 다이어로그의 폼 키
 
   TextEditingController? cellTextController;
+  var scrollController = ScrollController();
 
   bool isChordInput = false;
+  bool isAutoScroll = false;
+
+  int speedFactor = 20;
 
   @override
   void initState() {
@@ -51,12 +58,57 @@ class SheetEditorState extends State<SheetEditor> {
     if (widget.sheetID != null)
       getSheet(isInitialize: false);
     else
-      context.read<Sheet>().addPage('전체');
+      context.read<Sheet>().addBlock(blockName: '새 블록');
   }
 
   @override
   Widget build(BuildContext context) {
+    print("display height : " + MediaQuery.of(context).size.height.toString());
     songKey = context.select((Sheet s) => s.songKey);
+
+    List<Widget> _readOnlyAppbarActions = [
+      IconButton(
+        onPressed: (speedFactor > 10 && !isAutoScroll) ? () {
+          setState(() {
+            speedFactor -= 10;
+          });
+        } : null,
+        icon: Icon(Icons.exposure_minus_1),
+      ),
+      Center(
+        child: Container(
+          color: Colors.blue.shade700,
+          padding: EdgeInsets.symmetric(vertical: 1.0, horizontal: 6.0),
+          child: Text((speedFactor~/10).toString(), style: TextStyle(fontSize: 18),),),
+      ),
+      IconButton(
+        onPressed: (speedFactor < 100 && !isAutoScroll) ? () {
+          setState(() {
+            speedFactor += 10;
+          });
+        } : null,
+        icon: Icon(Icons.plus_one),
+      ),
+      IconButton(
+        onPressed: () {
+          setState(() {
+            isAutoScroll = !isAutoScroll;
+          });
+
+          if (isAutoScroll) {
+            autoScroll();
+          }
+          else {
+            scrollController.animateTo(
+              scrollController.offset,
+              duration: Duration(seconds: 1),
+              curve: Curves.linear,
+            );
+          }
+        },
+        icon: Icon(isAutoScroll ? Icons.pause : Icons.play_arrow),),
+      SizedBox(width: 10),
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -138,17 +190,9 @@ class SheetEditorState extends State<SheetEditor> {
                           SizedBox(height: 8),
                           Row(
                             children: [
-                              Icon(Icons.note_add_outlined, color: Colors.green),
+                              Icon(Icons.edit_outlined, color: Colors.black),
                               SizedBox(width: 10),
-                              Expanded(child: Text("새 페이지를 추가합니다."))
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(Icons.copy, color: Colors.green),
-                              SizedBox(width: 10),
-                              Expanded(child: Text("현재 페이지를 복사합니다."))
+                              Expanded(child: Text("현재 블록의 이름을 수정합니다."))
                             ],
                           ),
                           SizedBox(height: 8),
@@ -156,15 +200,7 @@ class SheetEditorState extends State<SheetEditor> {
                             children: [
                               Icon(Icons.delete_forever_outlined, color: Colors.red),
                               SizedBox(width: 10),
-                              Expanded(child: Text("현재 페이지를 삭제합니다. 첫 페이지는 삭제할 수 없습니다."))
-                            ],
-                          ),
-                          SizedBox(height: 8),
-                          Row(
-                            children: [
-                              Icon(Icons.edit_outlined, color: Colors.black),
-                              SizedBox(width: 10),
-                              Expanded(child: Text("현재 페이지의 이름을 수정합니다."))
+                              Expanded(child: Text("현재 블록을 삭제합니다."))
                             ],
                           ),
                           SizedBox(height: 8),
@@ -323,18 +359,7 @@ class SheetEditorState extends State<SheetEditor> {
               Navigator.of(context).pop();},
             icon: Icon(Icons.check),
           ),
-        ] :
-        [
-          // TODO : READ MODE 상단 버튼 구현
-        ],
-        bottom: PreferredSize(
-          child: Container(
-            height: 32.0,
-            color: Colors.orange,
-            child: Row(),
-          ),
-          preferredSize: Size.fromHeight(32.0),
-        ),
+        ] : _readOnlyAppbarActions,
       ),
       body: SafeArea(
         child: Column(
@@ -342,69 +367,77 @@ class SheetEditorState extends State<SheetEditor> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.all(8.0),
-                      color: Colors.amber.shade100,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(4, 0, 0, 8.0),
-                            child: Row(
-                              children: [
-                                Text(
-                                  context.read<Sheet>().pageList[0],
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(
-                                  width: 6.0,
-                                ),
-                                InkWell(
-                                  onTap: () {
-                                    print("Edit Touched");
-                                  },
-                                  child: Icon(
-                                    Icons.edit_outlined,
-                                    size: 22,
+              child: NotificationListener(
+                onNotification: (notification) {
+                  if (notification is ScrollEndNotification && isAutoScroll) {
+                    Timer(Duration(seconds: 1), () {autoScroll();});
+                  }
+                  return true;
+                },
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: context.read<Sheet>().blocks + [
+                      /// 새 블록 추가 버튼
+                      !widget.readOnly ?
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: DottedButton(
+                          padding: EdgeInsets.all(8.0),
+                          borderColor: Colors.grey,
+                          onTap: () {
+                            showDialog(context: context, builder: (context) {
+                              return SimpleDialog(
+                                children: [
+                                  TextButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          context.read<Sheet>().addBlock();
+                                          Navigator.of(context).pop();
+                                        });
+                                      },
+                                      child: Text("빈 블럭 만들기", style: TextStyle(fontSize: 16),)
                                   ),
-                                ),
-                                SizedBox(
-                                  width: 4.0,
-                                ),
-                                InkWell(
-                                  onTap: () {},
-                                  child: Icon(
-                                    Icons.delete_forever_outlined,
-                                    size: 22,
-                                    color: Colors.red,
+                                  TextButton(
+                                    onPressed: () {
+                                      showDialog(context: context, builder: (context) => AlertDialog(
+                                        title: Text("복사할 블록을 선택하세요."),
+                                        content: Container(
+                                          width: MediaQuery.of(context).size.width,
+                                          height: 300,
+                                          child: ListView.separated(
+                                            shrinkWrap: true,
+                                            itemBuilder: (context, index) => ListTile(
+                                              title: Text(context.read<Sheet>().blockNameList[index]),
+                                              onTap: () {
+                                                context.read<Sheet>().copyBlock(index);
+                                                Navigator.of(context).pop();
+                                              },
+                                            ),
+                                            separatorBuilder: (context, index) => Divider(),
+                                            itemCount: context.read<Sheet>().blockNameList.length,
+                                          ),
+                                        ),
+                                      )).then((value) {
+                                        Navigator.of(context).pop();
+                                      });
+                                    },
+                                    child: Text("기존 블럭 복사하기", style: TextStyle(fontSize: 16)),
                                   ),
-                                ),
-                              ],
-                            ),
+                                ],
+                              );
+                            }).then((value) {
+                              setState(() {});
+                            });
+                          },
+                          child: Center(
+                            child: Icon(Icons.add_circle_outline, color: Colors.grey,),
                           ),
-                          Wrap(
-                            children: context.read<Sheet>().pages[0],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: DottedButton(
-                        padding: EdgeInsets.all(8.0),
-                        onTap: () {},
-                        child: Center(
-                          child: Icon(Icons.add_circle_outline),
                         ),
-                      ),
-                    ),
-                  ],
+                      ) : SizedBox.shrink(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -418,7 +451,7 @@ class SheetEditorState extends State<SheetEditor> {
                         icon: Icon(Icons.add, size: 28),
                         color: Colors.green,
                         disabledColor: Colors.grey,
-                        onPressed: (context.read<Sheet>().selectedIndex > -1)
+                        onPressed: (context.read<Sheet>().selectedCellIndex > -1)
                             ? () {
                                 setState(() {
                                   context.read<Sheet>().addCell();
@@ -431,141 +464,94 @@ class SheetEditorState extends State<SheetEditor> {
                         icon: Icon(Icons.remove, size: 28),
                         color: Colors.red,
                         disabledColor: Colors.grey,
-                        onPressed: (context.read<Sheet>().selectedIndex > -1)
-                            ? () {
-                                setState(() {
-                                  context.read<Sheet>().remove();
-                                });
-                              }
-                            : null,
+                        onPressed: (context.read<Sheet>().selectedCellIndex > -1)
+                        ? () {
+                          setState(() {
+                            context.read<Sheet>().remove();
+                          });
+                        }
+                        : null,
                       ),
                       IconButton(
                         icon: Icon(Icons.arrow_downward_outlined),
                         disabledColor: Colors.grey,
-                        onPressed: (context.read<Sheet>().selectedIndex > 0)
-                            ? () {
-                                setState(() {
-                                  context.read<Sheet>().newLine();
-                                });
-                              }
-                            : null,
+                        onPressed: (context.read<Sheet>().selectedCellIndex > 0)
+                        ? () {
+                          setState(() {
+                            context.read<Sheet>().newLine();
+                          });
+                        }
+                        : null,
                       ),
                       IconButton(
                         icon: Icon(Icons.arrow_back),
                         color: Colors.red,
                         disabledColor: Colors.grey,
-                        onPressed: (context.read<Sheet>().selectedIndex > 0)
-                            ? () {
-                                setState(() {
-                                  context.read<Sheet>().removeBefore();
-                                });
-                              }
-                            : null,
+                        onPressed: (context.read<Sheet>().selectedCellIndex > 0)
+                        ? () {
+                          setState(() {
+                            context.read<Sheet>().removeBefore();
+                          });
+                        }
+                        : null,
                       ),
                       IconButton(
                         icon: Icon(Icons.text_rotation_none),
                         color: Colors.black,
                         disabledColor: Colors.grey,
-                        onPressed: (!isChordInput)
-                            ? () {
-                                int _nowPage = context.read<Sheet>().nowPage;
-                                int _maxSize = context
-                                    .read<Sheet>()
-                                    .lyrics[_nowPage]
-                                    .length;
-                                int _index =
-                                    context.read<Sheet>().selectedIndex;
+                        onPressed: (!isChordInput) ? () {
+                          int _nowPage = context.read<Sheet>().nowBlock;
+                          int _maxSize = context.read<Sheet>().lyrics[_nowPage].length;
+                          int _index = context.read<Sheet>().selectedCellIndex;
+                          int cutPos = cellTextController!.selection.end;
 
-                                int cutPos = cellTextController!.selection.end;
+                          String text = cellTextController!.text;
+                          String beforeLyric = cellTextController!.selection.textBefore(text);
+                          String afterLyric = cellTextController!.selection.textAfter(text);
 
-                                String text = cellTextController!.text;
+                          // 옆의 빈칸이 비어있다면 (null이 아닌 것도 포함됨)
+                          if (_index < _maxSize - 1 && context.read<Sheet>().getLyric(index: _index + 1) == "") {
+                            //빈칸인 가사에 옮겨붙인 가사를 넣기
+                            context.read<Sheet>().setLyric(_index + 1, afterLyric);
+                          } else {
+                            //칸을 새로 추가해서 가사를 넣기
+                            context.read<Sheet>().addCell(index: _index + 1, lyric: afterLyric);
+                          }
 
-                                String beforeLyric = cellTextController!
-                                    .selection
-                                    .textBefore(text);
-                                String afterLyric = cellTextController!
-                                    .selection
-                                    .textAfter(text);
-
-                                // 옆의 빈칸이 비어있다면 (null이 아닌 것도 포함됨)
-                                if (_index < _maxSize - 1 &&
-                                    context
-                                            .read<Sheet>()
-                                            .getLyric(index: _index + 1) ==
-                                        "") {
-                                  //빈칸인 가사에 옮겨붙인 가사를 넣기
-                                  context
-                                      .read<Sheet>()
-                                      .setLyric(_index + 1, afterLyric);
-                                } else {
-                                  //칸을 새로 추가해서 가사를 넣기
-                                  context.read<Sheet>().addCell(
-                                      index: _index + 1, lyric: afterLyric);
-                                }
-
-                                context
-                                    .read<Sheet>()
-                                    .setLyric(_index, beforeLyric);
-                                cellTextController!.text = beforeLyric;
-                                context.read<Sheet>().setStateOfSheet();
-                                cellTextController!.selection =
-                                    TextSelection.fromPosition(
-                                        TextPosition(offset: cutPos));
-                              }
-                            : null,
+                          context.read<Sheet>().setLyric(_index, beforeLyric);
+                          cellTextController!.text = beforeLyric;
+                          context.read<Sheet>().setStateOfSheet();
+                          cellTextController!.selection = TextSelection.fromPosition(TextPosition(offset: cutPos));
+                        } : null,
                       ),
                       IconButton(
                         icon: Icon(Icons.format_textdirection_r_to_l_outlined),
                         color: Colors.black,
                         disabledColor: Colors.grey,
-                        onPressed: (!isChordInput)
-                            ? () {
-                                int _nowPage = context.read<Sheet>().nowPage;
-                                int _index =
-                                    context.read<Sheet>().selectedIndex;
+                        onPressed: (!isChordInput) ? () {
+                          int _nowPage = context.read<Sheet>().nowBlock;
+                          int _index = context.read<Sheet>().selectedCellIndex;
+                          int cutPos = cellTextController!.selection.end;
 
-                                int cutPos = cellTextController!.selection.end;
+                          String text = cellTextController!.text;
+                          String beforeLyric = cellTextController!.selection.textBefore(text);
+                          String afterLyric = cellTextController!.selection.textAfter(text);
 
-                                String text = cellTextController!.text;
+                          // 왼쪽 셀이 있고, null이 아니라면 (줄넘김이 아니라면)
+                          if (_index > 0 && context.read<Sheet>().lyrics[_nowPage][_index - 1] != null) {
+                            //빈칸인 가사에 옮겨붙인 가사를 넣기
+                            context.read<Sheet>().setLyric(_index - 1, context.read<Sheet>().getLyric(index: _index - 1)! + beforeLyric);
+                            context.read<Sheet>().setLyric(_index, afterLyric);
+                          } else {
+                            //칸을 새로 추가해서 가사를 넣기
+                            context.read<Sheet>().addCell(index: _index, lyric: beforeLyric);
+                            context.read<Sheet>().setLyric(_index + 1, afterLyric);
+                          }
 
-                                String beforeLyric = cellTextController!
-                                    .selection
-                                    .textBefore(text);
-                                String afterLyric = cellTextController!
-                                    .selection
-                                    .textAfter(text);
-
-                                // 왼쪽 셀이 있고, null이 아니라면 (줄넘김이 아니라면)
-                                if (_index > 0 &&
-                                    context.read<Sheet>().lyrics[_nowPage]
-                                            [_index - 1] !=
-                                        null) {
-                                  //빈칸인 가사에 옮겨붙인 가사를 넣기
-                                  context.read<Sheet>().setLyric(
-                                      _index - 1,
-                                      context
-                                              .read<Sheet>()
-                                              .getLyric(index: _index - 1)! +
-                                          beforeLyric);
-                                  context
-                                      .read<Sheet>()
-                                      .setLyric(_index, afterLyric);
-                                } else {
-                                  //칸을 새로 추가해서 가사를 넣기
-                                  context.read<Sheet>().addCell(
-                                      index: _index, lyric: beforeLyric);
-                                  context
-                                      .read<Sheet>()
-                                      .setLyric(_index + 1, afterLyric);
-                                }
-
-                                cellTextController!.text = afterLyric;
-                                context.read<Sheet>().setStateOfSheet();
-                                cellTextController!.selection =
-                                    TextSelection.fromPosition(
-                                        TextPosition(offset: cutPos));
-                              }
-                            : null,
+                          cellTextController!.text = afterLyric;
+                          context.read<Sheet>().setStateOfSheet();
+                          cellTextController!.selection = TextSelection.fromPosition(TextPosition(offset: cutPos));
+                        } : null,
                       ),
                     ],
                   )
@@ -573,12 +559,12 @@ class SheetEditorState extends State<SheetEditor> {
             isChordInput
                 ? ChordKeyboard(insertAllFunction: () {
                     setState(() {
-                      int _select = context.read<Sheet>().selectedIndex + 1;
+                      int _select = context.read<Sheet>().selectedCellIndex + 1;
                       for (int i = 0; i < global.recentChord.length; i++) {
                         context.read<Sheet>().addCell(
-                            index: _select + i,
-                            chord:
-                                Chord.fromMap(global.recentChord[i].toMap()));
+                          index: _select + i,
+                          chord: Chord.fromMap(global.recentChord[i].toMap()),
+                        );
                       }
                     });
                   })
@@ -591,9 +577,9 @@ class SheetEditorState extends State<SheetEditor> {
 
   void _addSheet() {
     List<dynamic> _sheet = [];
-    for (int i = 0; i < context.read<Sheet>().pageList.length; i++) {
+    for (int i = 0; i < context.read<Sheet>().blockNameList.length; i++) {
       Map<String, dynamic> _page = {};
-      _page["page"] = context.read<Sheet>().pageList[i];
+      _page["page"] = context.read<Sheet>().blockNameList[i];
       List<dynamic> _chordList = [];
       for (int j = 0; j < context.read<Sheet>().chords[i].length; j++) {
         if (context.read<Sheet>().chords[i][j] == null)
@@ -627,9 +613,9 @@ class SheetEditorState extends State<SheetEditor> {
 
   void _updateSheet(String sheetID) {
     List<dynamic> _sheet = [];
-    for (int i = 0; i < context.read<Sheet>().pageList.length; i++) {
+    for (int i = 0; i < context.read<Sheet>().blockNameList.length; i++) {
       Map<String, dynamic> _page = {};
-      _page["page"] = context.read<Sheet>().pageList[i];
+      _page["page"] = context.read<Sheet>().blockNameList[i];
       List<dynamic> _chordList = [];
       for (int j = 0; j < context.read<Sheet>().chords[i].length; j++) {
         if (context.read<Sheet>().chords[i][j] == null)
@@ -681,16 +667,17 @@ class SheetEditorState extends State<SheetEditor> {
       for (int _pageIndex = 0; _pageIndex < _sheet.length; _pageIndex++) {
         var page = _sheet[_pageIndex];
 
-        context.read<Sheet>().pages.add([]);
+        context.read<Sheet>().cellsOfBlock.add([]);
         context.read<Sheet>().lyrics.add([]);
         context.read<Sheet>().chords.add([]);
-        context.read<Sheet>().pageList.add(page["page"]);
+        context.read<Sheet>().blockNameList.add(page["page"]);
+        context.read<Sheet>().blocks.add(ChordBlock(key: UniqueKey(), readOnly: widget.readOnly,));
 
         var cells = page["chords"];
 
         for (int j = 0; j < cells.length; j++) {
           if (cells[j]["lyric"] == "<!br!>") {
-            context.read<Sheet>().pages[_pageIndex].add(Container(width: 1000));
+            context.read<Sheet>().cellsOfBlock[_pageIndex].add(Container(width: 1000));
             context.read<Sheet>().lyrics[_pageIndex].add(null);
             context.read<Sheet>().chords[_pageIndex].add(null);
             continue;
@@ -702,14 +689,21 @@ class SheetEditorState extends State<SheetEditor> {
               .chords[_pageIndex]
               .add(Chord.fromMap(cells[j]["chord"]));
 
-          context.read<Sheet>().pages[_pageIndex].add(ChordCell(
+          context.read<Sheet>().cellsOfBlock[_pageIndex].add(ChordCell(
                 key: UniqueKey(),
-                pageIndex: _pageIndex,
                 readOnly: widget.readOnly,
               ));
         }
       }
       setState(() {});
     });
+  }
+
+  void autoScroll() {
+    double maxExtent = scrollController.position.maxScrollExtent;
+    double distanceDifference = maxExtent - scrollController.offset;
+    double durationDouble = distanceDifference / speedFactor;
+
+    scrollController.animateTo(scrollController.position.maxScrollExtent, duration: Duration(seconds: durationDouble.toInt()), curve: Curves.linear);
   }
 }

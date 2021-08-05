@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chord_everdu/page/sheet_editor.dart';
 import 'package:chord_everdu/custom_class/sheet.dart';
 import '../custom_class/chord.dart';
@@ -8,8 +10,7 @@ import 'package:provider/provider.dart';
 
 class ChordCell extends StatefulWidget {
   final bool readOnly;
-  final int pageIndex;
-  const ChordCell({Key? key, required this.pageIndex, this.readOnly = false}) : super(key: key);
+  const ChordCell({Key? key, this.readOnly = false}) : super(key: key);
 
   @override
   _ChordCellState createState() => _ChordCellState();
@@ -30,10 +31,10 @@ class _ChordCellState extends State<ChordCell>
   // ignore: must_call_super
   Widget build(BuildContext context) {
     SheetEditorState? parent = context.findAncestorStateOfType<SheetEditorState>();
-    int cellIndex = context.select((Sheet s) => s.getIndexOfCell(widget, pageIndex: widget.pageIndex));
-
-    print("build called cell of " + cellIndex.toString() + " from page " + widget.pageIndex.toString());
-    print(context.read<Sheet>().selectedIndex);
+    int blockIndex = context.select((Sheet s) => s.getBlockIndexOfCell(widget));
+    int cellIndex = context.select((Sheet s) => s.getIndexOfCell(widget, pageIndex: blockIndex));
+    print("build called cell of " + cellIndex.toString() + " from block " + blockIndex.toString());
+    print(context.read<Sheet>().selectedCellIndex);
 
     // 현재 줄 넘김시 사이에 컨테이너를 끼어도
 
@@ -45,28 +46,28 @@ class _ChordCellState extends State<ChordCell>
       /// 해결책은 2가지가 있는데, 첫번째는 속성값이 변할 때마다 코드 객체를 갈아 치우는 것
       /// 두번째는 ""속성값마다 셀렉터를 달아주는 것""이다.
 
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.root);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.rootSharp);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.rootTension);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.minor);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.minorTension);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.major);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.majorTension);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.tensionSharp);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.tension);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.asda);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.asdaTension);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.base);
-      context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!.baseSharp);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.root);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.rootSharp);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.rootTension);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.minor);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.minorTension);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.major);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.majorTension);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.tensionSharp);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.tension);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.asda);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.asdaTension);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.base);
+      context.select((Sheet s) => s.chords[blockIndex][cellIndex]!.baseSharp);
 
-      chord = context.select((Sheet s) => s.chords[widget.pageIndex][cellIndex]!);
+      chord = context.select((Sheet s) => s.chords[blockIndex][cellIndex]!);
       songKey = context.select((Sheet s) => s.songKey);
 
       chordController.text = chord.toStringChord(songKey: songKey);
 
       /// 이 조건 체크를 안하면 포커스를 받을 때마다 가사를 새로 채워서 항상 커서가 앞으로 감.
-      if (!isSelected && (lyricController.text != context.select((Sheet s) => s.lyrics[widget.pageIndex][cellIndex]!)))
-        lyricController.text = context.select((Sheet s) => s.lyrics[widget.pageIndex][cellIndex]!);
+      if (!isSelected && (lyricController.text != context.select((Sheet s) => s.lyrics[blockIndex][cellIndex]!)))
+        lyricController.text = context.select((Sheet s) => s.lyrics[blockIndex][cellIndex]!);
     }
 
     return Container(
@@ -79,11 +80,13 @@ class _ChordCellState extends State<ChordCell>
           setState(() {
             isSelected = hasFocus;
             if (hasFocus) {
-              context.read<Sheet>().selectedIndex = context.read<Sheet>().pages[widget.pageIndex].indexOf(widget);
-              print("now focus index : " + context.read<Sheet>().selectedIndex.toString());
+              context.read<Sheet>().selectedCellIndex = context.read<Sheet>().cellsOfBlock[blockIndex].indexOf(widget);
+              context.read<Sheet>().nowBlock = blockIndex;
+              context.read<Sheet>().setStateOfSheet();
+              print("now focus index : " + context.read<Sheet>().selectedCellIndex.toString());
             }
             else { // 포커스가 꺼졌을 때, 현재 가사를 저장
-              context.read<Sheet>().lyrics[widget.pageIndex][cellIndex] = lyricController.text;
+              context.read<Sheet>().lyrics[blockIndex][cellIndex] = lyricController.text;
             }
           });
         } : null,
@@ -98,9 +101,13 @@ class _ChordCellState extends State<ChordCell>
               child: IntrinsicWidth(
                 child: TextField(
                   onTap: (!widget.readOnly) ? () {
-                    parent!.setState(() {
-                      parent.isChordInput = true;
-                      parent.cellTextController = this.chordController;
+                    /// 가사를 입력하던 중, 코드를 입력하면 잠시동안 시스템키보드와 코드키보드가 같이 나타나면서
+                    /// 스크롤이 밀리는 현상을 방지하기 위해 타이머 설정
+                    Timer(Duration(milliseconds: 80), () {
+                      parent!.setState(() {
+                        parent.isChordInput = true;
+                        parent.cellTextController = this.chordController;
+                      });
                     });
                   } : null,
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -129,7 +136,9 @@ class _ChordCellState extends State<ChordCell>
                   onEditingComplete: () {
                     setState(() {
                       FocusScope.of(context).unfocus();
-                      context.read<Sheet>().selectedIndex = -1;
+                      context.read<Sheet>().selectedCellIndex = -1;
+                      context.read<Sheet>().nowBlock = -1;
+                      context.read<Sheet>().setStateOfSheet();
                     });
                   },
                   controller: lyricController,

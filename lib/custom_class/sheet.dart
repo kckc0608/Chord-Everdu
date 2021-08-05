@@ -1,123 +1,181 @@
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/custom_class/chord.dart';
 import 'package:chord_everdu/custom_widget/chord_cell.dart';
+import 'package:chord_everdu/custom_widget/chord_block.dart';
 class Sheet with ChangeNotifier {
   int songKey = 0;
-  int nowPage = 0;
-  int selectedIndex = -1;
+  int nowBlock = 0;
+  int selectedCellIndex = -1;
 
-  List<String> pageList = [];
-  List<List<Widget>> pages = [];
+  List<String> blockNameList = [];
+  List<Widget> blocks = [];
+  List<List<Widget>> cellsOfBlock = [];
   List<List<Chord?>> chords = [];
   List<List<String?>> lyrics = [];
 
   void addCell({Chord? chord, String? lyric, int? index}) {
-    index = index ?? selectedIndex + 1;
+    index = index ?? selectedCellIndex + 1;
 
-    if (index > chords[nowPage].length || index < 0)
+    if (index > chords[nowBlock].length || index < 0)
       throw Exception("[sheet.dart][addCell] 인덱스 범위를 벗어났습니다. index : " + index.toString());
 
-    chords[nowPage].insert(index, chord ?? Chord());
-    lyrics[nowPage].insert(index, lyric ?? "");
-    pages[nowPage].insert(index, ChordCell(key: UniqueKey(), pageIndex: nowPage));
+    chords[nowBlock].insert(index, chord ?? Chord());
+    lyrics[nowBlock].insert(index, lyric ?? "");
+    cellsOfBlock[nowBlock].insert(index, ChordCell(key: UniqueKey()));
     notifyListeners();
   }
 
   void remove({int? index}) {
-    index = index ?? selectedIndex;
+    index = index ?? selectedCellIndex;
 
-    if (index >= chords[nowPage].length || index < 0)
+    if (index >= chords[nowBlock].length || index < 0)
       throw Exception("[sheet.dart][removeCell] 인덱스 범위를 벗어났습니다. index : " + index.toString());
 
-    pages[nowPage].removeAt(selectedIndex);
-    chords[nowPage].removeAt(selectedIndex);
-    lyrics[nowPage].removeAt(selectedIndex);
+    cellsOfBlock[nowBlock].removeAt(selectedCellIndex);
+    chords[nowBlock].removeAt(selectedCellIndex);
+    lyrics[nowBlock].removeAt(selectedCellIndex);
     notifyListeners();
   }
 
   void newLine() {
-    if (selectedIndex == 0) return;
-    if (chords[nowPage][selectedIndex - 1] == null) return;
+    if (selectedCellIndex == 0) return;
+    if (chords[nowBlock][selectedCellIndex - 1] == null) return;
 
-    chords[nowPage].insert(selectedIndex, null);
-    lyrics[nowPage].insert(selectedIndex, null);
-    pages[nowPage].insert(selectedIndex, Container(key: UniqueKey(), width: 1000));
+    chords[nowBlock].insert(selectedCellIndex, null);
+    lyrics[nowBlock].insert(selectedCellIndex, null);
+    cellsOfBlock[nowBlock].insert(selectedCellIndex, Container(key: UniqueKey(), width: 1000));
 
-    selectedIndex += 1;
+    selectedCellIndex += 1;
     notifyListeners();
   }
 
   void removeBefore() {
-    if (selectedIndex == 0) return;
+    if (selectedCellIndex == 0) return;
 
-    pages[nowPage].removeAt(selectedIndex-1);
-    chords[nowPage].removeAt(selectedIndex-1);
-    lyrics[nowPage].removeAt(selectedIndex-1);
+    cellsOfBlock[nowBlock].removeAt(selectedCellIndex-1);
+    chords[nowBlock].removeAt(selectedCellIndex-1);
+    lyrics[nowBlock].removeAt(selectedCellIndex-1);
 
     // 자신의 포커스를 유지한 채로 앞의 위젯들을 지우다보면 selectedIndex가 갱신이 안됨.
-    selectedIndex -= 1;
+    selectedCellIndex -= 1;
 
     notifyListeners();
   }
 
   void moveLyric() {
     // TODO: 줄바꿈을 한 경우 가사 이동이 이상하게 되고 인덱스가 꼬임.
-    if (selectedIndex == chords[nowPage].length -1) {
-      chords[nowPage].add(Chord());
-      lyrics[nowPage].add("");
+    if (selectedCellIndex == chords[nowBlock].length -1) {
+      chords[nowBlock].add(Chord());
+      lyrics[nowBlock].add("");
     }
   }
 
-  void addPage(String pageName) {
-    pageList.add(pageName);
+  void addBlock({String? blockName}) {
+    blockNameList.add(blockName ?? "새 블록");
+    blocks.add(ChordBlock(key: UniqueKey(),));
     chords.add([Chord()]);
     lyrics.add(["가사"]);
-    pages.add([ChordCell(key: UniqueKey(), pageIndex: pageList.length-1)]);
-    //nowPage = sheet.length-1; // 탭만 바뀌고 탭뷰가 안바뀌는 문제 존재
+    cellsOfBlock.add([ChordCell(key: UniqueKey())]);
+    notifyListeners();
+  }
+
+  copyBlock(int blockIndex) {
+    blockNameList.add(blockNameList[blockIndex] + " - 복사본");
+    // 코드 복사
+    chords.add([]);
+    for (int i = 0; i < chords[blockIndex].length; i++) {
+      if (chords[blockIndex][i] == null)
+        chords.last.add(null);
+      else
+        chords.last.add(Chord.fromMap(chords[blockIndex][i]!.toMap()));
+    }
+    // 가사 복사
+    lyrics.add([]);
+    for (int i = 0; i < lyrics[blockIndex].length; i++) {
+      if (lyrics[blockIndex][i] == null)
+        lyrics.last.add(null);
+      else
+        lyrics.last.add(lyrics[blockIndex][i].toString());
+    }
+    // 코드셀 복사
+    cellsOfBlock.add([]);
+    for (int i = 0; i < cellsOfBlock[blockIndex].length; i++) {
+      if (cellsOfBlock[blockIndex][i] is Container)
+        cellsOfBlock.last.add(Container(key: UniqueKey(), width: 1000));
+      else
+        cellsOfBlock.last.add(ChordCell(key: UniqueKey()));
+    }
+    // 코드 블럭 추가
+    blocks.add(ChordBlock(key: UniqueKey()));
+    notifyListeners();
+  }
+
+  void removeBlock(int? index) {
+    blocks.removeAt(index ?? nowBlock);
+    cellsOfBlock.removeAt(index ?? nowBlock);
+    chords.removeAt(index ?? nowBlock);
+    lyrics.removeAt(index ?? nowBlock);
+    blockNameList.removeAt(index ?? nowBlock);
+
+    nowBlock = -1;
     notifyListeners();
   }
 
   void allClear() {
     songKey = 0;
-    pageList = [];
+    blocks = [];
+    blockNameList = [];
     chords = [];
     lyrics = [];
-    pages = [];
-    nowPage = 0;
-    selectedIndex = -1;
+    cellsOfBlock = [];
+    nowBlock = 0;
+    selectedCellIndex = -1;
   }
 
-  bool isLastSelection() => (selectedIndex == lyrics[nowPage].length-1);
+  bool isLastSelection() => (selectedCellIndex == lyrics[nowBlock].length-1);
 
   void setLyric(int index, String newLyric) {
     if (index == -1) throw Exception("selected index == -1");
-    if (index > lyrics[nowPage].length - 1) throw Exception("selected index is bigger than lyric list max index.");
-    lyrics[nowPage][index] = newLyric;
+    if (index > lyrics[nowBlock].length - 1) throw Exception("selected index is bigger than lyric list max index.");
+    lyrics[nowBlock][index] = newLyric;
   }
 
   String? getLyric({required int index}) {
     if (index <= -1) throw Exception("현재 선택한 셀이 없습니다.");
-    if (index >= lyrics[nowPage].length) throw Exception("셀 범위를 벗어났습니다.");
-    return lyrics[nowPage][index];
+    if (index >= lyrics[nowBlock].length) throw Exception("셀 범위를 벗어났습니다.");
+    return lyrics[nowBlock][index];
   }
 
   void setChord(int index, Chord newChord) {
     if (index == -1) throw Exception("selected index == -1");
-    if (index > lyrics[nowPage].length - 1) throw Exception("selected index is bigger than lyric list max index.");
-    chords[nowPage][index] = newChord;
+    if (index > lyrics[nowBlock].length - 1) throw Exception("selected index is bigger than lyric list max index.");
+    chords[nowBlock][index] = newChord;
     notifyListeners();
-  }
-
-  void getChord() {
-
   }
 
   int getIndexOfCell(ChordCell? cell, {int? pageIndex}) {
     if (cell == null) {
       print("[sheet.dart][getIndexOfCell] cell 이 null 입니다.");
-      return selectedIndex = -1;
+      return selectedCellIndex = -1;
     }
-    return pages[pageIndex ?? nowPage].indexOf(cell);
+    if (pageIndex != null && (pageIndex >= cellsOfBlock.length || pageIndex < 0))
+      return selectedCellIndex = -1;
+
+    return cellsOfBlock[pageIndex ?? nowBlock].indexOf(cell);
+  }
+
+  int getBlockIndexOfCell(ChordCell? cell) {
+    if (cell == null) {
+      print("[sheet.dart][getIndexOfCell] cell 이 null 입니다.");
+      return -1;
+    }
+
+    for (int i = 0; i < cellsOfBlock.length; i++) {
+      int _index = cellsOfBlock[i].indexOf(cell);
+      if (_index > -1) return i;
+    }
+
+    return -1;
   }
 
   void setStateOfSheet () {
@@ -126,6 +184,6 @@ class Sheet with ChangeNotifier {
   }
 
   void changePageName(String name) {
-    pageList[nowPage] = name;
+    blockNameList[nowBlock] = name;
   }
 }

@@ -21,7 +21,9 @@ class _GroupState extends State<Group> {
     return StreamBuilder(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+        /// 로그인이 안되어 있을 때
         if (snapshot.data == null) return Login();
+        /// 로그인이 되어 있을 때
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
           child: Column(
@@ -32,6 +34,11 @@ class _GroupState extends State<Group> {
                 child: Text("내가 속한 그룹", style: _headerStyle),
               ),
               Text("인기 그룹", style: _headerStyle),
+
+              /// /////////////////
+              /// 기능 준비 안내 ///
+              /// /////////////////
+              Expanded(child: Center(child: Text("준비중 입니다...", style: TextStyle(fontSize: 20)))),
             ],
           ),
         );
