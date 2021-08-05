@@ -374,70 +374,69 @@ class SheetEditorState extends State<SheetEditor> {
                   }
                   return true;
                 },
-                child: SingleChildScrollView(
+                child: ListView.builder(
                   controller: scrollController,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: context.read<Sheet>().blocks + [
-                      /// 새 블록 추가 버튼
-                      !widget.readOnly ?
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: DottedButton(
-                          padding: EdgeInsets.all(8.0),
-                          borderColor: Colors.grey,
-                          onTap: () {
-                            showDialog(context: context, builder: (context) {
-                              return SimpleDialog(
-                                children: [
-                                  TextButton(
+                  itemCount: context.read<Sheet>().blocks.length + 1,
+                  itemBuilder: (context, index) {
+                    /// 새 블록 추가 버튼
+                    if (index == context.read<Sheet>().blocks.length)
+                      return !widget.readOnly ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: DottedButton(
+                            padding: EdgeInsets.all(8.0),
+                            borderColor: Colors.grey,
+                            onTap: () {
+                              showDialog(context: context, builder: (context) {
+                                return SimpleDialog(
+                                  children: [
+                                    TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            context.read<Sheet>().addBlock();
+                                            Navigator.of(context).pop();
+                                          });
+                                        },
+                                        child: Text("빈 블럭 만들기", style: TextStyle(fontSize: 16),)
+                                    ),
+                                    TextButton(
                                       onPressed: () {
-                                        setState(() {
-                                          context.read<Sheet>().addBlock();
+                                        showDialog(context: context, builder: (context) => AlertDialog(
+                                          title: Text("복사할 블록을 선택하세요."),
+                                          content: Container(
+                                            width: MediaQuery.of(context).size.width,
+                                            height: 300,
+                                            child: ListView.separated(
+                                              shrinkWrap: true,
+                                              itemBuilder: (context, index) => ListTile(
+                                                title: Text(context.read<Sheet>().blockNameList[index]),
+                                                onTap: () {
+                                                  context.read<Sheet>().copyBlock(index);
+                                                  Navigator.of(context).pop();
+                                                },
+                                              ),
+                                              separatorBuilder: (context, index) => Divider(),
+                                              itemCount: context.read<Sheet>().blockNameList.length,
+                                            ),
+                                          ),
+                                        )).then((value) {
                                           Navigator.of(context).pop();
                                         });
                                       },
-                                      child: Text("빈 블럭 만들기", style: TextStyle(fontSize: 16),)
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      showDialog(context: context, builder: (context) => AlertDialog(
-                                        title: Text("복사할 블록을 선택하세요."),
-                                        content: Container(
-                                          width: MediaQuery.of(context).size.width,
-                                          height: 300,
-                                          child: ListView.separated(
-                                            shrinkWrap: true,
-                                            itemBuilder: (context, index) => ListTile(
-                                              title: Text(context.read<Sheet>().blockNameList[index]),
-                                              onTap: () {
-                                                context.read<Sheet>().copyBlock(index);
-                                                Navigator.of(context).pop();
-                                              },
-                                            ),
-                                            separatorBuilder: (context, index) => Divider(),
-                                            itemCount: context.read<Sheet>().blockNameList.length,
-                                          ),
-                                        ),
-                                      )).then((value) {
-                                        Navigator.of(context).pop();
-                                      });
-                                    },
-                                    child: Text("기존 블럭 복사하기", style: TextStyle(fontSize: 16)),
-                                  ),
-                                ],
-                              );
-                            }).then((value) {
-                              setState(() {});
-                            });
-                          },
-                          child: Center(
-                            child: Icon(Icons.add_circle_outline, color: Colors.grey,),
+                                      child: Text("기존 블럭 복사하기", style: TextStyle(fontSize: 16)),
+                                    ),
+                                  ],
+                                );
+                              }).then((value) {
+                                setState(() {});
+                              });
+                            },
+                            child: Center(
+                              child: Icon(Icons.add_circle_outline, color: Colors.grey,),
+                            ),
                           ),
-                        ),
-                      ) : SizedBox.shrink(),
-                    ],
-                  ),
+                        ) : SizedBox.shrink();
+                    return context.read<Sheet>().blocks[index];
+                  },
                 ),
               ),
             ),
@@ -652,7 +651,7 @@ class SheetEditorState extends State<SheetEditor> {
 
   void getSheet({bool isInitialize = true}) {
     if (isInitialize) {
-      // initialize Sheet
+      /// initialize Sheet
       context.read<Sheet>().allClear();
     }
 
@@ -662,7 +661,7 @@ class SheetEditorState extends State<SheetEditor> {
         .get()
         .then((snapshot) {
       var data = snapshot.data();
-      print(data.toString());
+      //print(data.toString());
       var _sheet = data!['sheet'];
       for (int _pageIndex = 0; _pageIndex < _sheet.length; _pageIndex++) {
         var page = _sheet[_pageIndex];
@@ -704,6 +703,16 @@ class SheetEditorState extends State<SheetEditor> {
     double distanceDifference = maxExtent - scrollController.offset;
     double durationDouble = distanceDifference / speedFactor;
 
-    scrollController.animateTo(scrollController.position.maxScrollExtent, duration: Duration(seconds: durationDouble.toInt()), curve: Curves.linear);
+    scrollController.animateTo(
+      scrollController.position.maxScrollExtent,
+      duration: Duration(seconds: durationDouble.toInt()),
+      curve: Curves.linear,
+    );
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
   }
 }
