@@ -54,8 +54,6 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
     setButton();
-
-    print("keyboad builder Called");
     print("Now Input is " + nowInput.toString());
 
     return Container(
@@ -294,7 +292,6 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 }, type: ChordKeyboard.typeASDA)
               : buildToggleButton([global.tensionList[7]], _numberSelection[7],
                   (_) {
-                print("7 코드 터치 - asda텐션 외");
                   setState(() {
                     _numberSelection[7][0] = !_numberSelection[7][0];
                     if (_numberSelection[7][0]) {
@@ -530,7 +527,6 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
       child: TextButton(
         onPressed: onPressed ?? () {
-          print("recent Button tapped");
           chord.setByMap(touchChord!.toMap());
           context.read<Sheet>().setStateOfSheet();
         },

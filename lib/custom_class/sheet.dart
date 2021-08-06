@@ -4,7 +4,7 @@ import 'package:chord_everdu/custom_widget/chord_cell.dart';
 import 'package:chord_everdu/custom_widget/chord_block.dart';
 class Sheet with ChangeNotifier {
   int songKey = 0;
-  int nowBlock = 0;
+  int nowBlock = -1;
   int selectedCellIndex = -1;
 
   List<String> blockNameList = [];
@@ -31,13 +31,22 @@ class Sheet with ChangeNotifier {
     if (index >= chords[nowBlock].length || index < 0)
       throw Exception("[sheet.dart][removeCell] 인덱스 범위를 벗어났습니다. index : " + index.toString());
 
-    cellsOfBlock[nowBlock].removeAt(selectedCellIndex);
-    chords[nowBlock].removeAt(selectedCellIndex);
-    lyrics[nowBlock].removeAt(selectedCellIndex);
+    if (index == 0 || cellsOfBlock[nowBlock][index -1] is Container) {
+      if (index < cellsOfBlock[nowBlock].length-1 && cellsOfBlock[nowBlock][index+1] is Container) {
+        cellsOfBlock[nowBlock].removeAt(index+1);
+        chords[nowBlock].removeAt(index+1);
+        lyrics[nowBlock].removeAt(index+1);
+      }
+    }
+
+    cellsOfBlock[nowBlock].removeAt(index);
+    chords[nowBlock].removeAt(index);
+    lyrics[nowBlock].removeAt(index);
     notifyListeners();
   }
 
   void newLine() {
+    /// 이 조건에서는 아예 버튼이 활성화가 안되기 때문에 실행될 일이 없기는 하다.
     if (selectedCellIndex == 0) return;
     if (chords[nowBlock][selectedCellIndex - 1] == null) return;
 
@@ -128,11 +137,13 @@ class Sheet with ChangeNotifier {
     chords = [];
     lyrics = [];
     cellsOfBlock = [];
-    nowBlock = 0;
+    nowBlock = -1;
     selectedCellIndex = -1;
   }
 
   bool isLastSelection() => (selectedCellIndex == lyrics[nowBlock].length-1);
+  bool isAvailableNewLineButton() => (selectedCellIndex > 0 && chords[nowBlock][selectedCellIndex-1] != null);
+  bool isAvailableDeleteCellButton() => (selectedCellIndex > -1 && cellsOfBlock[nowBlock].length > 1);
 
   void setLyric(int index, String newLyric) {
     if (index == -1) throw Exception("selected index == -1");

@@ -53,8 +53,8 @@ class Chord {
           chord += global.keyList[rootKey][0];
         else if (rootSharp == -1)
           chord += global.keyList[rootKey][1];
-        else
-          chord += global.keyList[rootKey][global.keyWithSharpOrFlat[songKey]]; // TODO : 각 key 별로 #/b 선택방법 (임시방편)
+        else /// 현재 키에 따라서 #, b을 적절하게 고르도록 했는데, b,# 이 둘다 가능할 경우 #을 표시하도록 하고 있음.
+          chord += global.keyList[rootKey][global.keyWithSharpOrFlat[songKey]];
       } else {
         chord += global.keyList[rootKey];
       }
@@ -85,8 +85,8 @@ class Chord {
           chord += global.keyList[baseKey][0];
         else if (baseSharp == -1)
           chord += global.keyList[baseKey][1];
-        else
-          chord += global.keyList[baseKey][global.keyWithSharpOrFlat[songKey]]; // TODO : #/b선택
+        else /// 현재 키에 따라서 #, b을 적절하게 고르도록 했는데, b,# 이 둘다 가능할 경우 #을 표시하도록 하고 있음.
+          chord += global.keyList[baseKey][global.keyWithSharpOrFlat[songKey]];
       } else {
         chord += global.keyList[baseKey];
       }

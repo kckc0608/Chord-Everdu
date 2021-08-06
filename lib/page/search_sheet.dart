@@ -86,7 +86,6 @@ class _SearchSheetState extends State<SearchSheet> {
   }
 }
 
-// TODO : 검색 기능 만들기
 // Search Function
 class MySearchDelegate extends SearchDelegate {
   @override
@@ -116,6 +115,7 @@ class MySearchDelegate extends SearchDelegate {
     );
   }
 
+  /// 시스템 키보드의 검색 버튼을 눌렀을 때, 검색 결과 리스트
   @override
   Widget buildResults(BuildContext context) {
     return ListView(
@@ -127,24 +127,67 @@ class MySearchDelegate extends SearchDelegate {
     );
   }
 
+  /// 쿼리가 바뀔 때마다 호출되는 검색 결과 제안 리스트 생성
   @override
   Widget buildSuggestions(BuildContext context) {
-    return ListView(
-      children: [
-        ListTile(
-          title: Text("item1"),
-          onTap: () {
-            query = "item1";
-            showResults(context);
-          },
-        ),
-        ListTile(
-          title: Text("item2"),
-        ),
-        ListTile(
-          title: Text("item3"),
-        ),
-      ],
+    if (query.isEmpty) return Center(child: Text("검색어를 입력하세요."));
+
+    var _db = FirebaseFirestore.instance;
+    return StreamBuilder<QuerySnapshot>(
+      stream: _db.collection('sheet_list').orderBy('title').startAt([query]).endAt([query + '\uf8ff']).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.data == null)
+          return Center(child: Text("검색 결과가 없습니다."));
+
+        final docs = snapshot.data!.docs;
+        if (docs.length > 0)
+          return ListView.separated(
+            itemBuilder: (context, index) {
+              if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+
+              var doc = docs[index];
+              final sheet = SheetInfo(
+                title:   doc['title'],
+                songKey: doc['song_key'],
+                singer:  doc['singer'],
+              );
+
+                return InkWell(
+                  onTap: () {
+                    print("onTap event");
+                    Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) {
+                          return SheetEditor(
+                            sheetID: doc.id,
+                            title:   sheet.title,
+                            singer:  sheet.singer,
+                            songKey: sheet.songKey,
+                            readOnly: true,
+                          );
+                        })
+                    );
+                  },
+                  child: Container(
+                    padding: EdgeInsets.all(8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(sheet.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        SizedBox(height: 4),
+                        Text(sheet.singer, style: TextStyle(color: Colors.black54)),
+                      ],
+                    ),
+                  ),
+                );
+            },
+            separatorBuilder: (context, index) {
+              return const Divider();
+            },
+            itemCount: docs.length,
+          );
+        else
+          return Center(child: Text("검색 결과가 없습니다."));
+      },
     );
   }
 }

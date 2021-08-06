@@ -63,7 +63,6 @@ class SheetEditorState extends State<SheetEditor> {
 
   @override
   Widget build(BuildContext context) {
-    print("display height : " + MediaQuery.of(context).size.height.toString());
     songKey = context.select((Sheet s) => s.songKey);
 
     List<Widget> _readOnlyAppbarActions = [
@@ -117,7 +116,6 @@ class SheetEditorState extends State<SheetEditor> {
         [
           IconButton(
             onPressed: () {
-              // TODO : help 구현
               showDialog(
                 context: context,
                 builder: (context) => AlertDialog(
@@ -215,7 +213,6 @@ class SheetEditorState extends State<SheetEditor> {
           ),
           IconButton(
             onPressed: () {
-              // TODO : Setting 구현
               var _keyList = ["C", "C#/Db", "D", "Eb", "E", "F", "F#/Gb", "G", "Ab", "A", "Bb", "B"];
               var _controllerForTitle = TextEditingController();
               _controllerForTitle.text = title;
@@ -225,126 +222,114 @@ class SheetEditorState extends State<SheetEditor> {
               var _focusNodeForSinger = FocusNode();
               showDialog(
                 context: context,
-                builder: (context) => AlertDialog(
-                              title: Text("악보 정보 수정"),
-                              content: SizedBox(
-                                width: 290,
-                                height: 230,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: SingleChildScrollView(
-                                    child: Form(
-                                      key: _formKey,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        children: [
-                                          SizedBox(height: 20),
-                                          TextFormField(
-                                            controller: _controllerForTitle,
-                                            focusNode: _focusNodeForTitle,
-                                            validator: (value) {
-                                              if (value == null ||
-                                                  value.isEmpty) {
-                                                return "곡 제목은 필수 입력값입니다.";
-                                              }
-                                              return null;
-                                            },
-                                            style: TextStyle(fontSize: 20),
-                                            decoration: const InputDecoration(
-                                              labelText: "곡 제목",
-                                              labelStyle:
-                                                  TextStyle(fontSize: 20),
-                                              helperText: "* 필수 입력값입니다.",
-                                              border: OutlineInputBorder(),
-                                              contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      12, 16, 12, 8),
-                                              isCollapsed: true,
-                                            ),
-                                            onEditingComplete: () {
-                                              _focusNodeForTitle.unfocus();
-                                            },
-                                          ),
-                                          SizedBox(height: 12),
-                                          TextField(
-                                            focusNode: _focusNodeForSinger,
-                                            controller: _controllerForSinger,
-                                            style: TextStyle(fontSize: 20),
-                                            decoration: const InputDecoration(
-                                              labelText: "가수",
-                                              labelStyle:
-                                                  TextStyle(fontSize: 20),
-                                              border: OutlineInputBorder(),
-                                              isCollapsed: true,
-                                              contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      12, 16, 12, 8),
-                                            ),
-                                            onEditingComplete: () {
-                                              _focusNodeForSinger.unfocus();
-                                            },
-                                          ),
-                                          SizedBox(height: 24),
-                                          DropdownButtonFormField(
-                                            style: TextStyle(
-                                                fontSize: 20,
-                                                color: Colors.black),
-                                            decoration: InputDecoration(
-                                              labelText: "키",
-                                              border: OutlineInputBorder(),
-                                              contentPadding:
-                                                  EdgeInsets.fromLTRB(
-                                                      12, 12, 12, 8),
-                                              isCollapsed: true,
-                                            ),
-                                            value: songKey,
-                                            items: _keyList.map((value) {
-                                              return DropdownMenuItem(
-                                                value: _keyList.indexOf(value),
-                                                child: Text(value),
-                                              );
-                                            }).toList(),
-                                            onChanged: (value) {
-                                              setState(() {
-                                                songKey =
-                                                    int.parse(value.toString());
-                                                context.read<Sheet>().songKey =
-                                                    songKey;
-                                                context
-                                                    .read<Sheet>()
-                                                    .setStateOfSheet();
-                                              });
-                                            },
-                                          ),
-                                        ],
-                                      ),
+                builder: (context) =>
+                    AlertDialog(
+                      title: Text("악보 정보 수정"),
+                      content: SizedBox(
+                        width: 290,
+                        height: 230,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: SingleChildScrollView(
+                            child: Form(
+                              key: _formKey,
+                              child: Column(
+                                mainAxisAlignment:
+                                MainAxisAlignment.start,
+                                children: [
+                                  SizedBox(height: 20),
+                                  TextFormField(
+                                    controller: _controllerForTitle,
+                                    focusNode: _focusNodeForTitle,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return "곡 제목은 필수 입력값입니다.";
+                                      }
+                                      return null;
+                                    },
+                                    style: TextStyle(fontSize: 20),
+                                    decoration: const InputDecoration(
+                                      labelText: "곡 제목",
+                                      labelStyle: TextStyle(fontSize: 20),
+                                      helperText: "* 필수 입력값입니다.",
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.fromLTRB(12, 16, 12, 8),
+                                      isCollapsed: true,
                                     ),
+                                    onEditingComplete: () {
+                                      _focusNodeForTitle.unfocus();
+                                    },
                                   ),
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  child: Text("OK"),
-                                  onPressed: () {
-                                    if (_formKey.currentState!.validate()) {
+                                  SizedBox(height: 12),
+                                  TextField(
+                                    focusNode: _focusNodeForSinger,
+                                    controller: _controllerForSinger,
+                                    style: TextStyle(fontSize: 20),
+                                    decoration: const InputDecoration(
+                                      labelText: "가수",
+                                      labelStyle:
+                                      TextStyle(fontSize: 20),
+                                      border: OutlineInputBorder(),
+                                      isCollapsed: true,
+                                      contentPadding:
+                                      EdgeInsets.fromLTRB(12, 16, 12, 8),
+                                    ),
+                                    onEditingComplete: () {
+                                      _focusNodeForSinger.unfocus();
+                                    },
+                                  ),
+                                  SizedBox(height: 24),
+                                  DropdownButtonFormField(
+                                    style: TextStyle(fontSize: 20, color: Colors.black),
+                                    decoration: InputDecoration(
+                                      labelText: "키",
+                                      border: OutlineInputBorder(),
+                                      contentPadding:
+                                      EdgeInsets.fromLTRB(12, 12, 12, 8),
+                                      isCollapsed: true,
+                                    ),
+                                    value: songKey,
+                                    items: _keyList.map((value) {
+                                      return DropdownMenuItem(
+                                        value: _keyList.indexOf(value),
+                                        child: Text(value),
+                                      );
+                                    }).toList(),
+                                    onChanged: (value) {
                                       setState(() {
-                                        title = _controllerForTitle.text;
-                                        singer = _controllerForSinger.text;
+                                        songKey = int.parse(value.toString());
+                                        context.read<Sheet>().songKey = songKey;
+                                        context.read<Sheet>().setStateOfSheet();
                                       });
-                                      Navigator.of(context).pop();
-                                    }
-                                  },
-                                ),
-                                TextButton(
-                                  child: Text("Cancel"),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                ),
-                              ],
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
+                          ),
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          child: Text("OK"),
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              setState(() {
+                                title = _controllerForTitle.text;
+                                singer = _controllerForSinger.text;
+                              });
+                              Navigator.of(context).pop();
+                            }
+                          },
+                        ),
+                        TextButton(
+                          child: Text("Cancel"),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    ),
               );
             },
             icon: Icon(Icons.edit),
@@ -459,22 +444,17 @@ class SheetEditorState extends State<SheetEditor> {
                             : null,
                       ),
                       IconButton(
-                        // TODO : 한칸 남았을 때 삭제 안되게, 한칸 만들고 -> 한칸 만들고 -> 두번째 칸 둘째 줄로 -> 첫번째 칸 지울 때 컨테이너가 맨 처음으로 오는 문제 해결해야 함.
                         icon: Icon(Icons.remove, size: 28),
                         color: Colors.red,
                         disabledColor: Colors.grey,
-                        onPressed: (context.read<Sheet>().selectedCellIndex > -1)
-                        ? () {
-                          setState(() {
-                            context.read<Sheet>().remove();
-                          });
-                        }
+                        onPressed: context.read<Sheet>().isAvailableDeleteCellButton()
+                        ? () {setState(() {context.read<Sheet>().remove();});}
                         : null,
                       ),
                       IconButton(
                         icon: Icon(Icons.arrow_downward_outlined),
                         disabledColor: Colors.grey,
-                        onPressed: (context.read<Sheet>().selectedCellIndex > 0)
+                        onPressed: context.read<Sheet>().isAvailableNewLineButton()
                         ? () {
                           setState(() {
                             context.read<Sheet>().newLine();
@@ -498,7 +478,7 @@ class SheetEditorState extends State<SheetEditor> {
                         icon: Icon(Icons.text_rotation_none),
                         color: Colors.black,
                         disabledColor: Colors.grey,
-                        onPressed: (!isChordInput) ? () {
+                        onPressed: (!isChordInput && context.read<Sheet>().selectedCellIndex > -1) ? () {
                           int _nowPage = context.read<Sheet>().nowBlock;
                           int _maxSize = context.read<Sheet>().lyrics[_nowPage].length;
                           int _index = context.read<Sheet>().selectedCellIndex;
@@ -527,7 +507,7 @@ class SheetEditorState extends State<SheetEditor> {
                         icon: Icon(Icons.format_textdirection_r_to_l_outlined),
                         color: Colors.black,
                         disabledColor: Colors.grey,
-                        onPressed: (!isChordInput) ? () {
+                        onPressed: (!isChordInput && context.read<Sheet>().selectedCellIndex > -1) ? () {
                           int _nowPage = context.read<Sheet>().nowBlock;
                           int _index = context.read<Sheet>().selectedCellIndex;
                           int cutPos = cellTextController!.selection.end;
@@ -596,8 +576,6 @@ class SheetEditorState extends State<SheetEditor> {
       _sheet.add(_page);
     }
 
-    print(_sheet.toString());
-
     Map<String, dynamic> _body = {
       'title': widget.title,
       'singer': widget.singer,
@@ -632,8 +610,6 @@ class SheetEditorState extends State<SheetEditor> {
       _sheet.add(_page);
     }
 
-    print(_sheet.toString());
-
     Map<String, dynamic> _body = {
       'title': title,
       'singer': singer,
@@ -661,7 +637,7 @@ class SheetEditorState extends State<SheetEditor> {
         .get()
         .then((snapshot) {
       var data = snapshot.data();
-      //print(data.toString());
+
       var _sheet = data!['sheet'];
       for (int _pageIndex = 0; _pageIndex < _sheet.length; _pageIndex++) {
         var page = _sheet[_pageIndex];
