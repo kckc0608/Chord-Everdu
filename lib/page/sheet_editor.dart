@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:chord_everdu/custom_widget/chord_input_keyboard.dart';
+import 'package:chord_everdu/custom_widget/sheet_editor/chord_input_keyboard.dart';
 import 'package:chord_everdu/custom_class/chord.dart';
 import 'package:chord_everdu/custom_class/sheet.dart';
-import 'package:chord_everdu/custom_widget/chord_block.dart';
-import 'package:chord_everdu/custom_widget/chord_cell.dart';
+import 'package:chord_everdu/custom_widget/sheet_editor/chord_block.dart';
+import 'package:chord_everdu/custom_widget/sheet_editor/chord_cell.dart';
 import 'package:chord_everdu/environment/global.dart' as global;
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -43,6 +43,7 @@ class SheetEditorState extends State<SheetEditor> {
 
   bool isChordInput = false;
   bool isAutoScroll = false;
+  bool isFavorite = false;
 
   int speedFactor = 20;
 
@@ -59,34 +60,78 @@ class SheetEditorState extends State<SheetEditor> {
       getSheet(isInitialize: false);
     else
       context.read<Sheet>().addBlock(blockName: '새 블록');
+
+    /// favorite 버튼 상태 설정
+    if (widget.readOnly) {
+      FirebaseFirestore.instance.collection('user_list').doc(FirebaseAuth.instance.currentUser!.email).get().then((user) {
+        List<dynamic> favoriteList = user["favoriteSheet"];
+        for (dynamic favorite in favoriteList) {
+          if (favorite["sheet_id"] == widget.sheetID) {
+            isFavorite = true;
+            break;
+          }
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     songKey = context.select((Sheet s) => s.songKey);
 
-    List<Widget> _readOnlyAppbarActions = [
-      IconButton(
-        onPressed: (speedFactor > 10 && !isAutoScroll) ? () {
-          setState(() {
-            speedFactor -= 10;
-          });
-        } : null,
-        icon: Icon(Icons.exposure_minus_1),
-      ),
-      Center(
-        child: Container(
-          color: Colors.blue.shade700,
-          padding: EdgeInsets.symmetric(vertical: 1.0, horizontal: 6.0),
-          child: Text((speedFactor~/10).toString(), style: TextStyle(fontSize: 18),),),
-      ),
-      IconButton(
-        onPressed: (speedFactor < 100 && !isAutoScroll) ? () {
-          setState(() {
-            speedFactor += 10;
-          });
-        } : null,
-        icon: Icon(Icons.plus_one),
+    /// 안드로이드 자동 코드 접기 기능이 꼬이는 문제가 발생해서 따로 위젯 리스트를 뺌
+    List<Widget> _viewerActions = [
+      Expanded(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  InkWell(
+                    onTap: (speedFactor > 10 && !isAutoScroll) ? () {
+                      setState(() {
+                        speedFactor -= 10;
+                      });
+                    } : null,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Icon(
+                        Icons.exposure_minus_1,
+                        size: 24,
+                        color: (speedFactor > 10 && !isAutoScroll) ? Colors.black : Theme.of(context).disabledColor,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    color: Colors.black12,
+                    width: 35,
+                    padding: EdgeInsets.symmetric(vertical: 1.0, horizontal: 6.0),
+                    child: Center(child: Text((speedFactor~/10).toString(), style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+                  ),
+                  InkWell(
+                    onTap: (speedFactor < 100 && !isAutoScroll) ? () {
+                      setState(() {
+                        speedFactor += 10;
+                      });
+                    } : null,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Icon(
+                        Icons.plus_one,
+                        size: 24,
+                        color: (speedFactor < 100 && !isAutoScroll) ? Colors.black : Theme.of(context).disabledColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Text("스크롤 속도")
+            ],
+          ),
+        ),
       ),
       IconButton(
         onPressed: () {
@@ -105,16 +150,105 @@ class SheetEditorState extends State<SheetEditor> {
             );
           }
         },
-        icon: Icon(isAutoScroll ? Icons.pause : Icons.play_arrow),),
+        icon: Icon(isAutoScroll ? Icons.pause : Icons.play_arrow, size: 28,),
+      ),
+      Expanded(
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  InkWell(
+                    onTap: (!isAutoScroll) ? () {
+                      context.read<Sheet>().decreaseSongKey();
+                    } : null,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Icon(
+                        Icons.remove,
+                        size: 20,
+                        color: (!isAutoScroll) ? Colors.black : Theme.of(context).disabledColor,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    color: Colors.black12,
+                    width: 75,
+                    padding: EdgeInsets.symmetric(vertical: 1.0, horizontal: 6.0),
+                    child: Center(child: Text(global.sheetKeyList[songKey], style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+                  ),
+                  InkWell(
+                    onTap: (!isAutoScroll) ? () {
+                      context.read<Sheet>().increaseSongKey();
+                    } : null,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Icon(
+                        Icons.add,
+                        size: 20,
+                        color: (!isAutoScroll) ? Colors.black : Theme.of(context).disabledColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Text("현재 키")
+            ],
+          ),
+        ),
+      ),
+    ];
+
+    List<Widget> _viewerAppbarActions = [
+      IconButton(onPressed: () {
+        setState(() {
+          isFavorite = !isFavorite;
+        });
+
+        FirebaseFirestore.instance.collection('user_list').doc(FirebaseAuth.instance.currentUser!.email).get().then((user) {
+          if (user.exists) {
+            List<dynamic> favoriteList = user["favoriteSheet"];
+            
+            if (isFavorite) {
+              favoriteList.add(
+                  {
+                    "sheet_id": widget.sheetID,
+                    "title": widget.title,
+                    "singer": widget.singer,
+                    "song_key": widget.songKey,
+                  }
+              );
+              user.reference.update({"favoriteSheet" : favoriteList});
+            } else {
+              for (dynamic favorite in favoriteList) {
+                if (favorite["sheet_id"] == widget.sheetID) {
+                  favoriteList.remove(favorite);
+                  user.reference.update({"favoriteSheet" : favoriteList});
+                  break;
+                }
+              }
+            }
+          }
+
+          else {
+            throw Exception("sheet_editor.dart : 유저 정보를 찾지 못했습니다.");
+          }
+        });
+      }, icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border)),
+      IconButton(onPressed: () {}, icon: Icon(Icons.share)),
       SizedBox(width: 10),
     ];
+    /// //////////////////////////////////////////////////////////////////////
 
     return Scaffold(
       appBar: AppBar(
         title: Text(((widget.sheetID == null) ? "새 악보 - " : "") + title),
-        actions: (!widget.readOnly) ?
-        [
-          IconButton(
+        actions: (!widget.readOnly)
+        ? [
+            IconButton(
             onPressed: () {
               showDialog(
                 context: context,
@@ -211,7 +345,7 @@ class SheetEditorState extends State<SheetEditor> {
             },
             icon: Icon(Icons.help_outline),
           ),
-          IconButton(
+            IconButton(
             onPressed: () {
               var _keyList = ["C", "C#/Db", "D", "Eb", "E", "F", "F#/Gb", "G", "Ab", "A", "Bb", "B"];
               var _controllerForTitle = TextEditingController();
@@ -334,7 +468,7 @@ class SheetEditorState extends State<SheetEditor> {
             },
             icon: Icon(Icons.edit),
           ),
-          IconButton(
+            IconButton(
             onPressed: () {
               if (widget.sheetID == null)
                 _addSheet();
@@ -344,7 +478,8 @@ class SheetEditorState extends State<SheetEditor> {
               Navigator.of(context).pop();},
             icon: Icon(Icons.check),
           ),
-        ] : _readOnlyAppbarActions,
+          ]
+        : _viewerAppbarActions
       ),
       body: SafeArea(
         child: Column(
@@ -426,7 +561,7 @@ class SheetEditorState extends State<SheetEditor> {
               ),
             ),
 
-            /// 편집용 아이콘 버튼들
+            /// 읽기 전용 ? 악보 편집 버튼 : 악보 뷰어 버튼
             (!widget.readOnly)
                 ? Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -534,7 +669,14 @@ class SheetEditorState extends State<SheetEditor> {
                       ),
                     ],
                   )
-                : SizedBox.shrink(),
+                : Container(
+                    //decoration: BoxDecoration(border: Border.fromBorderSide(BorderSide())),
+                    color: Colors.black12,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: _viewerActions,
+                    ),
+                ),
             isChordInput
                 ? ChordKeyboard(insertAllFunction: () {
                     setState(() {

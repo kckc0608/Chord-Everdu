@@ -19,7 +19,21 @@ class _LoginState extends State<Login> {
           Text("로그인이 필요합니다.", style: TextStyle(fontSize: 16)),
           SizedBox(height: 8),
           ElevatedButton(
-            child: Text("sign in Google"),
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all(Colors.white),
+              foregroundColor: MaterialStateProperty.all(Colors.black),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  width: 35,
+                  height: 35,
+                  child: Image.network('https://littledeep.com/wp-content/uploads/2020/09/google-icon-styl.png'),
+                ),
+                Text("Google Account"),
+              ],
+            ),
             onPressed: signInWithGoogle,
           ),
         ],

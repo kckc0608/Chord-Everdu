@@ -38,7 +38,7 @@ class _GroupState extends State<Group> {
               /// /////////////////
               /// 기능 준비 안내 ///
               /// /////////////////
-              Expanded(child: Center(child: Text("준비중 입니다...", style: TextStyle(fontSize: 20)))),
+              Expanded(child: Center(child: Text("준비중 입니다", style: TextStyle(fontSize: 20)))),
             ],
           ),
         );

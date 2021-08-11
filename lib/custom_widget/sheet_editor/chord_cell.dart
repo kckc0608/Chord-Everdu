@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:chord_everdu/page/sheet_editor.dart';
 import 'package:chord_everdu/custom_class/sheet.dart';
 import 'package:chord_everdu/environment/global.dart' as global;
-import '../custom_class/chord.dart';
+import '../../custom_class/chord.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
@@ -62,7 +62,7 @@ class _ChordCellState extends State<ChordCell>
     return Container(
       padding: widget.readOnly ? EdgeInsets.symmetric(vertical: 4.0) : EdgeInsets.zero,
       decoration: BoxDecoration(
-        color: isSelected ? Colors.amberAccent : global.backgroundColor,
+        color: isSelected ? Colors.amberAccent : Color.fromRGBO(0, 0, 0, 0),
         border: (!widget.readOnly) ? Border.all() : null,
       ),
       child: Focus(

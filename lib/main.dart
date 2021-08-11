@@ -2,6 +2,8 @@ import 'package:chord_everdu/page/search_sheet.dart';
 import 'package:chord_everdu/page/my_sheet.dart';
 import 'package:chord_everdu/page/group.dart';
 import 'package:chord_everdu/custom_class/sheet.dart';
+import 'package:chord_everdu/custom_widget/search_sheet/new_sheet_floating_button.dart';
+import 'package:chord_everdu/custom_widget/search_sheet/search_sheet_delegate.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';

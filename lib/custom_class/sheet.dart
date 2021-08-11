@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/custom_class/chord.dart';
-import 'package:chord_everdu/custom_widget/chord_cell.dart';
-import 'package:chord_everdu/custom_widget/chord_block.dart';
+import 'package:chord_everdu/custom_widget/sheet_editor/chord_cell.dart';
+import 'package:chord_everdu/custom_widget/sheet_editor/chord_block.dart';
 class Sheet with ChangeNotifier {
   int songKey = 0;
   int nowBlock = -1;
@@ -189,12 +189,25 @@ class Sheet with ChangeNotifier {
     return -1;
   }
 
-  void setStateOfSheet () {
+  void setStateOfSheet() {
     print("notify");
     notifyListeners();
   }
 
   void changePageName(String name) {
     blockNameList[nowBlock] = name;
+  }
+
+  void increaseSongKey() {
+    songKey += 1;
+    songKey %= 12;
+    notifyListeners();
+  }
+
+  void decreaseSongKey() {
+    songKey -= 1;
+    songKey += 12;
+    songKey %= 12;
+    notifyListeners();
   }
 }

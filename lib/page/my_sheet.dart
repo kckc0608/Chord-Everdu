@@ -31,6 +31,7 @@ class _MySheetState extends State<MySheet> {
           if (!value.exists)
             _DB.collection('user_list').doc(_auth.currentUser!.email).set({
               'displayName' : _auth.currentUser!.displayName,
+              'favoriteSheet' : [],
             });
           return await null;
         });
@@ -145,20 +146,55 @@ class _MySheetState extends State<MySheet> {
               ),
               /// 최근 좋아요 표시한 악보 리스트
               StreamBuilder<DocumentSnapshot>(
-                stream: _DB
-                    .collection('user_list')
-                    .doc(_auth.currentUser!.email)
-                    .snapshots(),
+                stream: _DB.collection('user_list').doc(_auth.currentUser!.email).snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
 
-                  final doc = snapshot.data!.data();
+                  final doc = snapshot.data!.data() as Map<String, dynamic>;
+
                   return Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.0),
                     child: ListView.separated(
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
-                        return SizedBox(height: 50);
+                        if (index >= doc["favoriteSheet"].length)
+                          return SizedBox(height: 50);
+
+                        var sheet = doc["favoriteSheet"][index];
+
+                        final sheetInfo = SheetInfo(
+                          title:   sheet['title'],
+                          songKey: sheet['song_key'],
+                          singer:  sheet['singer'],
+                        );
+
+                        return InkWell(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (context) {
+                                      return SheetEditor(
+                                        sheetID: sheet['sheet_id'],
+                                        title:   sheetInfo.title,
+                                        singer:  sheetInfo.singer,
+                                        songKey: sheetInfo.songKey,
+                                        readOnly: true,
+                                      );
+                                    })
+                                );
+                              },
+                              child: Container(
+                                padding: EdgeInsets.all(8.0),
+                                color: Colors.black12,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    Text(sheetInfo.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                    SizedBox(height: 4),
+                                    Text(sheetInfo.singer, style: TextStyle(color: Colors.black54)),
+                                  ],
+                                ),
+                              ),
+                            );
                       },
                       separatorBuilder: (context, index) {
                         return const Divider(height: 4.0, thickness: 1.0);
@@ -203,7 +239,7 @@ class _MySheetState extends State<MySheet> {
       },
       child: Container(
         padding: EdgeInsets.all(8.0),
-        color: Colors.grey,
+        color: Colors.black12,
         child: Row(
           children: [
             Expanded(

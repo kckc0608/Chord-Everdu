@@ -37,6 +37,13 @@ dependencies:
   firebase_auth: ^3.0.1
   google_sign_in: ^5.0.5
   dotted_border: ^2.0.0
+  kakao_flutter_sdk: ^0.7.1
+  dio: ^4.0.0
+  json_serializable: ^4.1.4
+  shared_preferences: ^2.0.6
+  platform: ^3.0.0
+  package_info: ^2.0.2
+  
 
 dev_dependencies:
   flutter_test:

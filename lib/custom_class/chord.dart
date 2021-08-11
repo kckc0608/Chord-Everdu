@@ -50,13 +50,13 @@ class Chord {
           (songKey + global.indexToKeyOffset[root] + rootSharp + 12) % 12;
       if (rootKey == 1 || rootKey == 3 || rootKey == 6 || rootKey == 8 || rootKey == 10) {
         if (rootSharp == 1)
-          chord += global.keyList[rootKey][0];
+          chord += global.chordKeyList[rootKey][0];
         else if (rootSharp == -1)
-          chord += global.keyList[rootKey][1];
+          chord += global.chordKeyList[rootKey][1];
         else /// 현재 키에 따라서 #, b을 적절하게 고르도록 했는데, b,# 이 둘다 가능할 경우 #을 표시하도록 하고 있음.
-          chord += global.keyList[rootKey][global.keyWithSharpOrFlat[songKey]];
+          chord += global.chordKeyList[rootKey][global.keyWithSharpOrFlat[songKey]];
       } else {
-        chord += global.keyList[rootKey];
+        chord += global.chordKeyList[rootKey];
       }
 
       if (rootTension > -1) chord += global.tensionList[rootTension];
@@ -82,13 +82,13 @@ class Chord {
       int baseKey = (songKey + global.indexToKeyOffset[base] + baseSharp + 12) % 12;
       if (baseKey == 1 || baseKey == 3 || baseKey == 6 || baseKey == 8 || baseKey == 10) {
         if (baseSharp == 1)
-          chord += global.keyList[baseKey][0];
+          chord += global.chordKeyList[baseKey][0];
         else if (baseSharp == -1)
-          chord += global.keyList[baseKey][1];
+          chord += global.chordKeyList[baseKey][1];
         else /// 현재 키에 따라서 #, b을 적절하게 고르도록 했는데, b,# 이 둘다 가능할 경우 #을 표시하도록 하고 있음.
-          chord += global.keyList[baseKey][global.keyWithSharpOrFlat[songKey]];
+          chord += global.chordKeyList[baseKey][global.keyWithSharpOrFlat[songKey]];
       } else {
-        chord += global.keyList[baseKey];
+        chord += global.chordKeyList[baseKey];
       }
     }
     return chord;
