@@ -90,7 +90,7 @@ class _ChordCellState extends State<ChordCell>
                 minWidth: (widget.readOnly) ? 1.0 : 36.0,
               ),
               child: IntrinsicWidth(
-                child: TextField(
+                child: /*TextField(
                   onTap: (!widget.readOnly) ? () {
                     /// 가사를 입력하고나서 코드를 입력하면, 잠시동안 시스템키보드와 코드키보드가 같이 나타나면서
                     /// 스크롤이 밀리는 현상을 방지하기 위해, 시스템 키보드가 사라지는 시간을 기다리는 타이머 설정
@@ -108,6 +108,21 @@ class _ChordCellState extends State<ChordCell>
                     border: (widget.readOnly) ? InputBorder.none : null,
                     isCollapsed: true,
                     contentPadding: EdgeInsets.fromLTRB(2, 0, 0, 0),
+                  ),
+                ),*/
+                InkWell(
+                  onTap: () {
+                    parent!.setState(() {
+                      parent.isChordInput = true;
+                      parent.cellTextController = this.chordController;
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      chord.toStringChord(songKey: songKey),
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ),

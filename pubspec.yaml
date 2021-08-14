@@ -43,6 +43,8 @@ dependencies:
   shared_preferences: ^2.0.6
   platform: ^3.0.0
   package_info: ^2.0.2
+  flutter_web_auth: ^0.3.0
+  uuid: ^3.0.4
   
 
 dev_dependencies:
