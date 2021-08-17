@@ -19,6 +19,7 @@ class _ChordCellState extends State<ChordCell>
   var lyricController = TextEditingController();
 
   late Chord chord;
+  late String lyric;
   late int songKey;
 
   bool isSelected = false;
@@ -42,12 +43,13 @@ class _ChordCellState extends State<ChordCell>
       }
 
       chord = context.select((Sheet s) => s.chords[blockIndex][cellIndex]!);
+      lyric = context.select((Sheet s) => s.lyrics[blockIndex][cellIndex]!);
       songKey = context.select((Sheet s) => s.songKey);
       isSelected = context.select((Sheet s) => s.isSelectedCell(widget, blockIndex));
 
       /// 이 조건 체크를 안하면 포커스를 받을 때마다 가사를 새로 채워서 항상 커서가 앞으로 감.
-      if (!isSelected && (lyricController.text != context.select((Sheet s) => s.lyrics[blockIndex][cellIndex]!)))
-        lyricController.text = context.select((Sheet s) => s.lyrics[blockIndex][cellIndex]!);
+      if (!isSelected && (lyricController.text != lyric))
+        lyricController.text = lyric;
     }
 
     return Focus(
@@ -67,6 +69,7 @@ class _ChordCellState extends State<ChordCell>
           }
           : null,
       child: Container(
+        //height: 43,
         padding: widget.readOnly
             ? EdgeInsets.symmetric(vertical: 4.0)
             : EdgeInsets.zero,
@@ -99,15 +102,14 @@ class _ChordCellState extends State<ChordCell>
                   padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
                   child: Text(
                     chord.toStringChord(songKey: songKey),
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                 ),
               ),
             ),
             widget.readOnly
                 ? Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                  padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
                   child: Text(
                       context.select((Sheet s) => s.lyrics[blockIndex][cellIndex]!),
                       style: TextStyle(fontSize: 16, height: 1),
@@ -119,33 +121,54 @@ class _ChordCellState extends State<ChordCell>
                 /// 빈 칸일 때 최소 너비
                 minWidth: (widget.readOnly) ? 16.0 : 36.0,
               ),
-              child: IntrinsicWidth(
-                child: TextField(
-                  onTap: (!widget.readOnly)
-                      ? () {
-                          parent!.setState(() {
-                            parent.isChordInput = false;
-                            parent.cellTextController = this.lyricController;
-                          });
-                        }
-                      : null,
-                  onEditingComplete: () {
-                    setState(() {
-                      FocusScope.of(context).unfocus();
-                      context.read<Sheet>().selectedCellIndex = -1;
-                      context.read<Sheet>().nowBlock = -1;
-                      context.read<Sheet>().setStateOfSheet();
-                    });
-                  },
-                  controller: lyricController,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    isCollapsed: true,
-                    contentPadding: EdgeInsets.fromLTRB(0, 0, 2, 2),
+              child:
+              isSelected
+                  ? IntrinsicWidth(
+                    child: TextField(
+                      autofocus: !parent!.isChordInput,
+                      onTap: (!widget.readOnly)
+                              ? () {
+                                    parent.setState(() {
+                                    parent.isChordInput = false;
+                                    parent.cellTextController = this.lyricController;
+                                  });
+                              }
+                              : null,
+                    onEditingComplete: () {
+                      setState(() {
+                        FocusScope.of(context).unfocus();
+                        context.read<Sheet>().selectedCellIndex = -1;
+                        context.read<Sheet>().nowBlock = -1;
+                        context.read<Sheet>().setStateOfSheet();
+                      });
+                    },
+                    controller: lyricController,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      isCollapsed: true,
+                      contentPadding: EdgeInsets.fromLTRB(0, 0, 2, 2),
+                    ),
+                    readOnly: widget.readOnly,
                   ),
-                  readOnly: widget.readOnly,
+                )
+                : GestureDetector(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 2, 5),
+                      child: Text(lyric, style: TextStyle(fontSize: 16, height: 1)),
+                    ),
+                    onTap: () {
+                      parent!.setState(() {
+                        parent.isChordInput = false;
+                        FocusScope.of(context).unfocus();
+                      });
+                      setState(() {
+                        context.read<Sheet>().selectedCellIndex = context.read<Sheet>().cellsOfBlock[blockIndex].indexOf(widget);
+                        context.read<Sheet>().nowBlock = blockIndex;
+                        context.read<Sheet>().setStateOfSheet();
+                        print("now focus index : " + context.read<Sheet>().selectedCellIndex.toString());
+                      });
+                    },
                 ),
-              ),
             ),
           ],
         ),

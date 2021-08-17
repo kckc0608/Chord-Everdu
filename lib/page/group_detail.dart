@@ -1,4 +1,5 @@
-import 'package:chord_everdu/custom_widget/dynamic_tab.dart';
+import 'package:chord_everdu/custom_widget/common/dynamic_tab.dart';
+import 'package:chord_everdu/custom_widget/group/search_sheet_dialog.dart';
 import 'package:flutter/material.dart';
 class GroupDetail extends StatefulWidget {
   final String groupName;
@@ -18,6 +19,8 @@ class _GroupDetailState extends State<GroupDetail> {
   List<String> tabs = ["1", "2", "3"];
   List<String> members = [];
 
+  TextStyle _headerStyle = TextStyle(fontSize: 18, fontWeight: FontWeight.bold);
+
   @override
   void initState() {
     super.initState();
@@ -31,42 +34,58 @@ class _GroupDetailState extends State<GroupDetail> {
         title: Text(groupName),
       ),
       body: SafeArea(child: Container(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text("멤버 (" + members.length.toString() + ")", style: TextStyle(fontSize: 16)),
-            Row(
-              children: [
-                Text("일정", style: TextStyle(fontSize: 16)),
-                SizedBox(width: 20),
-                DropdownButton<int>(
-                  items: [
-                    DropdownMenuItem(child: Text("아가페 8/15 콘티"), value: 1),
-                    DropdownMenuItem(child: Text("2"), value: 2),
-                    DropdownMenuItem(child: Text("3"), value: 3),
-                    DropdownMenuItem(child: Text("4"), value: 4),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      dropDownValue = value!;
-                    });
-                  },
-                  value: dropDownValue,
-                ),
-              ],
-            ),
-            Text("악보", style: TextStyle(fontSize: 16)),
-            Expanded(
-              child: CustomTabView(
-                itemCount: tabs.length,
-                tabBuilder: (context, index) => Tab(text: tabs[index],),
-                pageBuilder: (context, index) => Container(
-                  color: Colors.black12,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text("멤버 (" + members.length.toString() + ")", style: _headerStyle),
+              Row(
+                children: [
+                  Text("일정", style: _headerStyle),
+                  SizedBox(width: 20),
+                  DropdownButton<int>(
+                    items: [
+                      DropdownMenuItem(child: Text("아가페 8/15 콘티"), value: 1),
+                      DropdownMenuItem(child: Text("2"), value: 2),
+                      DropdownMenuItem(child: Text("3"), value: 3),
+                      DropdownMenuItem(child: Text("4"), value: 4),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        dropDownValue = value!;
+                      });
+                    },
+                    value: dropDownValue,
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Text("악보", style: _headerStyle),
+                  TextButton(onPressed: () {
+                    showDialog(context: context, builder: (context) => SimpleDialog(
+                      children: [
+                        TextButton(onPressed: () {
+                          Navigator.of(context).pop();
+                          showDialog(context: context, builder: (context) => SearchSheetDialog());
+                        }, child: Text("검색해서 추가하기")),
+                        TextButton(onPressed: () {}, child: Text("내가 만든 악보에서 추가하기")),
+                        TextButton(onPressed: () {}, child: Text("좋아요 표시한 악보에서 추가하기")),
+                        TextButton(onPressed: () {}, child: Text("직접 만들기")),
+                      ],
+                    ));
+                  }, child: Text("악보 추가"))
+                ],
+              ),
+              Expanded(
+                child: ListView(
+
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         )
       ))
     );

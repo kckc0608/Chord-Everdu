@@ -1,6 +1,5 @@
+import 'package:chord_everdu/custom_widget/common/sheet_list_item.dart';
 import 'package:chord_everdu/page/login.dart';
-import 'package:chord_everdu/custom_class/sheet_info.dart';
-import 'package:chord_everdu/page/sheet_editor.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -118,13 +117,22 @@ class _MySheetState extends State<MySheet> {
                     child: ListView.separated(
                       shrinkWrap: true,
                       itemBuilder: (context, index) {
+                        var _doc = documents[index];
                         if (index < documents.length)
-                          return _buildMySheetItemWidget(documents[index]);
+                          return SheetListItem(
+                            sheetID: _doc.id,
+                            title:   _doc['title'],
+                            singer:  _doc['singer'],
+                            songKey: _doc['song_key'],
+                            isDeletable: true,
+                            isEditable: true,
+                          );
+
                         return SizedBox(height: 50);
-                        },
+                      },
                       separatorBuilder: (context, index) {
                         return const Divider(height: 4.0, thickness: 1.0);
-                        },
+                      },
                       itemCount: 3,
                     ),
                   );
@@ -161,40 +169,12 @@ class _MySheetState extends State<MySheet> {
                           return SizedBox(height: 50);
 
                         var sheet = doc["favoriteSheet"][index];
-
-                        final sheetInfo = SheetInfo(
+                        return SheetListItem(
+                          sheetID: sheet['sheet_id'],
                           title:   sheet['title'],
-                          songKey: sheet['song_key'],
                           singer:  sheet['singer'],
+                          songKey: sheet['song_key'],
                         );
-
-                        return InkWell(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (context) {
-                                      return SheetEditor(
-                                        sheetID: sheet['sheet_id'],
-                                        title:   sheetInfo.title,
-                                        singer:  sheetInfo.singer,
-                                        songKey: sheetInfo.songKey,
-                                        readOnly: true,
-                                      );
-                                    })
-                                );
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(8.0),
-                                color: Colors.black12,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                                  children: [
-                                    Text(sheetInfo.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                    SizedBox(height: 4),
-                                    Text(sheetInfo.singer, style: TextStyle(color: Colors.black54)),
-                                  ],
-                                ),
-                              ),
-                            );
                       },
                       separatorBuilder: (context, index) {
                         return const Divider(height: 4.0, thickness: 1.0);
@@ -213,86 +193,5 @@ class _MySheetState extends State<MySheet> {
 
   void signOutFromGoogle() async {
     return await FirebaseAuth.instance.signOut();
-  }
-
-
-  Widget _buildMySheetItemWidget(doc) {
-    final sheet = SheetInfo(
-      title:   doc['title'],
-      songKey: doc['song_key'],
-      singer:  doc['singer'],
-    );
-
-    return InkWell(
-      onTap: () {
-        Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) {
-              return SheetEditor(
-                sheetID: doc.id,
-                title:   sheet.title,
-                singer:  sheet.singer,
-                songKey: sheet.songKey,
-                readOnly: true,
-              );
-            })
-        );
-      },
-      child: Container(
-        padding: EdgeInsets.all(8.0),
-        color: Colors.black12,
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(sheet.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 4),
-                  Text(sheet.singer, style: TextStyle(color: Colors.black54)),
-                ],
-              ),
-            ),
-            /// 악보 수정 버튼
-            IconButton(icon: Icon(Icons.edit_outlined), onPressed: () {
-              Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) {
-                    return SheetEditor(
-                      sheetID: doc.id,
-                      title:   sheet.title,
-                      singer:  sheet.singer,
-                      songKey: sheet.songKey,
-                    );
-                  })
-              );
-            }),
-            /// 악보 삭제 버튼
-            IconButton(icon: Icon(Icons.delete_forever_outlined), onPressed: () {
-              showDialog(context: context, builder: (context) {
-                return AlertDialog(
-                  title: Text("악보 삭제"),
-                  content: Text("정말 악보를 삭제할까요?"),
-                  actions: [
-                    TextButton(onPressed: () {Navigator.of(context).pop(true);}, child: Text("예")),
-                    TextButton(onPressed: () {Navigator.of(context).pop(false);}, child: Text("아니요")),
-                  ],
-                );
-              }).then((isDelete) {
-                if (isDelete) {
-                  /// 악보 삭제
-                  _DB.collection('sheet_list').doc(doc.id).delete().then((value) {
-                    showDialog(context: context, builder: (context) => AlertDialog(
-                      content: Text("삭제가 완료되었습니다."),
-                      actions: [TextButton(child: Text("확인"), onPressed: () {Navigator.of(context).pop();},)],
-                    ));
-                  }).catchError((error) {
-                    print(error.toString());
-                  });
-                }
-              });
-            }),
-          ],
-        ),
-      ),
-    );
   }
 }

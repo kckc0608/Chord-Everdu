@@ -1,5 +1,5 @@
+import 'package:chord_everdu/custom_widget/common/sheet_list_item.dart';
 import 'package:flutter/material.dart';
-import 'package:chord_everdu/page/sheet_editor.dart';
 import 'package:chord_everdu/custom_class/sheet_info.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -40,45 +40,11 @@ class _SearchSheetState extends State<SearchSheet> {
       songKey: doc['song_key'],
       singer:  doc['singer'],
     );
-
-    return InkWell(
-      onTap: () {
-        print("onTap event");
-        Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) {
-              return SheetEditor(
-                sheetID: doc.id,
-                title:   sheet.title,
-                singer:  sheet.singer,
-                songKey: sheet.songKey,
-                readOnly: true,
-              );
-            })
-        );
-      },
-      onLongPress: () {
-        print("long Press Event");
-        showDialog(context: context, builder: (context) {
-          return SimpleDialog(
-            children: [
-              TextButton(child: Text("악보 삭제"), onPressed: () {
-                Navigator.of(context).pop();
-              }),
-            ],
-          );
-        });
-      },
-      child: Container(
-        padding: EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(sheet.title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            SizedBox(height: 4),
-            Text(sheet.singer, style: TextStyle(color: Colors.black54)),
-          ],
-        ),
-      ),
+    return SheetListItem(
+      sheetID: doc.id,
+      title: sheet.title,
+      singer: sheet.singer,
+      songKey: sheet.songKey,
     );
   }
 }
