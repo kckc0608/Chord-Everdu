@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:chord_everdu/page/sheet_editor.dart';
 import 'package:chord_everdu/custom_class/sheet.dart';
-import 'package:chord_everdu/environment/global.dart' as global;
 import '../../custom_class/chord.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';

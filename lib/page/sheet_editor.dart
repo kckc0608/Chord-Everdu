@@ -36,7 +36,7 @@ class SheetEditor extends StatefulWidget {
 class SheetEditorState extends State<SheetEditor> {
   late int songKey;
   late String title, singer;
-  var _formKey = GlobalKey<FormState>(); // 새 탭 추가시 띄우는 다이어로그의 폼 키
+  var _formKey = GlobalKey<FormState>(); // 새 블록 추가시 띄우는 다이어로그의 폼 키
 
   TextEditingController? cellTextController;
   var scrollController = ScrollController();

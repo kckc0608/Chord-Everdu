@@ -1,3 +1,4 @@
+import 'package:chord_everdu/custom_widget/group/new_group_floating_button.dart';
 import 'package:chord_everdu/page/search_sheet.dart';
 import 'package:chord_everdu/page/my_sheet.dart';
 import 'package:chord_everdu/page/group.dart';
@@ -38,8 +39,6 @@ class MainFrame extends StatefulWidget {
 
 class _MainFrameState extends State<MainFrame> {
   var _selectedIndex = 0;
-
-  //var _searchResult = '';
 
   List<Widget> _bodyWidgets = [
     SearchSheet(),
@@ -85,8 +84,8 @@ class _MainFrameState extends State<MainFrame> {
   ];
 
   List<Widget?> _floatingButtonWidgets = [
-    SearchSheetFloatingButton(), // page_searchSheet.dart
-    null,
+    SearchSheetFloatingButton(),
+    NewGroupFloatingButton(),
     null,
   ];
 
