@@ -1,4 +1,6 @@
 import 'package:chord_everdu/page/group_detail.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class NewGroupFloatingButton extends StatelessWidget {
@@ -69,9 +71,21 @@ class _NewGroupInfoDialogState extends State<NewGroupInfoDialog> {
       ),
       actions: [
         TextButton(onPressed: () {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => GroupDetail(
-            groupName: _controller.text,
-          )));
+          String currentUserEmail = FirebaseAuth.instance.currentUser!.email!;
+          FirebaseFirestore.instance.collection('group_list').add({
+            'group_name': _controller.text,
+            'member': [currentUserEmail],
+            'sheet': [],
+          }).then((doc) {
+            FirebaseFirestore.instance.collection('user_list').doc(currentUserEmail)
+                .update({'group_in': FieldValue.arrayUnion([{'group_id': doc.id, 'group_name': _controller.text}])})
+                .then((value) {
+                  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => GroupDetail(
+                    groupID: doc.id,
+                    groupName: _controller.text,
+                  )));
+                });
+          });
         }, child: Text("확인")),
         TextButton(onPressed: () {
           Navigator.of(context).pop();
