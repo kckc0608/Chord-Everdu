@@ -1,7 +1,5 @@
-import 'package:chord_everdu/custom_widget/common/dynamic_tab.dart';
 import 'package:chord_everdu/custom_widget/group/search_sheet_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 class GroupDetail extends StatefulWidget {
   final String groupName;

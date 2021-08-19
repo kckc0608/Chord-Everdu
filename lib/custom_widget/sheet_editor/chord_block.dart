@@ -28,78 +28,87 @@ class _ChordBlockState extends State<ChordBlock> {
     /// 블럭 삭제할 때 인덱스 문제가 발생하는 것을 해결하기 위한 코드
     if (blockIndex == -1) return SizedBox.shrink();
 
-    return Container(
-      padding: EdgeInsets.all(8.0),
-      color: (!widget.readOnly && isSelected) ? Colors.amber.shade100 : global.backgroundColor,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(4, 0, 0, 8.0),
-            child: Row(
-              children: [
-                Text(
-                  widget.readOnly ? "[" + context.read<Sheet>().blockNameList[blockIndex] + "]"
-                  : context.select((Sheet s) => s.blockNameList[blockIndex]),
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(width: 8.0),
-                (isSelected && !widget.readOnly) ?
-                InkWell(
-                  onTap: () {
-                    var _controller = TextEditingController();
-                    _controller.text = context.read<Sheet>().blockNameList[blockIndex];
-                    showDialog(context: context, builder: (context) => AlertDialog(
-                      title: Text("블록 이름 변경"),
-                      content: TextField(
-                        controller: _controller,
-                      ),
-                      actions: [
-                        TextButton(child: Text("확인"), onPressed: () {
-                          Navigator.of(context).pop(_controller.text);
-                        }),
-                      ],
-                    )).then((blockTitle) {
-                      setState(() {
-                        context.read<Sheet>().blockNameList[blockIndex] = blockTitle;
-                      });
-                    });
-                  },
-                  child: Icon(Icons.edit_outlined, size: 20),
-                ) : SizedBox.shrink(),
-                SizedBox(width: 8.0),
-                (isSelected && !widget.readOnly) ?
-                InkWell(
-                  onTap: () {
-                    showDialog(context: context, builder: (context) {
-                      return AlertDialog(
-                        title: Text("블록 삭제"),
-                        content: Text("현재 블록을 삭제하시겠습니까?"),
+    return GestureDetector(
+      onTap: () {
+        if (!widget.readOnly) {
+          context.read<Sheet>().nowBlock = blockIndex;
+          context.read<Sheet>().setStateOfSheet();
+        }
+      },
+      child: Container(
+        padding: EdgeInsets.all(8.0),
+        color: (!widget.readOnly && isSelected) ? Colors.amber.shade100 : global.backgroundColor,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 0, 0, 8.0),
+              child: Row(
+                children: [
+                  Text(
+                    widget.readOnly ? "[" + context.read<Sheet>().blockNameList[blockIndex] + "]"
+                    : context.select((Sheet s) => s.blockNameList[blockIndex]),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(width: 8.0),
+                  (isSelected && !widget.readOnly) ?
+                  InkWell(
+                    onTap: () {
+                      var _controller = TextEditingController();
+                      _controller.text = context.read<Sheet>().blockNameList[blockIndex];
+                      showDialog(context: context, builder: (context) => AlertDialog(
+                        title: Text("블록 이름 변경"),
+                        content: TextField(
+                          autofocus: true,
+                          controller: _controller,
+                        ),
                         actions: [
-                          TextButton(child: Text("예"), onPressed: () {
-                            parent!.setState(() {
-                              parent.isChordInput = false;
-                            });
-                            context.read<Sheet>().removeBlock(blockIndex);
-                            Navigator.of(context).pop();
+                          TextButton(child: Text("확인"), onPressed: () {
+                            Navigator.of(context).pop(_controller.text);
                           }),
-                          TextButton(child: Text("아니오"), onPressed: () {Navigator.of(context).pop();})
                         ],
-                      );
-                    });
-                  },
-                  child: Icon(Icons.delete_forever_outlined, size: 20, color: Colors.red),
-                ) : SizedBox.shrink(),
-              ],
+                      )).then((blockTitle) {
+                        setState(() {
+                          context.read<Sheet>().blockNameList[blockIndex] = blockTitle;
+                        });
+                      });
+                    },
+                    child: Icon(Icons.edit_outlined, size: 20),
+                  ) : SizedBox.shrink(),
+                  SizedBox(width: 8.0),
+                  (isSelected && !widget.readOnly) ?
+                  InkWell(
+                    onTap: () {
+                      showDialog(context: context, builder: (context) {
+                        return AlertDialog(
+                          title: Text("블록 삭제"),
+                          content: Text("현재 블록을 삭제하시겠습니까?"),
+                          actions: [
+                            TextButton(child: Text("예"), onPressed: () {
+                              parent!.setState(() {
+                                parent.isChordInput = false;
+                              });
+                              context.read<Sheet>().removeBlock(blockIndex);
+                              Navigator.of(context).pop();
+                            }),
+                            TextButton(child: Text("아니오"), onPressed: () {Navigator.of(context).pop();})
+                          ],
+                        );
+                      });
+                    },
+                    child: Icon(Icons.delete_forever_outlined, size: 20, color: Colors.red),
+                  ) : SizedBox.shrink(),
+                ],
+              ),
             ),
-          ),
-          Wrap(
-            // TODO: block 자체에 대해 select를 하면 갱신이 안되는 문제가 있음
-            //       블록 갱신에 대한 조건을 달아주어야 할 것 같음.
-            //children: context.select((Sheet s) => s.cellsOfBlock[blockIndex]),
-            children: context.watch<Sheet>().cellsOfBlock[blockIndex],
-          ),
-        ],
+            Wrap(
+              // TODO: block 자체에 대해 select를 하면 갱신이 안되는 문제가 있음
+              //       블록 갱신에 대한 조건을 달아주어야 할 것 같음.
+              //children: context.select((Sheet s) => s.cellsOfBlock[blockIndex]),
+              children: context.watch<Sheet>().cellsOfBlock[blockIndex],
+            ),
+          ],
+        ),
       ),
     );
   }

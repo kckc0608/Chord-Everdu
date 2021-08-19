@@ -71,7 +71,7 @@ class _ChordCellState extends State<ChordCell>
       child: Container(
         //height: 43,
         padding: widget.readOnly
-            ? EdgeInsets.symmetric(vertical: 4.0)
+            ? EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0)
             : EdgeInsets.zero,
         decoration: BoxDecoration(
           color: isSelected ? Colors.amberAccent : Color.fromRGBO(0, 0, 0, 0),
@@ -108,13 +108,10 @@ class _ChordCellState extends State<ChordCell>
               ),
             ),
             widget.readOnly
-                ? Padding(
-                  padding: const EdgeInsets.fromLTRB(2, 0, 0, 0),
-                  child: Text(
-                      context.select((Sheet s) => s.lyrics[blockIndex][cellIndex]!),
-                      style: TextStyle(fontSize: 16, height: 1),
-                    ),
-                )
+                ? Text(
+                    context.select((Sheet s) => s.lyrics[blockIndex][cellIndex]!),
+                    style: TextStyle(fontSize: 16, height: 1),
+                  )
 
             : ConstrainedBox(
               constraints: BoxConstraints(

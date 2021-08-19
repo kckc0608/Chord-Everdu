@@ -141,9 +141,9 @@ class Sheet with ChangeNotifier {
     selectedCellIndex = -1;
   }
 
-  bool isLastSelection() => (selectedCellIndex == lyrics[nowBlock].length-1);
-  bool isAvailableNewLineButton() => (selectedCellIndex > 0 && chords[nowBlock][selectedCellIndex-1] != null);
-  bool isAvailableDeleteCellButton() => (selectedCellIndex > -1 && cellsOfBlock[nowBlock].length > 1);
+  bool isLastSelection() => (nowBlock > -1 && selectedCellIndex == lyrics[nowBlock].length-1);
+  bool isAvailableNewLineButton() => (selectedCellIndex > 0 && nowBlock > -1 && chords[nowBlock][selectedCellIndex-1] != null);
+  bool isAvailableDeleteCellButton() => (selectedCellIndex > -1 && nowBlock > -1 && cellsOfBlock[nowBlock].length > 1);
   bool isSelectedCell(ChordCell cell, int blockIndex) => cellsOfBlock[blockIndex].indexOf(cell) == selectedCellIndex && blockIndex == nowBlock;
 
   void setLyric(int index, String newLyric) {
