@@ -34,6 +34,7 @@ class _MainFrameState extends State<MainFrame> {
       appBar: AppBar(
         title: const Text("그룹"),
       ),
+      extendBodyBehindAppBar: true,
       bottomNavigationBar: BottomNavigationBar(
         items: const [
           BottomNavigationBarItem(
@@ -45,14 +46,30 @@ class _MainFrameState extends State<MainFrame> {
             label: "그룹",
           ),
           BottomNavigationBarItem(
-              icon: Icon(Icons.my_library_music),
-              label: "내 악보"
-          ),
+              icon: Icon(Icons.my_library_music), label: "내 악보"),
         ],
         currentIndex: _selectedIndex,
-        onTap: (idx) => {setState(() {_selectedIndex = idx;})},
+        onTap: (idx) => {
+          setState(() {
+            _selectedIndex = idx;
+          })
+        },
       ),
-      body: const SearchSheet(),
+      body: const [SearchSheet(), null, null][_selectedIndex],
+      floatingActionButton: [
+        FloatingActionButton(
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (context) {
+                  return Dialog();
+                });
+          },
+          child: const Icon(Icons.add),
+        ),
+        null,
+        null
+      ][_selectedIndex],
     );
   }
 }

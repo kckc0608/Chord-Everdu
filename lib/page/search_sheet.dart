@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:chord_everdu/widget/sheet_list_item.dart';
 import 'package:flutter/material.dart';
 
 class SearchSheet extends StatefulWidget {
@@ -15,7 +15,7 @@ class _SearchSheetState extends State<SearchSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
       child: ListView.separated(
           itemBuilder: (context, idx) {
-            return Text(idx.toString());
+            return SheetListItem(sheetID: idx.toString(), title: "take my hand", singer: "IU",);
           },
           separatorBuilder: (context, idx) {
             return const Divider(
