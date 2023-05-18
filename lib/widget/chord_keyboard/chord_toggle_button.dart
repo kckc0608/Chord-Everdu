@@ -3,12 +3,14 @@ import 'chord_keyboard.dart';
 
 class ChordToggleButton extends StatelessWidget {
   final void Function(int)? onPressed;
+  final List<String> buttonTextList;
   final List<bool> isSelected;
   final int type;
 
   const ChordToggleButton({
     Key? key,
     this.onPressed,
+    required this.buttonTextList,
     required this.isSelected,
     this.type = ChordKeyboard.typeRoot,
   }) : super(key: key);
@@ -42,15 +44,15 @@ class ChordToggleButton extends StatelessWidget {
       selectedColor: Colors.black,
       selectedBorderColor: setSelectedBorderColor(),
       fillColor: setFillColor(),
-      children: List.generate(
-          //keyList.length,
-          isSelected.length,
-          (int index) => Text(
-              //keyList[index],
-              "test",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
       isSelected: isSelected,
       onPressed: onPressed,
+      children: List.generate(
+          isSelected.length,
+          (int index) => Text(
+              buttonTextList[index],
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+      ),
     );
   }
 }
