@@ -1,4 +1,4 @@
-import 'package:chord_everdu/page/sheet_editor.dart';
+import 'package:chord_everdu/page/sheet_viewer.dart';
 import 'package:flutter/material.dart';
 
 class SheetListItem extends StatelessWidget {
@@ -15,7 +15,7 @@ class SheetListItem extends StatelessWidget {
     return InkWell(
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return SheetEditor(title: title, sheetID: sheetID,);
+          return SheetViewer(title: title, sheetID: sheetID,);
         }));
       },
       child: Padding(

@@ -1,8 +1,16 @@
+import 'package:chord_everdu/data_class/sheet.dart';
+import 'package:chord_everdu/delegate/sheet_search_delegate.dart';
 import 'package:flutter/material.dart';
-import 'package:chord_everdu/page/search_sheet.dart';
+import 'package:chord_everdu/page/search_sheet/search_sheet.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider(create: (_) => Sheet()),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -12,7 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Chord Everdu',
       home: MainFrame(),
     );
   }
@@ -31,9 +39,39 @@ class _MainFrameState extends State<MainFrame> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("그룹"),
-      ),
+      appBar: [
+        AppBar(
+          title: Builder(builder: (context) {
+            return GestureDetector(
+              onTap: () {
+                showSearch(context: context, delegate: SheetSearchDelegate());
+              },
+              child: Container(
+                padding: const EdgeInsets.all(6.0),
+                decoration: BoxDecoration(
+                  color: Colors.blue[700],
+                  borderRadius: BorderRadius.circular(4.0),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    Icon(
+                      Icons.search,
+                      color: Colors.white70,
+                    ),
+                    SizedBox(width: 12),
+                    Text("악보를 검색하세요.",
+                        style: TextStyle(color: Colors.white60, fontSize: 18)),
+                  ],
+                ),
+              ),
+            );
+          }),
+          centerTitle: true,
+        ),
+        AppBar(title: const Text("그룹")),
+        AppBar(title: const Text("내 정보"))
+      ][_selectedIndex],
       extendBodyBehindAppBar: true,
       bottomNavigationBar: BottomNavigationBar(
         items: const [
