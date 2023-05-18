@@ -12,10 +12,27 @@ class _ChordBlockState extends State<ChordBlock> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.yellow,
-      padding: EdgeInsets.all(16.0),
-      child: Column(
+      //color: Colors.yellow,
+      padding: const EdgeInsets.all(8.0),
+      child: const Column(
         children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(16, 0, 0, 8),
+            child: Row(
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(0, 0, 4, 0),
+                  child: Text("change block name"),
+                ),
+                InkWell(
+                  child: Icon(Icons.edit_outlined),
+                ),
+                InkWell(
+                  child: Icon(Icons.delete_forever_outlined, color: Colors.red,),
+                )
+              ],
+            ),
+          ),
           Wrap(
             children: [
               ChordCell(),
