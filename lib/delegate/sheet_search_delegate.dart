@@ -24,7 +24,7 @@ class SheetSearchDelegate extends SearchDelegate {
       ),
       inputDecorationTheme: const InputDecorationTheme(
         hintStyle: TextStyle(
-          color: Colors.white
+          color: Colors.white60
         )
       ),
       textSelectionTheme: const TextSelectionThemeData(
