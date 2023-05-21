@@ -1,7 +1,14 @@
 import 'package:chord_everdu/environment/global.dart' as global;
 
+enum ChordAnalyzeMode {
+  Root, RootSharp, RootTension, 
+  Minor, MinorTension, Major, MajorTension,
+  TensionSharp, Tension,
+  ASDS, ASDSTension,
+  Base, BaseSharp
+}
 class Chord {
-  int root,
+  int root, // 해당 song key 에서 상대적인 위치 (계이름 기준이다.)
       rootSharp,
       rootTension,
       minorTension,
@@ -43,18 +50,228 @@ class Chord {
         base = chordMap["base"],
         baseSharp = chordMap["baseSharp"];
 
+  factory Chord.fromString(String chordString, {int songKey = 0}) {
+    assert(chordString.isNotEmpty);
+
+    int key = 0;
+    int baseKey = -10;
+    String rootTension = "";
+    String minor = "";
+    String major = "";
+    String minorTension = "";
+    String majorTension = "";
+    String tensionSharp = "";
+    String tension = "";
+    String asda = "";
+    String asdaTension = "";
+
+    ChordAnalyzeMode mode = ChordAnalyzeMode.Root;    
+    int index = 0;
+    while (index < chordString.length) {
+      switch (mode) {
+        case ChordAnalyzeMode.Root:
+          if (chordString[index] == 'C') {
+            key = 0;
+          } else if (chordString[index] == 'D') {
+            key = 2;
+          } else if (chordString[index] == 'E') {
+            key = 4;
+          } else if (chordString[index] == 'F') {
+            key = 5;
+          } else if (chordString[index] == 'G') {
+            key = 7;
+          } else if (chordString[index] == 'A') {
+            key = 9;
+          } else if (chordString[index] == 'B') {
+            key = 11;
+          } else {
+            throw Exception("root value is wrong. root should be upper case A to G");
+          }
+          mode = ChordAnalyzeMode.RootSharp;
+          index += 1;
+          break;
+        case ChordAnalyzeMode.RootSharp:
+          if (chordString[index] == '#') {
+            key += 1;
+            index += 1;
+          } else if (chordString[index] == 'b') {
+            key -= 1;
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.RootTension;
+          break;
+        case ChordAnalyzeMode.RootTension:
+          if (chordString[index].contains(RegExp(r'[24569]'))) {
+            rootTension = chordString[index];
+            index += 1;
+          } else if (chordString[index] == '1') {
+            rootTension = chordString.substring(index, index+2);
+            index += 2;
+          }
+          mode = ChordAnalyzeMode.Minor;
+          break;
+        case ChordAnalyzeMode.Minor:
+          if (chordString[index] == 'm') {
+            minor = "m";
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.MinorTension;
+          break;
+        case ChordAnalyzeMode.MinorTension:
+          if (chordString[index] == '7') {
+            minorTension = '7';
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.Major;
+          break;
+        case ChordAnalyzeMode.Major:
+          if (chordString[index] == 'M') {
+            minor = "M";
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.MajorTension;
+          break;
+        case ChordAnalyzeMode.MajorTension:
+          if (chordString[index] == '7') {
+            majorTension = '7';
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.TensionSharp;
+          break;
+        case ChordAnalyzeMode.TensionSharp:
+          if (chordString[index].contains(RegExp(r'[#b]'))) {
+            tensionSharp = chordString[index];
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.Tension;
+          break;
+        case ChordAnalyzeMode.Tension:
+          if (chordString[index].contains(RegExp(r'[24569]'))) {
+            tension = chordString[index];
+            index += 1;
+          } else if (chordString[index] == '1') {
+            tension = chordString.substring(index, index+2);
+            index += 2;
+          }
+          mode = ChordAnalyzeMode.ASDS;
+          break;
+        case ChordAnalyzeMode.ASDS:
+          if (chordString.length > index + 2 &&
+              chordString.substring(index, index+3).contains(RegExp(r'add|sus|dim|aug'))) {
+            asda = chordString.substring(index, index+3);
+            index += 3;
+          }
+          mode = ChordAnalyzeMode.ASDSTension;
+          break;
+        case ChordAnalyzeMode.ASDSTension:
+          if (chordString[index].contains(RegExp(r'[24569]'))) {
+            asdaTension = chordString[index];
+            index += 1;
+          } else if (chordString[index] == '1') {
+            asdaTension = chordString.substring(index, index+2);
+            index += 2;
+          }
+          mode = ChordAnalyzeMode.Base;
+          break;
+        case ChordAnalyzeMode.Base:
+          if (chordString[index] == '/' && index + 1 < chordString.length) {
+            if (chordString[index+1] == 'C') {
+              baseKey = 0;
+            } else if (chordString[index+1] == 'D') {
+              baseKey = 2;
+            } else if (chordString[index+1] == 'E') {
+              baseKey = 4;
+            } else if (chordString[index+1] == 'F') {
+              baseKey = 5;
+            } else if (chordString[index+1] == 'G') {
+              baseKey = 7;
+            } else if (chordString[index+1] == 'A') {
+              baseKey = 9;
+            } else if (chordString[index+1] == 'B') {
+              baseKey = 11;
+            } else {
+              throw Exception("base chord value is wrong. base should be upper case A to G");
+            }
+            if (index + 2 < chordString.length) {
+              if (chordString[index+2] == '#') {
+                baseKey += 1;
+              } else if (chordString[index+2] == 'b') {
+                baseKey -= 1;
+              }
+            }
+          }
+          index += 3;
+        default:
+          break;
+      }
+    }
+
+    // 3. Change To 계이름
+    if (key < 0) {
+      key += 12;
+    }
+
+    int keyOffset = key - songKey;
+    if (keyOffset < 0) {
+      keyOffset += 12;
+    }
+
+    int root = global.indexToKeyOffset.indexOf(keyOffset);
+    int rootSharp = 0;
+    if (root == -1) {
+      keyOffset -= 1;
+      rootSharp = 1; // 일단은 다 #으로 넣어봄.
+      root = global.indexToKeyOffset.indexOf(keyOffset);
+    }
+
+    int base = -1;
+    int baseSharp = 0;
+    if (baseKey > -1) {
+      int baseKeyOffset = baseKey - songKey;
+      if (baseKeyOffset < 0) {
+        baseKeyOffset += 12;
+      }
+      base = global.indexToKeyOffset.indexOf(baseKeyOffset);
+      if (base == -1) {
+        baseKeyOffset -= 1;
+        baseSharp = 1; // 일단은 다 #으로 넣어봄.
+        base = global.indexToKeyOffset.indexOf(baseKeyOffset);
+      }
+    }
+
+    Chord chord = Chord(
+      root: root,
+      rootSharp: rootSharp,
+      minor: minor,
+      major: major,
+      asda: asda,
+      asdaTension: global.tensionList.indexOf(asdaTension),
+      majorTension: global.tensionList.indexOf(majorTension),
+      minorTension: global.tensionList.indexOf(minorTension),
+      rootTension: global.tensionList.indexOf(rootTension),
+      tension: global.tensionList.indexOf(tension),
+      tensionSharp: tensionSharp == '#' ? 1 : tensionSharp == 'b' ? -1 : 0,
+      base: base,
+      baseSharp: baseSharp,
+    );
+
+    return chord;
+  }
+
   String toStringChord({int songKey = 0}) {
     String chord = "";
     if (root > -1) {
       int rootKey =
           (songKey + global.indexToKeyOffset[root] + rootSharp + 12) % 12;
       if (rootKey == 1 || rootKey == 3 || rootKey == 6 || rootKey == 8 || rootKey == 10) {
-        if (rootSharp == 1)
+        if (rootSharp == 1) {
           chord += global.chordKeyList[rootKey][0];
-        else if (rootSharp == -1)
+        } else if (rootSharp == -1) {
           chord += global.chordKeyList[rootKey][1];
-        else /// 현재 키에 따라서 #, b을 적절하게 고르도록 했는데, b,# 이 둘다 가능할 경우 #을 표시하도록 하고 있음.
+        } else {
+          /// 현재 키에 따라서 #, b을 적절하게 고르도록 했는데, b,# 이 둘다 가능할 경우 #을 표시하도록 하고 있음.
           chord += global.chordKeyList[rootKey][global.keyWithSharpOrFlat[songKey]];
+        }
       } else {
         chord += global.chordKeyList[rootKey];
       }
@@ -67,9 +284,11 @@ class Chord {
       chord += major;
       if (majorTension > -1) chord += global.tensionList[majorTension];
 
-      if (tensionSharp == 1)
+      if (tensionSharp == 1) {
         chord += '#';
-      else if (tensionSharp == -1) chord += "b";
+      } else if (tensionSharp == -1) {
+        chord += "b";
+      }
 
       if (tension > -1) chord += global.tensionList[tension];
 

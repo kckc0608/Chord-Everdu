@@ -254,6 +254,11 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           ChordToggleButton(
             buttonTextList: const ['m', 'M'],
             isSelected: minorMajorSelection,
+            onPressed: (index) {
+              setState(() {
+                minorMajorSelection[index] = !minorMajorSelection[index];
+              });
+            },
           ),
             //   (index) {
             // setState(() {
