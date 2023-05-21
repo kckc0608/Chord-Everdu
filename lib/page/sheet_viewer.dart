@@ -32,7 +32,7 @@ class _SheetViewerState extends State<SheetViewer> {
 
   @override
   Widget build(BuildContext context) {
-    const blockCount = 2;
+    const blockCount = 1;
 
     return Scaffold(
         appBar: AppBar(
@@ -47,7 +47,7 @@ class _SheetViewerState extends State<SheetViewer> {
                 itemBuilder: (context, index) {
                   return index == blockCount
                     ? const NewChordBlockButton()
-                    : const ChordBlock();
+                    : ChordBlock(blockID: index);
                 },
               )),
               Row(

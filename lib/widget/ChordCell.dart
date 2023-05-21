@@ -1,7 +1,15 @@
+import 'package:chord_everdu/data_class/chord.dart';
 import 'package:flutter/material.dart';
 
 class ChordCell extends StatefulWidget {
-  const ChordCell({Key? key}) : super(key: key);
+  final Chord? chord;
+  final String? lyric;
+
+  const ChordCell({
+    Key? key,
+    required this.chord,
+    required this.lyric,
+  }) : super(key: key);
 
   @override
   State<ChordCell> createState() => _ChordCellState();
@@ -16,22 +24,25 @@ class _ChordCellState extends State<ChordCell> {
         color: Colors.white,
         border: Border.all(),
       ),
-      child: Column(
-        children: [
-          ConstrainedBox(
-            constraints: const BoxConstraints(minWidth: 36.0),
-            child: GestureDetector(
-              onTap: () {
-                // chord keyboard open
-              },
-              child: const Padding(
-                padding: EdgeInsets.all(2.0),
-                child: Text("chord", style: TextStyle(fontSize: 16)),
+      child: Padding(
+        padding: const EdgeInsets.all(2.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 36.0),
+              child: GestureDetector(
+                onTap: () {
+                  // chord keyboard open
+                },
+                child: Text(widget.chord!.toStringChord(), style: const TextStyle(fontSize: 16)),
               ),
             ),
-          ),
-          const Text("lyric", style: TextStyle(fontSize: 16)),
-        ],
+            ConstrainedBox(
+              constraints: const BoxConstraints(minWidth: 36.0),
+              child: Text(widget.lyric!, style: const TextStyle(fontSize: 16)),
+            ),
+          ],      ),
       ),
     );
   }
