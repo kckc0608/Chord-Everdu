@@ -4,6 +4,7 @@ import 'package:chord_everdu/widget/new_chord_block_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../data_class/chord.dart';
 import '../data_class/sheet.dart';
 import '../data_class/sheet_data.dart';
 
@@ -32,8 +33,7 @@ class _SheetViewerState extends State<SheetViewer> {
 
   @override
   Widget build(BuildContext context) {
-    int blockCount = context.read<Sheet>().chords.length;
-
+    int blockCount = context.watch<Sheet>().chords.length;
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
@@ -60,14 +60,17 @@ class _SheetViewerState extends State<SheetViewer> {
                   children: [
                   IconButton(
                     onPressed: () {
-                      //context.read<Sheet>().chords[widget.]
+                      context.read<Sheet>().addCell(
+                        context.read<Sheet>().selectedBlockIndex,
+                        Chord(),
+                        "",
+                      );
                     },
                     icon: const Icon(Icons.add),
                   ),
                   IconButton(
                     onPressed: () {
                       setState(() {
-
                       });
                     },
                     icon: const Icon(Icons.remove),

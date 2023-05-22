@@ -22,14 +22,22 @@ class Sheet with ChangeNotifier {
     }
     chords.add(chordList);
     lyrics.add(sheetData.lyricData.split("|"));
-
-    // test
-    chords.add(chordList);
-    lyrics.add(sheetData.lyricData.split("|"));
   }
 
   void setSelectedBlockIndex(int index) {
     selectedBlockIndex = index;
+    notifyListeners();
+  }
+
+  void addCell(int blockID, Chord chord, String lyric) {
+    chords[blockID].add(chord);
+    lyrics[blockID].add(lyric);
+    notifyListeners();
+  }
+
+  void addBlock() {
+    chords.add([]);
+    lyrics.add([]);
     notifyListeners();
   }
 }

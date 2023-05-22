@@ -350,4 +350,9 @@ class Chord {
     base = chordMap["base"];
     baseSharp = chordMap["baseSharp"];
   }
+
+  @override
+  String toString() {
+    return toStringChord();
+  }
 }
