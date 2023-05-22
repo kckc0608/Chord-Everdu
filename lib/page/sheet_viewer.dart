@@ -32,7 +32,7 @@ class _SheetViewerState extends State<SheetViewer> {
 
   @override
   Widget build(BuildContext context) {
-    const blockCount = 1;
+    int blockCount = context.read<Sheet>().chords.length;
 
     return Scaffold(
         appBar: AppBar(
@@ -60,13 +60,15 @@ class _SheetViewerState extends State<SheetViewer> {
                   children: [
                   IconButton(
                     onPressed: () {
-                      setState(() {});
+                      //context.read<Sheet>().chords[widget.]
                     },
                     icon: const Icon(Icons.add),
                   ),
                   IconButton(
                     onPressed: () {
-                      setState(() {});
+                      setState(() {
+
+                      });
                     },
                     icon: const Icon(Icons.remove),
                   ),
@@ -119,6 +121,9 @@ class _SheetViewerState extends State<SheetViewer> {
   }
 
   void setSheetToProvider(SheetData sheetData) {
+    context.read<Sheet>().chords.clear();
+    context.read<Sheet>().lyrics.clear();
     context.read<Sheet>().copyFromData(sheetData);
+
   }
 }

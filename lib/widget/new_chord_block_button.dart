@@ -1,3 +1,4 @@
+import 'package:chord_everdu/widget/new_chord_blcok_dialog.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 
@@ -9,12 +10,16 @@ class NewChordBlockButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          showDialog(context: context, builder: (context) {
+            return const NewChordBlockDialog();
+          });
+        },
         child: DottedBorder(
           padding: const EdgeInsets.all(8.0),
           color: Colors.grey,
           borderType: BorderType.RRect,
-          dashPattern: [3, 3],
+          dashPattern: const [3, 3],
           strokeWidth: 1.5,
           radius: const Radius.circular(4.0),
           child: const Center(
