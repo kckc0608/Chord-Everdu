@@ -29,11 +29,11 @@ class _ChordBlockState extends State<ChordBlock> {
 
     return Container(
       //color: Colors.yellow,
-      padding: const EdgeInsets.all(8.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Padding(
-            padding: EdgeInsets.fromLTRB(16, 0, 0, 8),
+            padding: EdgeInsets.symmetric(vertical: 8.0),
             child: Row(
               children: [
                 Padding(

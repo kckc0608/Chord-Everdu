@@ -35,7 +35,7 @@ class _ChordCellState extends State<ChordCell> {
                 onTap: () {
                   // chord keyboard open
                 },
-                child: Text(widget.chord!.toStringChord(), style: const TextStyle(fontSize: 16)),
+                child: Text(widget.chord!.toStringChord(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
             ConstrainedBox(

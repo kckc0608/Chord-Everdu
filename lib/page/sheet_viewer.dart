@@ -41,18 +41,23 @@ class _SheetViewerState extends State<SheetViewer> {
         ),
         body: SafeArea(
             child: Column(
-            children: [
-              Expanded(child: ListView.builder(
-                itemCount: blockCount+1,
-                itemBuilder: (context, index) {
-                  return index == blockCount
-                    ? const NewChordBlockButton()
-                    : ChordBlock(blockID: index);
-                },
-              )),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: ListView.builder(
+                      itemCount: blockCount+1,
+                      itemBuilder: (context, index) {
+                        return index == blockCount
+                            ? const NewChordBlockButton()
+                            : ChordBlock(blockID: index);
+                        },
+                    ),
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                   IconButton(
                     onPressed: () {
                       setState(() {});
