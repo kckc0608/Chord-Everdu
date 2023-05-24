@@ -192,14 +192,30 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             onPressed: (index) {
               setState(() {
                 _minorMajorSelection[index] = !_minorMajorSelection[index];
+                if (_minorMajorSelection[0] == true) {
+                  _chord.minor = 'm';
+                } else {
+                  _chord.minor = '';
+                }
+
+                if (_minorMajorSelection[1] == true) {
+                  _chord.major = 'M';
+                } else {
+                  _chord.major = '';
+                }
+                context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
               });
             },
           ),
           // 7 입력
           // asda input인 상황에서, 루트텐션/mM텐션이 7이 아니거나, asda텐션이 7인 경우
-          const ChordToggleButton(
-              buttonTextList: ['7'],
-              isSelected: [false],
+          ChordToggleButton(
+            buttonTextList: const ['7'],
+            isSelected: [false],
+            onPressed: (index) {
+              setState(() {
+              });
+            },
           ),
         ],
       ),
