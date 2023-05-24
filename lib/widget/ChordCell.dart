@@ -5,15 +5,11 @@ import 'package:provider/provider.dart';
 import '../data_class/sheet.dart';
 
 class ChordCell extends StatefulWidget {
-  final Chord? chord;
-  final String? lyric;
   final int cellID;
   final int blockID;
 
   const ChordCell({
     Key? key,
-    required this.chord,
-    required this.lyric,
     required this.cellID,
     required this.blockID,
   }) : super(key: key);
@@ -59,12 +55,18 @@ class _ChordCellState extends State<ChordCell> {
                 children: [
                   ConstrainedBox(
                     constraints: const BoxConstraints(minWidth: 36.0),
-                    child: Text(widget.chord!.toStringChord(), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    child: Text(
+                      context.watch<Sheet>().chords[widget.blockID][widget.cellID]!.toStringChord(),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
                   ),
                   ConstrainedBox(
                     constraints: const BoxConstraints(minWidth: 36.0),
                     child:
-                      Text(widget.lyric!, style: const TextStyle(fontSize: 16)),
+                      Text(
+                        context.watch<Sheet>().lyrics[widget.blockID][widget.cellID]!,
+                        style: const TextStyle(fontSize: 16),
+                      ),
                       //TextField(),
                   ),
                 ],      ),

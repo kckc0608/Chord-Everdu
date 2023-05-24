@@ -141,7 +141,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               isSelected: _rootSelection,
               onPressed: (index) {
                 setState(() {
-                  _rootSelection[_chord.root] = false;
+                  if (_chord.root > -1) _rootSelection[_chord.root] = false;
                   _rootSelection[index] = true;
                   _chord.root = index;
                   context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
@@ -447,7 +447,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           // type ChordKeyboard.typeTens
           return ChordToggleButton(
               buttonTextList: global.tensionList,
-              isSelected: _numberSelection
+              isSelected: _numberSelection,
+              onPressed: (index) {},
           );
           // return buildToggleButton(
           //     [global.tensionList[index]], _numberSelection[index], (i) {

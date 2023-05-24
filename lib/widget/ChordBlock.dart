@@ -26,8 +26,6 @@ class _ChordBlockState extends State<ChordBlock> {
       cellList.add(ChordCell(
         blockID: widget.blockID,
         cellID: i,
-        chord: chordList[i],
-        lyric: lyricList[i],
       ));
     }
 
