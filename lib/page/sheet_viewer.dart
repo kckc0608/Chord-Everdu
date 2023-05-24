@@ -23,6 +23,7 @@ class SheetViewer extends StatefulWidget {
 }
 
 class _SheetViewerState extends State<SheetViewer> {
+  late int _songKey;
 
   @override
   void initState() {
@@ -33,7 +34,9 @@ class _SheetViewerState extends State<SheetViewer> {
 
   @override
   Widget build(BuildContext context) {
-    int blockCount = context.watch<Sheet>().chords.length;
+    int blockCount = context.select((Sheet sheet) => sheet.chords.length);
+    _songKey = context.select((Sheet s) => s.songKey);
+
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
@@ -59,25 +62,24 @@ class _SheetViewerState extends State<SheetViewer> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                   IconButton(
-                    onPressed: () {
-                      context.read<Sheet>().addCell(
-                        context.read<Sheet>().selectedBlockIndex,
-                        Chord(),
-                        "",
-                      );
-                    },
                     icon: const Icon(Icons.add),
+                    onPressed: () {
+                      setState(() {
+                        context.read<Sheet>().addCell(
+                          context.read<Sheet>().selectedBlockIndex,
+                          Chord(),
+                          "",
+                        );
+                      });
+                    },
                   ),
                   IconButton(
                     onPressed: () {
-                      setState(() {
-                      });
                     },
                     icon: const Icon(Icons.remove),
                   ),
                   IconButton(
                     onPressed: () {
-                      setState(() {});
                     },
                     icon: const Icon(Icons.arrow_downward_outlined),
                   ),
@@ -127,6 +129,5 @@ class _SheetViewerState extends State<SheetViewer> {
     context.read<Sheet>().chords.clear();
     context.read<Sheet>().lyrics.clear();
     context.read<Sheet>().copyFromData(sheetData);
-
   }
 }

@@ -29,6 +29,11 @@ class Sheet with ChangeNotifier {
     notifyListeners();
   }
 
+  void setSelectedCellIndex(int index) {
+    selectedCellIndex = index;
+    notifyListeners();
+  }
+
   void addCell(int blockID, Chord chord, String lyric) {
     chords[blockID].add(chord);
     lyrics[blockID].add(lyric);
@@ -38,6 +43,15 @@ class Sheet with ChangeNotifier {
   void addBlock() {
     chords.add([]);
     lyrics.add([]);
+    notifyListeners();
+  }
+
+  void notifyChange() {
+    notifyListeners();
+  }
+
+  void updateChord(int blockID, int cellID, Chord chord) {
+    chords[blockID][cellID] = chord;
     notifyListeners();
   }
 }

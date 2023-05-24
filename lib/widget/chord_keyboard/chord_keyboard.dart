@@ -1,7 +1,9 @@
 import 'package:chord_everdu/widget/chord_keyboard/chord_toggle_button.dart';
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/environment/global.dart' as global;
+import 'package:provider/provider.dart';
 import '../../data_class/chord.dart';
+import '../../data_class/sheet.dart';
 
 class ChordKeyboard extends StatefulWidget {
   const ChordKeyboard({
@@ -21,14 +23,6 @@ class ChordKeyboard extends StatefulWidget {
 }
 
 class _ChordKeyboardState extends State<ChordKeyboard> {
-  late List<List<bool>> _rootSelection;
-  //late List<bool> _minorMajorSelection;
-  //late List<bool> _asdaSelection;
-  //late List<bool> _rootAddSelection;
-  late List<bool> _tensionAddSelection;
-
-  //late List<List<bool>> _numberSelection;
-
   late int _songKey;
 
   final TextStyle _toggleTextStyle =
@@ -38,32 +32,34 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   bool isRootInput = true;
 
   // currentCell 이 null 이 아닐 때 이 위젯이 생성되기 때문에, 코드는 항상 존재함.
-  //late Chord chord;
-  Chord chord = Chord();
+  late Chord _chord;
   late int _nowPage;
-  late int _selectedIndex;
+  late int _selectedCellIndex;
+  late int _selectedBlockIndex;
 
-  List<bool> rootSelected = [false, false, false, false, false, false, false];
-  List<bool> asdsSelection = [false, false, false, false];
-  List<bool> minorMajorSelection = [false, false];
-  List<bool> numberSelection = [false, false, false, false, false, false, false];
-  List<bool> rootAddSelection = [false, false];
-  List<bool> tensionAddSelection = [false, false];
-  List<bool> baseAddSelection = [false, false, false];
+  List<bool> _rootSelection = [false, false, false, false, false, false, false];
+  List<bool> _asdaSelection = [false, false, false, false];
+  List<bool> _minorMajorSelection = [false, false];
+  List<bool> _numberSelection = [false, false, false, false, false, false, false];
+  List<bool> _rootSharpSelection = [false, false];
+  List<bool> _tensionSharpSelection = [false, false];
+  List<bool> _baseSharpSelection = [false, false, false];
 
   @override
   Widget build(BuildContext context) {
-    //_nowPage = context.select((Sheet s) => s.nowBlock); // page가 바뀌면 리빌드
-    //_selectedIndex = context.select((Sheet s) => s.selectedCellIndex); // 선택한 인덱스가 바뀌면 리빌드
-    //_songKey = context.select((Sheet s) => s.songKey); // songKey가 바뀌면 리빌드
-    _songKey = 0;
+    _selectedBlockIndex = context.select((Sheet s) => s.selectedBlockIndex);
+    _selectedCellIndex = context.select((Sheet s) => s.selectedCellIndex);
+    if (_selectedBlockIndex > -1 && _selectedCellIndex > -1) {
+      _chord = context.read<Sheet>().chords[_selectedBlockIndex][_selectedCellIndex] ?? Chord();
+      setButtonWithChord();
+    } else {
+      _chord = Chord();
+    }
 
     //if (_selectedIndex < context.select((Sheet s) => s.chords[_nowPage].length))
-    //  chord = context.select((Sheet s) => s.chords[_nowPage][_selectedIndex]!); // 선택한 코드구성이 바뀌면 리빌드
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
-    //setButton();
-    print("Now Input is " + nowInput.toString());
+    print("Now Input is $nowInput");
 
     return Container(
       height: 340,
@@ -142,10 +138,13 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           //} else {
             return ChordToggleButton(
               buttonTextList: const ['C', 'D', 'E','F','G','A','B'],
-              isSelected: rootSelected,
+              isSelected: _rootSelection,
               onPressed: (index) {
                 setState(() {
-                  rootSelected[index] = !rootSelected[index];
+                  _rootSelection[_chord.root] = false;
+                  _rootSelection[index] = true;
+                  _chord.root = index;
+                  context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
                 });
               },
             );
@@ -168,11 +167,11 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
         children: [
           ChordToggleButton(
             buttonTextList: const ['add', 'sus', 'dim', 'aug'],
-            isSelected: asdsSelection,
+            isSelected: _asdaSelection,
             type: ChordKeyboard.typeASDA,
             onPressed: (index) {
               setState(() {
-                asdsSelection[index] = !asdsSelection[index];
+                _asdaSelection[index] = !_asdaSelection[index];
               });
             },
           ),
@@ -253,10 +252,10 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               // },
           ChordToggleButton(
             buttonTextList: const ['m', 'M'],
-            isSelected: minorMajorSelection,
+            isSelected: _minorMajorSelection,
             onPressed: (index) {
               setState(() {
-                minorMajorSelection[index] = !minorMajorSelection[index];
+                _minorMajorSelection[index] = !_minorMajorSelection[index];
               });
             },
           ),
@@ -448,7 +447,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           // type ChordKeyboard.typeTens
           return ChordToggleButton(
               buttonTextList: global.tensionList,
-              isSelected: numberSelection
+              isSelected: _numberSelection
           );
           // return buildToggleButton(
           //     [global.tensionList[index]], _numberSelection[index], (i) {
@@ -478,17 +477,19 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           ChordToggleButton(
-              buttonTextList: ['#', 'b'],
-              isSelected: rootAddSelection,
+            buttonTextList: const ['#', 'b'],
+            isSelected: _rootSharpSelection,
+            onPressed: (index) {
+            },
           ),
           ChordToggleButton(
-            buttonTextList: ['#', 'b'],
-            isSelected: tensionAddSelection,
+            buttonTextList: const ['#', 'b'],
+            isSelected: _tensionSharpSelection,
             type: ChordKeyboard.typeTens,
           ),
           ChordToggleButton(
-            buttonTextList: ['/', '#', 'b'],
-            isSelected: baseAddSelection,
+            buttonTextList: const ['/', '#', 'b'],
+            isSelected: _baseSharpSelection,
             type: ChordKeyboard.typeBase,
           ),
 
@@ -621,37 +622,40 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   //   };
   // }
   //
-  // setButton() {
-  //   _rootSelection = [[false], [false], [false], [false], [false], [false], [false]];
-  //   _minorMajorSelection = [false, false];
-  //   _asdaSelection = [false, false, false, false];
-  //   _rootAddSelection = [false, false];
-  //   _tensionAddSelection = [false, false];
-  //   _baseAddSelection = [false, false, false];
-  //   _numberSelection = [[false], [false], [false], [false], [false], [false], [false], [false]];
-  //
-  //   if (chord.root > -1) _rootSelection[chord.root][0] = true;
-  //   if (chord.rootSharp == 1) _rootAddSelection[0] = true;
-  //   else if (chord.rootSharp == -1) _rootAddSelection[1] = true;
-  //   if (chord.rootTension > -1) _numberSelection[chord.rootTension][0] = true;
-  //   if (chord.minor.isNotEmpty) _minorMajorSelection[0] = true;
-  //   if (chord.major.isNotEmpty) _minorMajorSelection[1] = true;
-  //   if (chord.minorTension > -1) _numberSelection[chord.minorTension][0] = true;
-  //   if (chord.majorTension > -1) _numberSelection[chord.majorTension][0] = true;
-  //   if (chord.tensionSharp == 1) _tensionAddSelection[0] = true;
-  //   else if (chord.tensionSharp == -1) _tensionAddSelection[1] = true;
-  //   if (chord.tension > -1) _numberSelection[chord.tension][0] = true;
-  //   if (chord.asdaTension > -1) _numberSelection[chord.asdaTension][0] = true;
-  //   if (chord.base > -1) _rootSelection[chord.base][0] = true;
-  //   _baseAddSelection[0] = !isRootInput;
-  //   if (chord.baseSharp == 1) _baseAddSelection[1] = true;
-  //   else if (chord.baseSharp == -1) _baseAddSelection[2] = true;
-  //   if (chord.asda == "add")
-  //     _asdaSelection[0] = true;
-  //   else if (chord.asda == "sus")
-  //     _asdaSelection[1] = true;
-  //   else if (chord.asda == "dim")
-  //     _asdaSelection[2] = true;
-  //   else if (chord.asda == "aug") _asdaSelection[3] = true;
-  // }
+  void setButtonWithChord() {
+    _rootSelection = [false, false, false, false, false, false, false];
+    _minorMajorSelection = [false, false];
+    _asdaSelection = [false, false, false, false];
+    _rootSharpSelection = [false, false];
+    _tensionSharpSelection = [false, false];
+    _baseSharpSelection = [false, false, false];
+    _numberSelection = [false, false, false, false, false, false, false];
+
+    if (_chord.root > -1) _rootSelection[_chord.root] = true;
+    if (_chord.rootSharp == 1) {
+      _rootSharpSelection[0] = true;
+    } else if (_chord.rootSharp == -1) {
+      _rootSharpSelection[1] = true;
+    }
+    if (_chord.rootTension > -1) _numberSelection[_chord.rootTension] = true;
+    if (_chord.minor.isNotEmpty) _minorMajorSelection[0] = true;
+    if (_chord.major.isNotEmpty) _minorMajorSelection[1] = true;
+    if (_chord.minorTension > -1) _numberSelection[_chord.minorTension] = true;
+    if (_chord.majorTension > -1) _numberSelection[_chord.majorTension] = true;
+    if (_chord.tensionSharp == 1) _tensionSharpSelection[0] = true;
+    else if (_chord.tensionSharp == -1) _tensionSharpSelection[1] = true;
+    if (_chord.tension > -1) _numberSelection[_chord.tension] = true;
+    if (_chord.asdaTension > -1) _numberSelection[_chord.asdaTension] = true;
+    if (_chord.base > -1) _rootSelection[_chord.base] = true;
+    _baseSharpSelection[0] = !isRootInput;
+    if (_chord.baseSharp == 1) _baseSharpSelection[1] = true;
+    else if (_chord.baseSharp == -1) _baseSharpSelection[2] = true;
+    if (_chord.asda == "add")
+      _asdaSelection[0] = true;
+    else if (_chord.asda == "sus")
+      _asdaSelection[1] = true;
+    else if (_chord.asda == "dim")
+      _asdaSelection[2] = true;
+    else if (_chord.asda == "aug") _asdaSelection[3] = true;
+  }
 }

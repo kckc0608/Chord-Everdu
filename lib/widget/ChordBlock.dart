@@ -14,53 +14,75 @@ class ChordBlock extends StatefulWidget {
 }
 
 class _ChordBlockState extends State<ChordBlock> {
+  bool isSelected = false;
   @override
   Widget build(BuildContext context) {
     List<ChordCell> cellList = [];
-    List<Chord?> chordList = context.watch<Sheet>().chords[widget.blockID];
-    List<String?> lyricList = context.watch<Sheet>().lyrics[widget.blockID];
-    bool isSelected = context.select((Sheet sheet) => sheet.selectedBlockIndex == widget.blockID);
+    /// 이렇게 하면 sheet.chords[blockID] 가 아니라 sheet.chords 를 추적하는 것 같음.
+    List<Chord?> chordList = context.select((Sheet sheet) => sheet.chords[widget.blockID]);
+    List<String?> lyricList = context.select((Sheet sheet) => sheet.lyrics[widget.blockID]);
 
     for (int i = 0; i < chordList.length; i++) {
       cellList.add(ChordCell(
+        blockID: widget.blockID,
+        cellID: i,
         chord: chordList[i],
         lyric: lyricList[i],
       ));
     }
 
-    return GestureDetector(
-      onTap: () {
+    return Focus(
+      onFocusChange: (hasFocus) {
+        if (hasFocus) {
+          context.read<Sheet>().selectedBlockIndex = widget.blockID;
+        }
+
+        /// setState를 호출하면 기존에 선택했던 블록과, 새로 선택된 블록을 통으로 리빌드함.
         setState(() {
-          context.read<Sheet>().setSelectedBlockIndex(widget.blockID);
+          isSelected = hasFocus;
         });
       },
-      child: Container(
-        color: isSelected ? Colors.yellow : Colors.white,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8.0),
-              child: Row(
+      child: Builder(
+        builder: (context) {
+          FocusNode focusNode = Focus.of(context);
+          return GestureDetector(
+            onTap: () {
+              if (focusNode.hasFocus) {
+                focusNode.unfocus();
+              } else {
+                focusNode.requestFocus();
+              }
+            },
+            child: Container(
+              color: isSelected ? Colors.yellow : Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(0, 0, 4, 0),
-                    child: Text("change block name"),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                    child: Row(
+                      children: [
+                        Padding(
+                          padding: EdgeInsets.fromLTRB(0, 0, 4, 0),
+                          child: Text("change block name"),
+                        ),
+                        InkWell(
+                          child: Icon(Icons.edit_outlined),
+                        ),
+                        InkWell(
+                          child: Icon(Icons.delete_forever_outlined, color: Colors.red,),
+                        )
+                      ],
+                    ),
                   ),
-                  InkWell(
-                    child: Icon(Icons.edit_outlined),
-                  ),
-                  InkWell(
-                    child: Icon(Icons.delete_forever_outlined, color: Colors.red,),
+                  Wrap(
+                    children: cellList,
                   )
                 ],
               ),
             ),
-            Wrap(
-              children: cellList,
-            )
-          ],
-        ),
+          );
+        }
       ),
     );
   }
