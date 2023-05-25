@@ -39,11 +39,11 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   late int _selectedCellIndex;
   late int _selectedBlockIndex;
 
-  List<List<bool>> _rootSelection = [[false], [false], [false], [false], [false], [false], [false]];
+  List<List<bool>> _rootAndBaseSelection = [[false], [false], [false], [false], [false], [false], [false]];
   List<bool> _asdaSelection = [false, false, false, false];
   List<bool> _minorMajorSelection = [false, false];
   List<bool> _seventhSelection = [false];
-  List<bool> _numberSelection = [false, false, false, false, false, false, false];
+  List<List<bool>> _numberSelection = [[false], [false], [false], [false], [false], [false], [false]];
   List<bool> _rootSharpSelection = [false, false];
   List<bool> _tensionSharpSelection = [false, false];
   List<bool> _baseSharpSelection = [false, false, false];
@@ -64,6 +64,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     // TODO : 현재 코드 조합에 따라 now Input 설정
     // print("Now Input is $nowInput");
     print(_chord);
+    print(inputMode);
 
     return Container(
       height: 340,
@@ -126,25 +127,33 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(7, (index) => ChordToggleButton(
             buttonTextList: rootButtonTextList[index],
-            isSelected: _rootSelection[index],
+            isSelected: _rootAndBaseSelection[index],
             type: (_chord.base == index) ? ChordKeyboard.typeBase : ChordKeyboard.typeRoot,
             onPressed: (_) {
               setState(() {
+                if (index == _chord.root) {
+                  inputMode = InputMode.root;
+                  return;
+                }
+
                 switch (inputMode) {
                   case InputMode.root:
-                    if (_chord.root > -1)
-                      _rootSelection[_chord.root][0] = false;
-                    _rootSelection[index][0] = true;
+                    if (_chord.root > -1) {
+                      _rootAndBaseSelection[_chord.root][0] = false;
+                    }
+                    _rootAndBaseSelection[index][0] = true;
                     _chord.root = index;
                     break;
                   case InputMode.base:
-                    if (_chord.base > -1)
-                      _rootSelection[_chord.base][0] = false;
-                    _rootSelection[index][0] = true;
+                    if (_chord.base > -1) {
+                      _rootAndBaseSelection[_chord.base][0] = false;
+                    }
+                    _rootAndBaseSelection[index][0] = true;
                     _chord.base = index;
                     break;
                   default:
-                    throw Exception("잘못된 input Mode 가 들어왔습니다.");
+                    inputMode = InputMode.root;
+                    //throw Exception("잘못된 input Mode 가 들어왔습니다.");
                 }
                 context.read<Sheet>().updateChord(
                     _selectedBlockIndex, _selectedCellIndex, _chord);
@@ -167,6 +176,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             type: ChordKeyboard.typeASDA,
             onPressed: (index) {
               setState(() {
+                inputMode = InputMode.asda;
                 if (_chord.asda.isNotEmpty) {
                   _asdaSelection[asdaTensionList.indexOf(_chord.asda)] = false;
                 }
@@ -235,29 +245,36 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   //
   Expanded buildRowTension() {
     return Expanded(
-      child: ChordToggleButton(
-        buttonTextList: global.tensionList,
-        isSelected: _numberSelection,
-        onPressed: (index) {
-          setState(() {
-            _numberSelection[index] = !_numberSelection[index];
-            switch (inputMode) {
-              case InputMode.root:
-                _chord.rootTension = _numberSelection[index] == true ? index : -1;
-                break;
-              case InputMode.asda:
-                _chord.asdaTension = _numberSelection[index] == true ? index : -1;
-                break;
-              case InputMode.tension:
-                _chord.tension = _numberSelection[index] == true ? index : -1;
-                break;
-              default:
-                break;
-            }
-            context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
-          });
-        },
-    ));
+      child: Row(
+        children: List.generate(7, (index) =>
+            ChordToggleButton(
+              buttonTextList: [global.tensionList[index]],
+              isSelected: _numberSelection[index],
+              type: index == _chord.asdaTension
+                  ? ChordKeyboard.typeASDA
+                  : index == _chord.tension
+                  ? ChordKeyboard.typeTens
+                  : ChordKeyboard.typeRoot,
+              onPressed: (_) {
+                setState(() {
+                  _numberSelection[index][0] = !_numberSelection[index][0];
+                  switch (inputMode) {
+                    case InputMode.root:
+                      _chord.rootTension = _numberSelection[index][0] == true ? index : -1;
+                      break;
+                    case InputMode.asda:
+                      _chord.asdaTension = _numberSelection[index][0] == true ? index : -1;
+                      break;
+                    case InputMode.tension:
+                      _chord.tension = _numberSelection[index][0] == true ? index : -1;
+                      break;
+                    default:
+                      break;
+                  }
+                  context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
+                });},
+            )),
+      ));
           // // now input에 따라 비활성화 된 버튼의 활성화 색을 결정
           // if (nowInput == global.NowInput.tension || nowInput == null)
           //   _type = ChordKeyboard.typeTens;
@@ -562,45 +579,62 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   // }
   //
   void setButtonWithChord() {
-    _rootSelection = [[false], [false], [false], [false], [false], [false], [false]];
+    _rootAndBaseSelection = [[false], [false], [false], [false], [false], [false], [false]];
     _minorMajorSelection = [false, false];
     _seventhSelection = [false];
     _asdaSelection = [false, false, false, false];
     _rootSharpSelection = [false, false];
     _tensionSharpSelection = [false, false];
     _baseSharpSelection = [false, false, false];
-    _numberSelection = [false, false, false, false, false, false, false];
+    _numberSelection = [[false], [false], [false], [false], [false], [false], [false]];
 
-    if (_chord.root > -1) _rootSelection[_chord.root][0] = true;
+    if (_chord.root > -1) _rootAndBaseSelection[_chord.root][0] = true;
     if (_chord.rootSharp == 1) {
       _rootSharpSelection[0] = true;
     } else if (_chord.rootSharp == -1) {
       _rootSharpSelection[1] = true;
     }
-    if (_chord.rootTension == 7) _seventhSelection[0] = true;
-    else if (_chord.rootTension > -1) _numberSelection[_chord.rootTension] = true;
+    if (_chord.rootTension == 7) {
+      _seventhSelection[0] = true;
+    } else if (_chord.rootTension > -1) {
+      _numberSelection[_chord.rootTension][0] = true;
+    }
     if (_chord.minor.isNotEmpty) _minorMajorSelection[0] = true;
     if (_chord.major.isNotEmpty) _minorMajorSelection[1] = true;
-    if (_chord.minorTension == 7) _seventhSelection[0] = true;
-    else if (_chord.minorTension > -1) _numberSelection[_chord.minorTension] = true;
-    if (_chord.majorTension == 7) _seventhSelection[0] = true;
-    else if (_chord.majorTension > -1) _numberSelection[_chord.majorTension] = true;
-    if (_chord.tensionSharp == 1) _tensionSharpSelection[0] = true;
-    else if (_chord.tensionSharp == -1) _tensionSharpSelection[1] = true;
-    if (_chord.tension > -1) _numberSelection[_chord.tension] = true;
-    if (_chord.asdaTension > -1) _numberSelection[_chord.asdaTension] = true;
+    if (_chord.minorTension == 7) {
+      _seventhSelection[0] = true;
+    } else if (_chord.minorTension > -1) {
+      _numberSelection[_chord.minorTension][0] = true;
+    }
+    if (_chord.majorTension == 7) {
+      _seventhSelection[0] = true;
+    } else if (_chord.majorTension > -1) {
+      _numberSelection[_chord.majorTension][0] = true;
+    }
+    if (_chord.tensionSharp == 1) {
+      _tensionSharpSelection[0] = true;
+    } else if (_chord.tensionSharp == -1) {
+      _tensionSharpSelection[1] = true;
+    }
+    if (_chord.tension > -1) _numberSelection[_chord.tension][0] = true;
+    if (_chord.asdaTension > -1) _numberSelection[_chord.asdaTension][0] = true;
     if (_chord.base > -1) {
-      _rootSelection[_chord.base][0] = true;
+      _rootAndBaseSelection[_chord.base][0] = true;
       _baseSharpSelection[0] = true;
     }
-    if (_chord.baseSharp == 1) _baseSharpSelection[1] = true;
-    else if (_chord.baseSharp == -1) _baseSharpSelection[2] = true;
-    if (_chord.asda == "add")
+    if (_chord.baseSharp == 1) {
+      _baseSharpSelection[1] = true;
+    } else if (_chord.baseSharp == -1) {
+      _baseSharpSelection[2] = true;
+    }
+    if (_chord.asda == "add") {
       _asdaSelection[0] = true;
-    else if (_chord.asda == "sus")
+    } else if (_chord.asda == "sus") {
       _asdaSelection[1] = true;
-    else if (_chord.asda == "dim")
+    } else if (_chord.asda == "dim") {
       _asdaSelection[2] = true;
-    else if (_chord.asda == "aug") _asdaSelection[3] = true;
+    } else if (_chord.asda == "aug") {
+      _asdaSelection[3] = true;
+    }
   }
 }
