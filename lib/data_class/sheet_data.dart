@@ -4,5 +4,5 @@ class SheetData {
   String chordData = '';
   String lyricData = '';
 
-  SheetData(this.chordData, this.lyricData);
+  SheetData({required this.chordData, required this.lyricData});
 }

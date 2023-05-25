@@ -23,7 +23,6 @@ class _ChordCellState extends State<ChordCell> {
   @override
   Widget build(BuildContext context) {
     print("build:${widget.cellID}");
-    //print(context.read<Sheet>().selectedCellIndex);
     return Focus(
       onFocusChange: (hasFocus) {
         setState(() {
