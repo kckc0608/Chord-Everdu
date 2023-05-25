@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../data_class/chord.dart';
 import '../../data_class/sheet.dart';
 
+enum InputMode {root, asda, base, tension}
 class ChordKeyboard extends StatefulWidget {
   const ChordKeyboard({
     Key? key,
@@ -31,15 +32,17 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   String? nowInput; // 현재 입력중인 부분체크
   bool isRootInput = true;
 
+  InputMode inputMode = InputMode.root;
+
   // currentCell 이 null 이 아닐 때 이 위젯이 생성되기 때문에, 코드는 항상 존재함.
   late Chord _chord;
-  late int _nowPage;
   late int _selectedCellIndex;
   late int _selectedBlockIndex;
 
-  List<bool> _rootSelection = [false, false, false, false, false, false, false];
+  List<List<bool>> _rootSelection = [[false], [false], [false], [false], [false], [false], [false]];
   List<bool> _asdaSelection = [false, false, false, false];
   List<bool> _minorMajorSelection = [false, false];
+  List<bool> _seventhSelection = [false];
   List<bool> _numberSelection = [false, false, false, false, false, false, false];
   List<bool> _rootSharpSelection = [false, false];
   List<bool> _tensionSharpSelection = [false, false];
@@ -59,7 +62,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     //if (_selectedIndex < context.select((Sheet s) => s.chords[_nowPage].length))
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
-    print("Now Input is $nowInput");
+    // print("Now Input is $nowInput");
+    print(_chord);
 
     return Container(
       height: 340,
@@ -68,7 +72,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
       child: Column(
         children: [
           buildRowRecentChord(),
-          buildRowRoot(context),
+          buildRowRootAndBase(context),
           buildRowMiddle(),
           buildRowTension(),
           buildRowSharpFlat(),
@@ -113,50 +117,41 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     );
   }
   //
-  Widget buildRowRoot(BuildContext context) {
+  Widget buildRowRootAndBase(BuildContext context) {
+    const List<List<String>> rootButtonTextList = [
+      ['C'], ['D'], ['E'], ['F'], ['G'], ['A'], ['B']
+    ];
     return Expanded(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(1, (index) {
-          // 현재 루트를 입력하는 상태인 경우
-          //if (index == chord.root) {
-            //return ChordToggleButton(isSelected: [false]);
-            //   buildToggleButton(
-            //   [Chord(root: index).toStringChord(songKey: _songKey)],
-            //   _rootSelection[index],
-            //   _onPressedRoot(index, type: ChordKeyboard.typeRoot),
-            //   type: 1,
-            // );
-          //} else if (index == chord.base) {
-            //return ChordToggleButton(isSelected: [false]);
-            //   buildToggleButton(
-            //   [Chord(root: index).toStringChord(songKey: _songKey)],
-            //   _rootSelection[index],
-            //   _onPressedRoot(index, type: ChordKeyboard.typeBase),
-            //   type: 3,
-            // );
-          //} else {
-            return ChordToggleButton(
-              buttonTextList: const ['C', 'D', 'E','F','G','A','B'],
-              isSelected: _rootSelection,
-              onPressed: (index) {
-                setState(() {
-                  if (_chord.root > -1) _rootSelection[_chord.root] = false;
-                  _rootSelection[index] = true;
-                  _chord.root = index;
-                  context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
-                });
-              },
-            );
-            //   buildToggleButton(
-            //   [Chord(root: index).toStringChord(songKey: _songKey)],
-            //   _rootSelection[index],
-            //   _onPressedRoot(index, type: isRootInput ? ChordKeyboard.typeRoot : ChordKeyboard.typeBase),
-            //   type: isRootInput ? ChordKeyboard.typeRoot : ChordKeyboard.typeBase,
-            // );
-          //}
-        }),
-      ),
+        children: List.generate(7, (index) => ChordToggleButton(
+            buttonTextList: rootButtonTextList[index],
+            isSelected: _rootSelection[index],
+            type: (_chord.base == index) ? ChordKeyboard.typeBase : ChordKeyboard.typeRoot,
+            onPressed: (_) {
+              setState(() {
+                switch (inputMode) {
+                  case InputMode.root:
+                    if (_chord.root > -1)
+                      _rootSelection[_chord.root][0] = false;
+                    _rootSelection[index][0] = true;
+                    _chord.root = index;
+                    break;
+                  case InputMode.base:
+                    if (_chord.base > -1)
+                      _rootSelection[_chord.base][0] = false;
+                    _rootSelection[index][0] = true;
+                    _chord.base = index;
+                    break;
+                  default:
+                    throw Exception("잘못된 input Mode 가 들어왔습니다.");
+                }
+                context.read<Sheet>().updateChord(
+                    _selectedBlockIndex, _selectedCellIndex, _chord);
+              });
+            })
+        ),
+      )
     );
   }
   //
@@ -199,6 +194,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 }
 
                 if (_minorMajorSelection[1] == true) {
+                  /// root 코드에 바로 7 넣고나서 M 누르면 7 뒤에 M 가 생김 ( root tension 에서 Major tension 으로 옮겨야함 )
                   _chord.major = 'M';
                 } else {
                   _chord.major = '';
@@ -211,9 +207,24 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           // asda input인 상황에서, 루트텐션/mM텐션이 7이 아니거나, asda텐션이 7인 경우
           ChordToggleButton(
             buttonTextList: const ['7'],
-            isSelected: [false],
+            isSelected: _seventhSelection,
             onPressed: (index) {
               setState(() {
+                _seventhSelection[0] = !_seventhSelection[0];
+                if (_seventhSelection[0] == true) {
+                  if (_chord.major.isNotEmpty) {
+                    _chord.majorTension = 7;
+                  } else if (_chord.minor.isNotEmpty) {
+                    _chord.minorTension = 7;
+                  } else {
+                    _chord.rootTension = 7;
+                  }
+                } else {
+                  _chord.majorTension = -1;
+                  _chord.minorTension = -1;
+                  _chord.rootTension = -1;
+                }
+                context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
               });
             },
           ),
@@ -224,10 +235,29 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   //
   Expanded buildRowTension() {
     return Expanded(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(1, (index) {
-          int _type = ChordKeyboard.typeTens;
+      child: ChordToggleButton(
+        buttonTextList: global.tensionList,
+        isSelected: _numberSelection,
+        onPressed: (index) {
+          setState(() {
+            _numberSelection[index] = !_numberSelection[index];
+            switch (inputMode) {
+              case InputMode.root:
+                _chord.rootTension = _numberSelection[index] == true ? index : -1;
+                break;
+              case InputMode.asda:
+                _chord.asdaTension = _numberSelection[index] == true ? index : -1;
+                break;
+              case InputMode.tension:
+                _chord.tension = _numberSelection[index] == true ? index : -1;
+                break;
+              default:
+                break;
+            }
+            context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
+          });
+        },
+    ));
           // // now input에 따라 비활성화 된 버튼의 활성화 색을 결정
           // if (nowInput == global.NowInput.tension || nowInput == null)
           //   _type = ChordKeyboard.typeTens;
@@ -297,11 +327,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           //   }, type: _type);
           // }
           // type ChordKeyboard.typeTens
-          return ChordToggleButton(
-              buttonTextList: global.tensionList,
-              isSelected: _numberSelection,
-              onPressed: (index) {},
-          );
+
           // return buildToggleButton(
           //     [global.tensionList[index]], _numberSelection[index], (i) {
           //   setState(() {
@@ -319,9 +345,6 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           //     context.read<Sheet>().setStateOfSheet();
           //   });
           // }, type: _type);
-        }),
-      ),
-    );
   }
   //
   Expanded buildRowSharpFlat() {
@@ -333,17 +356,80 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             buttonTextList: const ['#', 'b'],
             isSelected: _rootSharpSelection,
             onPressed: (index) {
+              setState(() {
+                _rootSharpSelection[index] = !_rootSharpSelection[index];
+                if (_rootSharpSelection[0] && _rootSharpSelection[1]) {
+                  _rootSharpSelection[0] = false;
+                  _rootSharpSelection[1] = false;
+                  _rootSharpSelection[index] = true;
+                }
+                if (_rootSharpSelection[0] == true) {
+                  _chord.rootSharp = 1;
+                } else if (_rootSharpSelection[1] == true) {
+                  _chord.rootSharp = -1;
+                } else {
+                  _chord.rootSharp = 0;
+                }
+                context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
+              });
             },
           ),
           ChordToggleButton(
             buttonTextList: const ['#', 'b'],
             isSelected: _tensionSharpSelection,
             type: ChordKeyboard.typeTens,
+            onPressed: (index) {
+              setState(() {
+                _tensionSharpSelection[index] = !_tensionSharpSelection[index];
+                if (_tensionSharpSelection[0] && _tensionSharpSelection[1]) {
+                  _tensionSharpSelection[0] = false;
+                  _tensionSharpSelection[1] = false;
+                  _tensionSharpSelection[index] = true;
+                }
+                if (_tensionSharpSelection[0] == true) {
+                  _chord.tensionSharp = 1;
+                } else if (_tensionSharpSelection[1] == true) {
+                  _chord.tensionSharp = -1;
+                } else {
+                  _chord.tensionSharp = 0;
+                }
+                context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
+              });
+            } ,
           ),
           ChordToggleButton(
             buttonTextList: const ['/', '#', 'b'],
             isSelected: _baseSharpSelection,
             type: ChordKeyboard.typeBase,
+            onPressed: (index) {
+              setState(() {
+                _baseSharpSelection[index] = !_baseSharpSelection[index];
+                if (_tensionSharpSelection[1] && _tensionSharpSelection[2]) {
+                  _tensionSharpSelection[1] = false;
+                  _tensionSharpSelection[2] = false;
+                  _tensionSharpSelection[index] = true;
+                }
+                if (_baseSharpSelection[0] == true) {
+                  inputMode = InputMode.base;
+                  if (_chord.root > -1) {
+                    _chord.base = (_chord.root + 2) % 7;
+                  }
+                } else {
+                  inputMode = InputMode.root;
+                  _chord.base = -1;
+                  _chord.baseSharp = 0;
+                }
+
+                if (_baseSharpSelection[1] == true) {
+                  _chord.baseSharp = 1;
+                } else if (_baseSharpSelection[2] == true) {
+                  _chord.baseSharp = -1;
+                } else {
+                  _chord.baseSharp = 0;
+                }
+                context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
+              });
+            },
           ),
 
           // buildToggleButton(['#', 'b'], _rootAddSelection, (index) {
@@ -408,19 +494,19 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           // chord.setByMap(touchChord!.toMap());
           // context.read<Sheet>().setStateOfSheet();
         },
-        child: Text(
-          text,
-          //touchChord?.toStringChord(songKey: _songKey) ?? text,
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
         style: ButtonStyle(
-          minimumSize: MaterialStateProperty.all(Size(40.0, 35.0)),
+          minimumSize: MaterialStateProperty.all(const Size(40.0, 35.0)),
           backgroundColor: MaterialStateProperty.all(Colors.white),
           foregroundColor: MaterialStateProperty.all(Colors.black),
           shape: MaterialStateProperty.all(RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(5.0),
-            side: BorderSide(color: Colors.black, width: 1.5),
+            side: const BorderSide(color: Colors.black, width: 1.5),
           )),
+        ),
+        child: Text(
+          text,
+          //touchChord?.toStringChord(songKey: _songKey) ?? text,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -476,31 +562,37 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   // }
   //
   void setButtonWithChord() {
-    _rootSelection = [false, false, false, false, false, false, false];
+    _rootSelection = [[false], [false], [false], [false], [false], [false], [false]];
     _minorMajorSelection = [false, false];
+    _seventhSelection = [false];
     _asdaSelection = [false, false, false, false];
     _rootSharpSelection = [false, false];
     _tensionSharpSelection = [false, false];
     _baseSharpSelection = [false, false, false];
     _numberSelection = [false, false, false, false, false, false, false];
 
-    if (_chord.root > -1) _rootSelection[_chord.root] = true;
+    if (_chord.root > -1) _rootSelection[_chord.root][0] = true;
     if (_chord.rootSharp == 1) {
       _rootSharpSelection[0] = true;
     } else if (_chord.rootSharp == -1) {
       _rootSharpSelection[1] = true;
     }
-    if (_chord.rootTension > -1) _numberSelection[_chord.rootTension] = true;
+    if (_chord.rootTension == 7) _seventhSelection[0] = true;
+    else if (_chord.rootTension > -1) _numberSelection[_chord.rootTension] = true;
     if (_chord.minor.isNotEmpty) _minorMajorSelection[0] = true;
     if (_chord.major.isNotEmpty) _minorMajorSelection[1] = true;
-    if (_chord.minorTension > -1) _numberSelection[_chord.minorTension] = true;
-    if (_chord.majorTension > -1) _numberSelection[_chord.majorTension] = true;
+    if (_chord.minorTension == 7) _seventhSelection[0] = true;
+    else if (_chord.minorTension > -1) _numberSelection[_chord.minorTension] = true;
+    if (_chord.majorTension == 7) _seventhSelection[0] = true;
+    else if (_chord.majorTension > -1) _numberSelection[_chord.majorTension] = true;
     if (_chord.tensionSharp == 1) _tensionSharpSelection[0] = true;
     else if (_chord.tensionSharp == -1) _tensionSharpSelection[1] = true;
     if (_chord.tension > -1) _numberSelection[_chord.tension] = true;
     if (_chord.asdaTension > -1) _numberSelection[_chord.asdaTension] = true;
-    if (_chord.base > -1) _rootSelection[_chord.base] = true;
-    _baseSharpSelection[0] = !isRootInput;
+    if (_chord.base > -1) {
+      _rootSelection[_chord.base][0] = true;
+      _baseSharpSelection[0] = true;
+    }
     if (_chord.baseSharp == 1) _baseSharpSelection[1] = true;
     else if (_chord.baseSharp == -1) _baseSharpSelection[2] = true;
     if (_chord.asda == "add")

@@ -123,8 +123,8 @@ class _SheetViewerState extends State<SheetViewer> {
   SheetData getSheetDataFromDB() {
     // TODO: DB 연동
     return SheetData(
-        'C|C#|Cadd2',
-        'hi|hi|hi'
+        'C|C#|Cadd2|C/E',
+        'hi|hi|hi|hihi'
     );
   }
 
