@@ -137,13 +137,6 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 }
 
                 switch (inputMode) {
-                  case InputMode.root:
-                    if (_chord.root > -1) {
-                      _rootAndBaseSelection[_chord.root][0] = false;
-                    }
-                    _rootAndBaseSelection[index][0] = true;
-                    _chord.root = index;
-                    break;
                   case InputMode.base:
                     if (_chord.base > -1) {
                       _rootAndBaseSelection[_chord.base][0] = false;
@@ -151,9 +144,15 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                     _rootAndBaseSelection[index][0] = true;
                     _chord.base = index;
                     break;
+                  case InputMode.root:
                   default:
                     inputMode = InputMode.root;
-                    //throw Exception("잘못된 input Mode 가 들어왔습니다.");
+                    if (_chord.root > -1) {
+                      _rootAndBaseSelection[_chord.root][0] = false;
+                    }
+                    _rootAndBaseSelection[index][0] = true;
+                    _chord.root = index;
+                    inputMode = InputMode.root;
                 }
                 context.read<Sheet>().updateChord(
                     _selectedBlockIndex, _selectedCellIndex, _chord);
