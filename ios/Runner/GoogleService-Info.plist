@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>225963577293-ursg0us5jsa9sbtob3l3rpt65hmbsuc8.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.225963577293-ursg0us5jsa9sbtob3l3rpt65hmbsuc8</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>225963577293-fn321hnf51250sqt6jt0ba2bcr82pp5l.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDheuAc5AzHeG_SXEqefcvRRdLygvwO_uU</string>
+	<key>GCM_SENDER_ID</key>
+	<string>225963577293</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.everdu.chordEverdu</string>
+	<key>PROJECT_ID</key>
+	<string>chord-everdu</string>
+	<key>STORAGE_BUCKET</key>
+	<string>chord-everdu.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:225963577293:ios:57c99d1210c861f70b3e84</string>
+</dict>
+</plist>

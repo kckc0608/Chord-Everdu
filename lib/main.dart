@@ -1,13 +1,17 @@
 import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:chord_everdu/delegate/sheet_search_delegate.dart';
+import 'package:chord_everdu/environment/app_state.dart';
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/page/search_sheet/search_sheet.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => Sheet()),
+      ChangeNotifierProvider(create: (_) => ApplicationState()),
     ],
     child: const MyApp(),
   ));

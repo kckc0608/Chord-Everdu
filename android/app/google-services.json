@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "225963577293",
+    "project_id": "chord-everdu",
+    "storage_bucket": "chord-everdu.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:225963577293:android:ba061317877232580b3e84",
+        "android_client_info": {
+          "package_name": "com.everdu.chord_everdu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "225963577293-fn321hnf51250sqt6jt0ba2bcr82pp5l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.everdu.chord_everdu",
+            "certificate_hash": "661d50c8d31b5b224201f6a93d2d62da64c03a38"
+          }
+        },
+        {
+          "client_id": "225963577293-a8h5c6msjep93kqb7v7f2ppggt7luvso.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrwwK-CdP8-DmLuiIfvnuKqwQW0IaZuSY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "225963577293-a8h5c6msjep93kqb7v7f2ppggt7luvso.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "225963577293-gelt2rpoigdot365ofjmidbdhit57onq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.everdu.chordEverdu.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

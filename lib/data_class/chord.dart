@@ -1,11 +1,11 @@
 import 'package:chord_everdu/environment/global.dart' as global;
 
 enum ChordAnalyzeMode {
-  Root, RootSharp, RootTension, 
-  Minor, MinorTension, Major, MajorTension,
-  TensionSharp, Tension,
-  ASDS, ASDSTension,
-  Base, BaseSharp
+  root, rootSharp, rootTension,
+  minor, minorTension, major, majorTension,
+  tensionSharp, tension,
+  asda, asdaTension,
+  base, baseSharp
 }
 class Chord {
   int root, // 해당 song key 에서 상대적인 위치 (계이름 기준이다.)
@@ -65,11 +65,11 @@ class Chord {
     String asda = "";
     String asdaTension = "";
 
-    ChordAnalyzeMode mode = ChordAnalyzeMode.Root;    
+    ChordAnalyzeMode mode = ChordAnalyzeMode.root;
     int index = 0;
     while (index < chordString.length) {
       switch (mode) {
-        case ChordAnalyzeMode.Root:
+        case ChordAnalyzeMode.root:
           if (chordString[index] == 'C') {
             key = 0;
           } else if (chordString[index] == 'D') {
@@ -87,10 +87,10 @@ class Chord {
           } else {
             throw Exception("root value is wrong. root should be upper case A to G");
           }
-          mode = ChordAnalyzeMode.RootSharp;
+          mode = ChordAnalyzeMode.rootSharp;
           index += 1;
           break;
-        case ChordAnalyzeMode.RootSharp:
+        case ChordAnalyzeMode.rootSharp:
           if (chordString[index] == '#') {
             key += 1;
             index += 1;
@@ -98,9 +98,9 @@ class Chord {
             key -= 1;
             index += 1;
           }
-          mode = ChordAnalyzeMode.RootTension;
+          mode = ChordAnalyzeMode.rootTension;
           break;
-        case ChordAnalyzeMode.RootTension:
+        case ChordAnalyzeMode.rootTension:
           if (chordString[index].contains(RegExp(r'[24569]'))) {
             rootTension = chordString[index];
             index += 1;
@@ -108,44 +108,44 @@ class Chord {
             rootTension = chordString.substring(index, index+2);
             index += 2;
           }
-          mode = ChordAnalyzeMode.Minor;
+          mode = ChordAnalyzeMode.minor;
           break;
-        case ChordAnalyzeMode.Minor:
+        case ChordAnalyzeMode.minor:
           if (chordString[index] == 'm') {
             minor = "m";
             index += 1;
           }
-          mode = ChordAnalyzeMode.MinorTension;
+          mode = ChordAnalyzeMode.minorTension;
           break;
-        case ChordAnalyzeMode.MinorTension:
+        case ChordAnalyzeMode.minorTension:
           if (chordString[index] == '7') {
             minorTension = '7';
             index += 1;
           }
-          mode = ChordAnalyzeMode.Major;
+          mode = ChordAnalyzeMode.major;
           break;
-        case ChordAnalyzeMode.Major:
+        case ChordAnalyzeMode.major:
           if (chordString[index] == 'M') {
             minor = "M";
             index += 1;
           }
-          mode = ChordAnalyzeMode.MajorTension;
+          mode = ChordAnalyzeMode.majorTension;
           break;
-        case ChordAnalyzeMode.MajorTension:
+        case ChordAnalyzeMode.majorTension:
           if (chordString[index] == '7') {
             majorTension = '7';
             index += 1;
           }
-          mode = ChordAnalyzeMode.TensionSharp;
+          mode = ChordAnalyzeMode.tensionSharp;
           break;
-        case ChordAnalyzeMode.TensionSharp:
+        case ChordAnalyzeMode.tensionSharp:
           if (chordString[index].contains(RegExp(r'[#b]'))) {
             tensionSharp = chordString[index];
             index += 1;
           }
-          mode = ChordAnalyzeMode.Tension;
+          mode = ChordAnalyzeMode.tension;
           break;
-        case ChordAnalyzeMode.Tension:
+        case ChordAnalyzeMode.tension:
           if (chordString[index].contains(RegExp(r'[24569]'))) {
             tension = chordString[index];
             index += 1;
@@ -153,17 +153,17 @@ class Chord {
             tension = chordString.substring(index, index+2);
             index += 2;
           }
-          mode = ChordAnalyzeMode.ASDS;
+          mode = ChordAnalyzeMode.asda;
           break;
-        case ChordAnalyzeMode.ASDS:
+        case ChordAnalyzeMode.asda:
           if (chordString.length > index + 2 &&
               chordString.substring(index, index+3).contains(RegExp(r'add|sus|dim|aug'))) {
             asda = chordString.substring(index, index+3);
             index += 3;
           }
-          mode = ChordAnalyzeMode.ASDSTension;
+          mode = ChordAnalyzeMode.asdaTension;
           break;
-        case ChordAnalyzeMode.ASDSTension:
+        case ChordAnalyzeMode.asdaTension:
           if (chordString[index].contains(RegExp(r'[24569]'))) {
             asdaTension = chordString[index];
             index += 1;
@@ -171,9 +171,9 @@ class Chord {
             asdaTension = chordString.substring(index, index+2);
             index += 2;
           }
-          mode = ChordAnalyzeMode.Base;
+          mode = ChordAnalyzeMode.base;
           break;
-        case ChordAnalyzeMode.Base:
+        case ChordAnalyzeMode.base:
           if (chordString[index] == '/' && index + 1 < chordString.length) {
             if (chordString[index+1] == 'C') {
               baseKey = 0;
