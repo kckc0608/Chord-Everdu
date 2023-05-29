@@ -1,4 +1,4 @@
-import 'package:chord_everdu/widget/new_chord_blcok_dialog.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_blcok_dialog.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 

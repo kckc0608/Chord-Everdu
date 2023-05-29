@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
-import '../data_class/sheet.dart';
+import '../../../data_class/sheet.dart';
 
 class ChordCell extends StatefulWidget {
   final int cellID;

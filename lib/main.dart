@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:chord_everdu/page/search_sheet/search_sheet.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
+import 'environment/firebase_options.dart';
 
 void main() {
   runApp(MultiProvider(

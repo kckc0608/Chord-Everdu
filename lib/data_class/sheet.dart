@@ -1,5 +1,5 @@
 import 'package:chord_everdu/data_class/sheet_data.dart';
-import 'package:chord_everdu/widget/ChordBlock.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:flutter/material.dart';
 
 import 'chord.dart';

@@ -1,4 +1,4 @@
-import 'package:chord_everdu/page/sheet_viewer.dart';
+import 'package:chord_everdu/page/sheet_viewer/sheet_viewer.dart';
 import 'package:flutter/material.dart';
 
 class SheetListItem extends StatelessWidget {

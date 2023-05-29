@@ -1,10 +1,10 @@
-import 'package:chord_everdu/widget/chord_keyboard/chord_toggle_button.dart';
+import './chord_toggle_button.dart';
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/environment/global.dart' as global;
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import '../../data_class/chord.dart';
-import '../../data_class/sheet.dart';
+import 'package:chord_everdu/data_class/chord.dart';
+import 'package:chord_everdu/data_class/sheet.dart';
 
 enum InputMode {root, asda, base, tension}
 class ChordKeyboard extends StatefulWidget {

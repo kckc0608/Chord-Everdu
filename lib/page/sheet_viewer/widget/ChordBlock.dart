@@ -1,9 +1,9 @@
-import 'package:chord_everdu/widget/ChordCell.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/ChordCell.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data_class/chord.dart';
-import '../data_class/sheet.dart';
+import '../../../data_class/chord.dart';
+import '../../../data_class/sheet.dart';
 
 class ChordBlock extends StatefulWidget {
   final int blockID;

@@ -1,12 +1,12 @@
-import 'package:chord_everdu/widget/ChordBlock.dart';
-import 'package:chord_everdu/widget/chord_keyboard/chord_keyboard.dart';
-import 'package:chord_everdu/widget/new_chord_block_button.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_block_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data_class/chord.dart';
-import '../data_class/sheet.dart';
-import '../data_class/sheet_data.dart';
+import '../../data_class/chord.dart';
+import '../../data_class/sheet.dart';
+import '../../data_class/sheet_data.dart';
 
 class SheetViewer extends StatefulWidget {
   final String sheetID;

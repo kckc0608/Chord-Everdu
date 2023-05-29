@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../data_class/sheet.dart';
+import '../../../data_class/sheet.dart';
 
 class NewChordBlockDialog extends StatelessWidget {
   const NewChordBlockDialog({Key? key}) : super(key: key);
