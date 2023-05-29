@@ -1,6 +1,7 @@
 import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:chord_everdu/delegate/sheet_search_delegate.dart';
 import 'package:chord_everdu/environment/app_state.dart';
+import 'package:chord_everdu/page/search_sheet/widget/new_sheet_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/page/search_sheet/search_sheet.dart';
 import 'package:provider/provider.dart';
@@ -101,11 +102,7 @@ class _MainFrameState extends State<MainFrame> {
       floatingActionButton: [
         FloatingActionButton(
           onPressed: () {
-            showDialog(
-                context: context,
-                builder: (context) {
-                  return Dialog();
-                });
+            showDialog(context: context, builder: (_) => const NewSheetDialog());
           },
           child: const Icon(Icons.add),
         ),

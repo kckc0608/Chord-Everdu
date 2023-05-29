@@ -49,6 +49,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     _selectedBlockIndex = context.select((Sheet s) => s.selectedBlockIndex);
     _selectedCellIndex = context.select((Sheet s) => s.selectedCellIndex);
     if (_selectedBlockIndex > -1 && _selectedCellIndex > -1) {
+      print(_selectedBlockIndex);
+      print(_selectedCellIndex);
       _chord = context.read<Sheet>().chords[_selectedBlockIndex][_selectedCellIndex];
       setButtonWithChord();
     } else {

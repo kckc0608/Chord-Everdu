@@ -18,7 +18,11 @@ class Sheet with ChangeNotifier {
   void copyFromData(SheetData sheetData) {
     List<Chord> chordList = [];
     for (String chord in sheetData.chordData.split("|")) {
-      chordList.add(Chord.fromString(chord));
+      chordList.add(
+        chord.isEmpty
+            ? Chord()
+            : Chord.fromString(chord)
+      );
     }
     chords.add(chordList);
     lyrics.add(sheetData.lyricData.split("|"));

@@ -122,6 +122,9 @@ class _SheetViewerState extends State<SheetViewer> {
 
   SheetData getSheetDataFromDB() {
     // TODO: DB 연동
+    if (widget.sheetID.isEmpty) {
+      return SheetData(chordData: "", lyricData: "");
+    }
     return SheetData(
       chordData: 'C|C#|Cadd2|C/E',
       lyricData: 'hi|hi|hi|hihi',
@@ -131,6 +134,8 @@ class _SheetViewerState extends State<SheetViewer> {
   void setSheetToProvider(SheetData sheetData) {
     context.read<Sheet>().chords.clear();
     context.read<Sheet>().lyrics.clear();
+    context.read<Sheet>().selectedCellIndex = -1;
+    context.read<Sheet>().selectedBlockIndex = -1;
     context.read<Sheet>().copyFromData(sheetData);
   }
 }
