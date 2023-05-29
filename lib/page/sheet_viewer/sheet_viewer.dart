@@ -40,6 +40,25 @@ class _SheetViewerState extends State<SheetViewer> {
     return Scaffold(
         appBar: AppBar(
           title: Text(widget.title),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              showDialog(context: context, builder: (_) => AlertDialog(
+                title: const Text("취소"),
+                content: const Text("악보 작성 페이지를 나가시겠습니까?"),
+                actions: [
+                  TextButton(child: const Text("취소"),onPressed: () {
+                    Navigator.of(context).pop();
+                  }),
+                  TextButton(child: const Text("확인"),onPressed: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  }),
+                  // TODO : 뒤로 가기 버튼 작업을 해줘야 함.
+                ],
+              ));
+            },
+          ),
           actions: [],
         ),
         body: SafeArea(
