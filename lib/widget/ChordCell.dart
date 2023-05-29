@@ -1,5 +1,6 @@
 import 'package:chord_everdu/data_class/chord.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
 import '../data_class/sheet.dart';
@@ -20,9 +21,10 @@ class ChordCell extends StatefulWidget {
 
 class _ChordCellState extends State<ChordCell> {
   bool isSelected = false;
+  Logger logger = Logger();
   @override
   Widget build(BuildContext context) {
-    print("build:${widget.cellID}");
+    logger.i("build:${widget.cellID}");
     return Focus(
       onFocusChange: (hasFocus) {
         setState(() {

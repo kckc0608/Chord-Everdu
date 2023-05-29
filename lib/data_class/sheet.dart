@@ -12,7 +12,7 @@ class Sheet with ChangeNotifier {
   List<String> blockNameList = [];
   List<ChordBlock> blocks = [];
   List<List<Widget>> cellsOfBlock = [];
-  List<List<Chord?>> chords = [];
+  List<List<Chord>> chords = [];
   List<List<String?>> lyrics = [];
 
   void copyFromData(SheetData sheetData) {

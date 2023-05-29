@@ -1,6 +1,7 @@
 import 'package:chord_everdu/widget/chord_keyboard/chord_toggle_button.dart';
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/environment/global.dart' as global;
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import '../../data_class/chord.dart';
 import '../../data_class/sheet.dart';
@@ -25,16 +26,11 @@ class ChordKeyboard extends StatefulWidget {
 
 class _ChordKeyboardState extends State<ChordKeyboard> {
   late int _songKey;
-
-  final TextStyle _toggleTextStyle =
-  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
-
-  String? nowInput; // 현재 입력중인 부분체크
+  String? nowInput; // 현재 입력 중인 부분 체크
   bool isRootInput = true;
-
   InputMode inputMode = InputMode.root;
 
-  // currentCell 이 null 이 아닐 때 이 위젯이 생성되기 때문에, 코드는 항상 존재함.
+  // currentCell 이 null 이 아닐 때 이 위젯이 생성 되기 때문에, 코드는 항상 존재함.
   late Chord _chord;
   late int _selectedCellIndex;
   late int _selectedBlockIndex;
@@ -53,18 +49,17 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     _selectedBlockIndex = context.select((Sheet s) => s.selectedBlockIndex);
     _selectedCellIndex = context.select((Sheet s) => s.selectedCellIndex);
     if (_selectedBlockIndex > -1 && _selectedCellIndex > -1) {
-      _chord = context.read<Sheet>().chords[_selectedBlockIndex][_selectedCellIndex] ?? Chord();
+      _chord = context.read<Sheet>().chords[_selectedBlockIndex][_selectedCellIndex];
       setButtonWithChord();
     } else {
       _chord = Chord();
     }
 
-    //if (_selectedIndex < context.select((Sheet s) => s.chords[_nowPage].length))
+    var logger = Logger();
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
-    // print("Now Input is $nowInput");
-    print(_chord);
-    print(inputMode);
+    logger.i(_chord);
+    logger.i(inputMode);
 
     return Container(
       height: 340,
@@ -161,7 +156,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                     inputMode = InputMode.root;
                     break;
                   default:
-                    throw Exception("input 모드가 잘못되었습니다.");
+                    throw Exception("input 모드가 잘못 되었습니다.");
                 }
                 context.read<Sheet>().updateChord(
                     _selectedBlockIndex, _selectedCellIndex, _chord);
@@ -217,7 +212,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 }
 
                 if (_minorMajorSelection[1] == true) {
-                  /// root 코드에 바로 7 넣고나서 M 누르면 7 뒤에 M 가 생김 ( root tension 에서 Major tension 으로 옮겨야함 )
+                  /// root 코드에 바로 7 넣고 나서 M 누르면 7 뒤에 M 가 생김 ( root tension 에서 Major tension 으로 옮겨야함 )
                   _chord.major = 'M';
                 } else {
                   _chord.major = '';
@@ -227,7 +222,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             },
           ),
           // 7 입력
-          // asda input인 상황에서, 루트텐션/mM텐션이 7이 아니거나, asda텐션이 7인 경우
+          // asda input 인 상황에서, 루트 텐션 / mM 텐션이 7이 아니거나, asda 텐션이 7인 경우
           ChordToggleButton(
             buttonTextList: const ['7'],
             isSelected: _seventhSelection,
