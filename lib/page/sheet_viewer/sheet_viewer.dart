@@ -66,7 +66,33 @@ class _SheetViewerState extends State<SheetViewer> {
                       ));
             },
           ),
-          actions: [],
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.save),
+              onPressed: () {
+                showDialog(context: context, builder: (context) => AlertDialog(
+                  title: const Text("저장"),
+                  content: const Text("저장하고 화면을 나가시겠습니까?"),
+                  actions: [
+                    TextButton(
+                      child: const Text("취소"),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    TextButton(
+                      child: const Text("저장"),
+                      onPressed: () {
+                        saveSheet();
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                ));
+              },
+            ),
+          ],
         ),
         body: SafeArea(
             child: Column(
@@ -177,6 +203,17 @@ class _SheetViewerState extends State<SheetViewer> {
       context.read<Sheet>().selectedCellIndex = -1;
       context.read<Sheet>().selectedBlockIndex = -1;
       context.read<Sheet>().copyFromData(sheetData);
+    }
+  }
+
+  void saveSheet() async {
+    Map<String, dynamic> data = {};
+    data['chords'] = context.read<Sheet>().convertChordsToStringList();
+    data['lyrics'] = context.read<Sheet>().convertLyricsToStringList();
+    if (widget.sheetID.isNotEmpty) {
+      await FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).set(
+        data, SetOptions(merge: true)
+      ).onError((error, stackTrace) => Logger().i(error));
     }
   }
 }

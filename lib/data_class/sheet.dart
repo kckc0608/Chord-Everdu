@@ -62,4 +62,30 @@ class Sheet with ChangeNotifier {
     chords[blockID][cellID] = chord;
     notifyListeners();
   }
+
+  List<String> convertChordsToStringList() {
+    List<String> list = [];
+    for (int i = 0; i < chords.length; i++) {
+      String block = '';
+      for (int j = 0; j < chords[i].length; j++) {
+        block += chords[i][j].toStringChord();
+        if (j < chords[i].length - 1) block += '|';
+      }
+      list.add(block);
+    }
+    return list;
+  }
+
+  List<String> convertLyricsToStringList() {
+    List<String> list = [];
+    for (int i = 0; i < lyrics.length; i++) {
+      String block = '';
+      for (int j = 0; j < lyrics[i].length; j++) {
+        block += lyrics[i][j]!; /// String? 을 써야하는가? 그냥 빈 문자열로 치면 안되나 싶음.
+        if (j < lyrics[i].length - 1) block += '|';
+      }
+      list.add(block);
+    }
+    return list;
+  }
 }
