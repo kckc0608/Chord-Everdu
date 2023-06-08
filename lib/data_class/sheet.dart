@@ -88,4 +88,9 @@ class Sheet with ChangeNotifier {
     }
     return list;
   }
+
+  void initializeSheet() {
+    chords.clear();
+    lyrics.clear();
+  }
 }

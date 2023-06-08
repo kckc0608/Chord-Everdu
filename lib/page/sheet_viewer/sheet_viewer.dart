@@ -30,7 +30,8 @@ class _SheetViewerState extends State<SheetViewer> {
   @override
   void initState() {
     super.initState();
-    fetchAndSetSheetToProvider();
+    if (widget.sheetID.isNotEmpty) fetchAndSetSheetToProvider();
+    else initializeSheet();
   }
 
   @override
@@ -83,7 +84,11 @@ class _SheetViewerState extends State<SheetViewer> {
                     TextButton(
                       child: const Text("저장"),
                       onPressed: () {
-                        saveSheet();
+                        if (widget.sheetID.isNotEmpty) {
+                          saveSheet();
+                        } else {
+                          addSheet(); // TODO : 악보 정보만 추가되고, 악보 이름, 가수 정보는 추가가 안됨.
+                        }
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },
@@ -206,14 +211,30 @@ class _SheetViewerState extends State<SheetViewer> {
     }
   }
 
-  void saveSheet() async {
+  Map<String, dynamic> convertSheetToSaveData() {
     Map<String, dynamic> data = {};
     data['chords'] = context.read<Sheet>().convertChordsToStringList();
     data['lyrics'] = context.read<Sheet>().convertLyricsToStringList();
+    return data;
+  }
+
+  void saveSheet() async {
+    Map<String, dynamic> data = convertSheetToSaveData();
     if (widget.sheetID.isNotEmpty) {
       await FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).set(
         data, SetOptions(merge: true)
       ).onError((error, stackTrace) => Logger().i(error));
+    }
+  }
+
+  void addSheet() async {
+    Map<String, dynamic> data = convertSheetToSaveData();
+    await FirebaseFirestore.instance.collection('sheet_list').add(data);
+  }
+
+  void initializeSheet() {
+    if (context.mounted) {
+      context.read<Sheet>().initializeSheet();
     }
   }
 }
