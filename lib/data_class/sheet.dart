@@ -1,6 +1,6 @@
 import 'package:chord_everdu/data_class/sheet_data.dart';
-import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 
 import 'chord.dart';
 
@@ -10,22 +10,26 @@ class Sheet with ChangeNotifier {
   int selectedCellIndex = -1;
 
   List<String> blockNameList = [];
-  List<ChordBlock> blocks = [];
-  List<List<Widget>> cellsOfBlock = [];
   List<List<Chord>> chords = [];
   List<List<String?>> lyrics = [];
 
   void copyFromData(SheetData sheetData) {
-    List<Chord> chordList = [];
-    for (String chord in sheetData.chordData.split("|")) {
-      chordList.add(
-        chord.isEmpty
-            ? Chord()
-            : Chord.fromString(chord)
-      );
+    for (String chords in sheetData.chordData) {
+      List<Chord> chordList = [];
+      for (String chord in chords.split("|")) {
+        chordList.add(
+            chord.isEmpty
+                ? Chord()
+                : Chord.fromString(chord)
+        );
+      }
+      this.chords.add(chordList);
     }
-    chords.add(chordList);
-    lyrics.add(sheetData.lyricData.split("|"));
+
+    for (String lyrics in sheetData.lyricData) {
+      this.lyrics.add(lyrics.split("|"));
+    }
+    Logger().d(this.chords);
   }
 
   void setSelectedBlockIndex(int index) {

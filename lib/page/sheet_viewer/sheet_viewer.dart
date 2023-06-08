@@ -3,6 +3,7 @@ import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keybo
 import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_block_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
 import '../../data_class/chord.dart';
@@ -29,8 +30,7 @@ class _SheetViewerState extends State<SheetViewer> {
   @override
   void initState() {
     super.initState();
-    SheetData sheetData = getSheetDataFromDB();
-    setSheetToProvider(sheetData);
+    fetchAndSetSheetToProvider();
   }
 
   @override
@@ -144,22 +144,39 @@ class _SheetViewerState extends State<SheetViewer> {
         )));
   }
 
-  SheetData getSheetDataFromDB() {
+  Future<SheetData> fetchSheet() async {
     // TODO: DB 연동
-    if (widget.sheetID.isEmpty) {
-      return SheetData(chordData: "", lyricData: "");
-    }
-    return SheetData(
-      chordData: 'C|C#|Cadd2|C/E',
-      lyricData: 'hi|hi|hi|hihi',
-    );
+    assert (widget.sheetID.isNotEmpty);
+    return await FirebaseFirestore.instance
+        .collection('sheet_list')
+        .doc(widget.sheetID)
+        .get()
+        .then((doc) {
+          List<String> chords = [];
+          List<String> lyrics = [];
+          if (doc.exists) {
+            var data = doc.data();
+            Logger().d(data);
+            for (String chordData in data!["chords"]) {
+              chords.add(chordData);
+            }
+            for (String lyricData in data!["lyrics"]) {
+              lyrics.add(lyricData);
+            }
+          }
+          return SheetData(lyricData: lyrics, chordData: chords);
+        });
   }
 
-  void setSheetToProvider(SheetData sheetData) {
-    context.read<Sheet>().chords.clear();
-    context.read<Sheet>().lyrics.clear();
-    context.read<Sheet>().selectedCellIndex = -1;
-    context.read<Sheet>().selectedBlockIndex = -1;
-    context.read<Sheet>().copyFromData(sheetData);
+  void fetchAndSetSheetToProvider() async {
+    SheetData sheetData = await fetchSheet();
+    Logger().d(sheetData.chordData);
+    if (context.mounted) {
+      context.read<Sheet>().chords.clear();
+      context.read<Sheet>().lyrics.clear();
+      context.read<Sheet>().selectedCellIndex = -1;
+      context.read<Sheet>().selectedBlockIndex = -1;
+      context.read<Sheet>().copyFromData(sheetData);
+    }
   }
 }
