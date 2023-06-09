@@ -208,6 +208,7 @@ class _SheetViewerState extends State<SheetViewer> {
       context.read<Sheet>().selectedCellIndex = -1;
       context.read<Sheet>().selectedBlockIndex = -1;
       context.read<Sheet>().copyFromData(sheetData);
+      setState(() {}); // 이걸 안하면 데이터만 받아 오고 위젯은 다시 안 그리는 경우가 있음
     }
   }
 
