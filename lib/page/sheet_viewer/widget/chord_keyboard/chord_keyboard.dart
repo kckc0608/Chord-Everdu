@@ -48,18 +48,15 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   Widget build(BuildContext context) {
     _selectedBlockIndex = context.select((Sheet s) => s.selectedBlockIndex);
     _selectedCellIndex = context.select((Sheet s) => s.selectedCellIndex);
-    if (_selectedBlockIndex > -1 && _selectedCellIndex > -1) {
-      print(_selectedBlockIndex);
-      print(_selectedCellIndex);
-      _chord = context.read<Sheet>().chords[_selectedBlockIndex][_selectedCellIndex];
-      setButtonWithChord();
-    } else {
-      _chord = Chord();
-    }
+    _chord = (_selectedBlockIndex > -1 && _selectedCellIndex > -1)
+        ? context.read<Sheet>().chords[_selectedBlockIndex][_selectedCellIndex]
+        : Chord();
+    setButtonWithChord();
 
     var logger = Logger();
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
+    // TODO : block 을 터치해서 포커스를 껐을 때 셀 포커스가 해제됐음에도 키보드 포커스가 그대로인 문제 수정 필요
     logger.i(_chord);
     logger.i(inputMode);
 
