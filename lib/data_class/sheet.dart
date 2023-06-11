@@ -29,7 +29,7 @@ class Sheet with ChangeNotifier {
     for (String lyrics in sheetData.lyricData) {
       this.lyrics.add(lyrics.split("|"));
     }
-    Logger().d(this.chords);
+    Logger().d(chords);
   }
 
   void setSelectedBlockIndex(int index) {
@@ -45,6 +45,12 @@ class Sheet with ChangeNotifier {
   void addCell(int blockID, Chord chord, String lyric) {
     chords[blockID].add(chord);
     lyrics[blockID].add(lyric);
+    notifyListeners();
+  }
+
+  void removeCell({required int blockID, required int cellID}) {
+    chords[blockID].removeAt(cellID);
+    lyrics[blockID].removeAt(cellID);
     notifyListeners();
   }
 

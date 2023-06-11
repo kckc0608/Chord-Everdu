@@ -30,13 +30,17 @@ class _SheetViewerState extends State<SheetViewer> {
   @override
   void initState() {
     super.initState();
-    if (widget.sheetID.isNotEmpty) fetchAndSetSheetToProvider();
-    else initializeSheet();
+    if (widget.sheetID.isNotEmpty) {
+      fetchAndSetSheetToProvider();
+    } else {
+      initializeSheet();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     int blockCount = context.select((Sheet sheet) => sheet.chords.length);
+    int selectedCell = context.select((Sheet sheet) => sheet.selectedCellIndex);
     _songKey = context.select((Sheet s) => s.songKey);
 
     return Scaffold(
@@ -131,42 +135,48 @@ class _SheetViewerState extends State<SheetViewer> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: () {
-                    setState(() {
-                      context.read<Sheet>().addCell(
+                  icon: const Icon(
+                    Icons.add_box_outlined,
+                  ),
+                  color: Colors.green,
+                  onPressed: selectedCell > -1
+                      ? () {
+                        setState(() {
+                          context.read<Sheet>().addCell(
                             context.read<Sheet>().selectedBlockIndex,
                             Chord(),
                             "",
                           );
-                    });
-                  },
+                        });
+                      }
+                      : null,
                 ),
                 IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.remove),
+                  icon: const Icon(
+                    Icons.indeterminate_check_box_outlined,
+                  ),
+                  color: Colors.red,
+                  onPressed: selectedCell > -1
+                      ? () {
+                        setState(() {
+                          context.read<Sheet>().removeCell(
+                            blockID: context.read<Sheet>().selectedBlockIndex,
+                            cellID: selectedCell,
+                          );
+                          context.read<Sheet>().setSelectedCellIndex(-1);
+                        });
+                      }
+                      : null,
                 ),
                 IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.arrow_downward_outlined),
+                  icon: const Icon(Icons.subdirectory_arrow_left),
+                  onPressed: selectedCell > -1 ? () {} : null,
                 ),
                 IconButton(
-                  onPressed: () {
-                    setState(() {});
-                  },
-                  icon: const Icon(Icons.arrow_back),
-                ),
-                IconButton(
-                  onPressed: () {
-                    setState(() {});
-                  },
                   icon: const Icon(Icons.text_rotation_none),
-                ),
-                IconButton(
-                  onPressed: () {
+                  onPressed: selectedCell > -1 ? () {
                     setState(() {});
-                  },
-                  icon: const Icon(Icons.format_textdirection_r_to_l_outlined),
+                  } : null,
                 ),
               ],
             ),
@@ -191,7 +201,7 @@ class _SheetViewerState extends State<SheetViewer> {
             for (String chordData in data!["chords"]) {
               chords.add(chordData);
             }
-            for (String lyricData in data!["lyrics"]) {
+            for (String lyricData in data["lyrics"]) {
               lyrics.add(lyricData);
             }
           }
