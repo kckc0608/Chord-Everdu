@@ -1,4 +1,5 @@
 import 'package:chord_everdu/data_class/chord.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/NullCell.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -22,59 +23,66 @@ class ChordCell extends StatefulWidget {
 class _ChordCellState extends State<ChordCell> {
   bool isSelected = false;
   Logger logger = Logger();
+
   @override
   Widget build(BuildContext context) {
-    logger.i("build:${widget.cellID}");
+    //logger.i("build:${widget.cellID}");
+    Chord? chord = context.watch<Sheet>().chords[widget.blockID][widget.cellID];
+    String? lyric = context.watch<Sheet>().lyrics[widget.blockID][widget.cellID];
     return Focus(
       onFocusChange: (hasFocus) {
         setState(() {
           isSelected = hasFocus;
         });
       },
-      child: Builder(
-        builder: (context) {
-          FocusNode focusNode = Focus.of(context);
-          return GestureDetector(
-            onTap: () {
-              if (focusNode.hasFocus) {
-                focusNode.unfocus();
-                context.read<Sheet>().selectedCellIndex = -1;
-              } else {
-                focusNode.requestFocus();
-                context.read<Sheet>().selectedCellIndex = widget.cellID;
-              }
-              context.read<Sheet>().notifyChange();
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-              decoration: BoxDecoration(
+      child: Builder(builder: (context) {
+        FocusNode focusNode = Focus.of(context);
+        return GestureDetector(
+          onTap: () {
+            if (focusNode.hasFocus) {
+              focusNode.unfocus();
+              context.read<Sheet>().selectedCellIndex = -1;
+            } else {
+              focusNode.requestFocus();
+              context.read<Sheet>().selectedCellIndex = widget.cellID;
+            }
+            context.read<Sheet>().notifyChange();
+          },
+          child: (chord == null && lyric == null)
+              ? NullCell(
                 color: isSelected ? Colors.yellow : Colors.white,
-                border: Border.all(),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 36.0),
-                    child: Text(
-                      context.watch<Sheet>().chords[widget.blockID][widget.cellID]!.toStringChord(),
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+              )
+              : Container(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 4.0, horizontal: 4.0),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.yellow : Colors.white,
+                    border: Border.all(),
                   ),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(minWidth: 36.0),
-                    child:
-                      Text(
-                        context.watch<Sheet>().lyrics[widget.blockID][widget.cellID]!,
-                        style: const TextStyle(fontSize: 16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(minWidth: 36.0),
+                        child: Text(
+                          chord!.toStringChord(),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      //TextField(),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(minWidth: 36.0),
+                        child: Text(
+                          lyric ?? "",
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        //TextField(),
+                      ),
+                    ],
                   ),
-                ],      ),
-            ),
-          );
-        }
-      ),
+                ),
+        );
+      }),
     );
   }
 }

@@ -41,6 +41,7 @@ class _SheetViewerState extends State<SheetViewer> {
   Widget build(BuildContext context) {
     int blockCount = context.select((Sheet sheet) => sheet.chords.length);
     int selectedCell = context.select((Sheet sheet) => sheet.selectedCellIndex);
+    Logger().d(context.read<Sheet>().chords);
     _songKey = context.select((Sheet s) => s.songKey);
 
     return Scaffold(
@@ -170,7 +171,25 @@ class _SheetViewerState extends State<SheetViewer> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.subdirectory_arrow_left),
-                  onPressed: selectedCell > -1 ? () {} : null,
+                  onPressed: selectedCell > -1 ? () {
+                    setState(() {
+                      context.read<Sheet>().addNewLineCell(
+                        blockID: context.read<Sheet>().selectedBlockIndex,
+                        cellID: selectedCell,
+                      );
+                    });
+                  } : null,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: selectedCell > 0 ? () {
+                    setState(() {
+                      context.read<Sheet>().removePreviousCell(
+                        blockID: context.read<Sheet>().selectedBlockIndex,
+                        cellID: selectedCell,
+                      );
+                    });
+                  } : null,
                 ),
                 IconButton(
                   icon: const Icon(Icons.text_rotation_none),

@@ -48,9 +48,15 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   Widget build(BuildContext context) {
     _selectedBlockIndex = context.select((Sheet s) => s.selectedBlockIndex);
     _selectedCellIndex = context.select((Sheet s) => s.selectedCellIndex);
-    _chord = (_selectedBlockIndex > -1 && _selectedCellIndex > -1)
-        ? context.read<Sheet>().chords[_selectedBlockIndex][_selectedCellIndex]
-        : Chord();
+    if (_selectedBlockIndex > -1 && _selectedCellIndex > -1) {
+      if (context.read<Sheet>().chords[_selectedBlockIndex][_selectedCellIndex] == null) {
+        _chord = Chord();
+      } else {
+        _chord = context.read<Sheet>().chords[_selectedBlockIndex][_selectedCellIndex]!;
+      }
+    } else {
+      _chord = Chord();
+    }
     setButtonWithChord();
 
     var logger = Logger();

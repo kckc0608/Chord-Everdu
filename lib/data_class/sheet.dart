@@ -10,26 +10,32 @@ class Sheet with ChangeNotifier {
   int selectedCellIndex = -1;
 
   List<String> blockNameList = [];
-  List<List<Chord>> chords = [];
+  List<List<Chord?>> chords = [];
   List<List<String?>> lyrics = [];
 
   void copyFromData(SheetData sheetData) {
     for (String chords in sheetData.chordData) {
-      List<Chord> chordList = [];
+      List<Chord?> chordList = [];
       for (String chord in chords.split("|")) {
         chordList.add(
-            chord.isEmpty
+            chord == '\n'
+            ? null
+            : chord.isEmpty
                 ? Chord()
-                : Chord.fromString(chord)
-        );
+                : Chord.fromString(chord));
       }
       this.chords.add(chordList);
     }
 
     for (String lyrics in sheetData.lyricData) {
-      this.lyrics.add(lyrics.split("|"));
+      List<String?> lyricList = [];
+      for (String lyric in lyrics.split("|")) { // Split 한거 바로 넣으면 List<String> 타입이 들어감.
+        lyricList.add(lyric == '\n' ? null : lyric);
+      }
+      this.lyrics.add(lyricList);
     }
     Logger().d(chords);
+    Logger().d(lyrics);
   }
 
   void setSelectedBlockIndex(int index) {
@@ -48,9 +54,23 @@ class Sheet with ChangeNotifier {
     notifyListeners();
   }
 
+  void addNewLineCell({required int blockID, required int cellID}) {
+    chords[blockID].insert(cellID, null);
+    lyrics[blockID].insert(cellID, null);
+    notifyListeners();
+  }
+
   void removeCell({required int blockID, required int cellID}) {
     chords[blockID].removeAt(cellID);
     lyrics[blockID].removeAt(cellID);
+    notifyListeners();
+  }
+
+  void removePreviousCell({required int blockID, required int cellID}) {
+    if (cellID == 0) return;
+    chords[blockID].removeAt((cellID-1));
+    lyrics[blockID].removeAt((cellID-1));
+    selectedCellIndex = -1;
     notifyListeners();
   }
 
@@ -74,7 +94,11 @@ class Sheet with ChangeNotifier {
     for (int i = 0; i < chords.length; i++) {
       String block = '';
       for (int j = 0; j < chords[i].length; j++) {
-        block += chords[i][j].toStringChord();
+        if (chords[i][j] == null) {
+          block += '\n';
+        } else {
+          block += chords[i][j]!.toStringChord();
+        }
         if (j < chords[i].length - 1) block += '|';
       }
       list.add(block);
@@ -87,7 +111,11 @@ class Sheet with ChangeNotifier {
     for (int i = 0; i < lyrics.length; i++) {
       String block = '';
       for (int j = 0; j < lyrics[i].length; j++) {
-        block += lyrics[i][j]!; /// String? 을 써야하는가? 그냥 빈 문자열로 치면 안되나 싶음.
+        if (lyrics[i][j] == null) {
+          block += '\n';
+        } else {
+          block += lyrics[i][j]!;
+        }
         if (j < lyrics[i].length - 1) block += '|';
       }
       list.add(block);
