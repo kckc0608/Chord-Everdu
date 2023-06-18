@@ -26,6 +26,7 @@ class SheetViewer extends StatefulWidget {
 
 class _SheetViewerState extends State<SheetViewer> {
   late int _songKey;
+  final _textController = TextEditingController();
 
   @override
   void initState() {
@@ -37,12 +38,24 @@ class _SheetViewerState extends State<SheetViewer> {
     }
   }
 
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     int blockCount = context.select((Sheet sheet) => sheet.chords.length);
     int selectedCell = context.select((Sheet sheet) => sheet.selectedCellIndex);
+    int selectedBlock = context.read<Sheet>().selectedBlockIndex;
     Logger().d(context.read<Sheet>().chords);
     _songKey = context.select((Sheet s) => s.songKey);
+
+    if (selectedCell > -1 && selectedBlock > -1) {
+      _textController.text = context.read<Sheet>().lyrics[selectedBlock][selectedCell] ?? "";
+    }
 
     return Scaffold(
         appBar: AppBar(
@@ -199,7 +212,37 @@ class _SheetViewerState extends State<SheetViewer> {
                 ),
               ],
             ),
-            ChordKeyboard(insertAllFunction: () {}),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 40),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Text("가사 : ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
+                    Expanded(
+                      child: Container(
+                        color: Colors.blue[300],
+                        child: TextField(
+                          controller: _textController,
+                          onChanged: (text) {
+                            context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
+                          },
+                          keyboardType: TextInputType.text,
+                          style: const TextStyle(fontSize: 18),
+                          decoration: const InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.all(4.0),
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            MediaQuery.of(context).viewInsets.bottom == 0 ? const ChordKeyboard() : const SizedBox.shrink(),
           ],
         )));
   }

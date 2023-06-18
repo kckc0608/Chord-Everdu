@@ -89,6 +89,11 @@ class Sheet with ChangeNotifier {
     notifyListeners();
   }
 
+  void updateLyric(int blockID, int cellID, String lyric) {
+    lyrics[blockID][cellID] = lyric;
+    notifyListeners();
+  }
+
   List<String> convertChordsToStringList() {
     List<String> list = [];
     for (int i = 0; i < chords.length; i++) {

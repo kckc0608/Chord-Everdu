@@ -8,17 +8,12 @@ import 'package:chord_everdu/data_class/sheet.dart';
 
 enum InputMode {root, asda, base, tension}
 class ChordKeyboard extends StatefulWidget {
-  const ChordKeyboard({
-    Key? key,
-    required this.insertAllFunction,
-  }) : super(key: key);
+  const ChordKeyboard({Key? key,}) : super(key: key);
 
   static const typeRoot = 1;
   static const typeASDA = 2;
   static const typeBase = 3;
   static const typeTens = 4;
-
-  final VoidCallback insertAllFunction;
 
   @override
   _ChordKeyboardState createState() => _ChordKeyboardState();
@@ -67,12 +62,11 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     logger.i(inputMode);
 
     return Container(
-      height: 340,
+      height: 300,
       padding: const EdgeInsets.fromLTRB(0, 2, 0, 0),
       color: Colors.blue[200],
       child: Column(
         children: [
-          buildRowRecentChord(),
           buildRowRootAndBase(context),
           buildRowMiddle(),
           buildRowTension(),
@@ -82,42 +76,6 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     );
   }
 
-  Widget buildRowRecentChord() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3.0),
-      child: Row(
-        children: [
-          buildRecentChordButton(text: "all", onPressed: widget.insertAllFunction),
-          buildRecentChordButton(text: "+", onPressed: () {
-            // setState(() {
-            //   if (!chord.isEmpty()) {
-            //     global.recentChord.add(Chord.fromMap(chord.toMap()));
-            //     if (global.recentChord.length > 24) global.recentChord.removeAt(0);
-            //   }
-            // });
-          }),
-          buildRecentChordButton(text: "ㅡ", onPressed: () {
-            // setState(() {
-            //   if (global.recentChord.length > 0) global.recentChord.removeLast();
-            // });
-          }),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(2, 0, 6.0, 0),
-            child: Container(width: 2, height: 35, color: Colors.black),
-          ),
-          const Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                  // children: global.recentChord.map((chord) => buildRecentChordButton(touchChord: chord)).toList()
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  //
   Widget buildRowRootAndBase(BuildContext context) {
     const List<List<String>> rootButtonTextList = [
       ['C'], ['D'], ['E'], ['F'], ['G'], ['A'], ['B']
