@@ -60,7 +60,7 @@ class _ChordCellState extends State<ChordCell> {
                     border: Border.all(),
                   ),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       ConstrainedBox(
                         constraints: const BoxConstraints(minWidth: 36.0),

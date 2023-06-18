@@ -1,5 +1,7 @@
+import 'package:chord_everdu/page/search_sheet/widget/new_sheet_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/edit_sheet_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_block_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -13,11 +15,13 @@ import '../../data_class/sheet_data.dart';
 class SheetViewer extends StatefulWidget {
   final String sheetID;
   final String title;
+  final String singer;
 
   const SheetViewer({
     Key? key,
     required this.sheetID,
     required this.title,
+    required this.singer,
   }) : super(key: key);
 
   @override
@@ -87,6 +91,19 @@ class _SheetViewerState extends State<SheetViewer> {
           ),
           actions: [
             IconButton(
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => EditSheetDialog(
+                    title: widget.title,
+                    singer: widget.singer,
+                    songKey: _songKey,
+                  ),
+                );
+              },
+            ),
+            IconButton(
               icon: const Icon(Icons.save),
               onPressed: () {
                 showDialog(context: context, builder: (context) => AlertDialog(
@@ -145,104 +162,118 @@ class _SheetViewerState extends State<SheetViewer> {
                 ),
               ),
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.add_box_outlined,
-                  ),
-                  color: Colors.green,
-                  onPressed: selectedCell > -1
-                      ? () {
-                        setState(() {
-                          context.read<Sheet>().addCell(
-                            context.read<Sheet>().selectedBlockIndex,
-                            Chord(),
-                            "",
-                          );
-                        });
-                      }
-                      : null,
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.indeterminate_check_box_outlined,
-                  ),
-                  color: Colors.red,
-                  onPressed: selectedCell > -1
-                      ? () {
-                        setState(() {
-                          context.read<Sheet>().removeCell(
-                            blockID: context.read<Sheet>().selectedBlockIndex,
-                            cellID: selectedCell,
-                          );
-                          context.read<Sheet>().setSelectedCellIndex(-1);
-                        });
-                      }
-                      : null,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.subdirectory_arrow_left),
-                  onPressed: selectedCell > -1 ? () {
-                    setState(() {
-                      context.read<Sheet>().addNewLineCell(
-                        blockID: context.read<Sheet>().selectedBlockIndex,
-                        cellID: selectedCell,
-                      );
-                    });
-                  } : null,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: selectedCell > 0 ? () {
-                    setState(() {
-                      context.read<Sheet>().removePreviousCell(
-                        blockID: context.read<Sheet>().selectedBlockIndex,
-                        cellID: selectedCell,
-                      );
-                    });
-                  } : null,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.text_rotation_none),
-                  onPressed: selectedCell > -1 ? () {
-                    setState(() {});
-                  } : null,
-                ),
-              ],
-            ),
-            ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 40),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+            Container(
+              decoration: const BoxDecoration(
+                boxShadow: [BoxShadow(
+                  color: Colors.black54,
+                  blurRadius: 15.0,
+                  offset: Offset(0, 0.75),
+                )],
+                color: Colors.white,
+              ),
+              child: Column(
                 children: [
-                  const Text("가사 : ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
-                    Expanded(
-                      child: Container(
-                        color: Colors.blue[300],
-                        child: TextField(
-                          controller: _textController,
-                          onChanged: (text) {
-                            context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
-                          },
-                          keyboardType: TextInputType.text,
-                          style: const TextStyle(fontSize: 18),
-                          decoration: const InputDecoration(
-                            isDense: true,
-                            contentPadding: EdgeInsets.all(4.0),
-                            border: InputBorder.none,
-                          ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.add_box_outlined,
                         ),
+                        color: Colors.green,
+                        onPressed: selectedCell > -1
+                            ? () {
+                              setState(() {
+                                context.read<Sheet>().addCell(
+                                  context.read<Sheet>().selectedBlockIndex,
+                                  Chord(),
+                                  "",
+                                );
+                              });
+                            }
+                            : null,
+                      ),
+                      IconButton(
+                        icon: const Icon(
+                          Icons.indeterminate_check_box_outlined,
+                        ),
+                        color: Colors.red,
+                        onPressed: selectedCell > -1
+                            ? () {
+                              setState(() {
+                                context.read<Sheet>().removeCell(
+                                  blockID: context.read<Sheet>().selectedBlockIndex,
+                                  cellID: selectedCell,
+                                );
+                                context.read<Sheet>().setSelectedCellIndex(-1);
+                              });
+                            }
+                            : null,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.subdirectory_arrow_left),
+                        onPressed: selectedCell > -1 ? () {
+                          setState(() {
+                            context.read<Sheet>().addNewLineCell(
+                              blockID: context.read<Sheet>().selectedBlockIndex,
+                              cellID: selectedCell,
+                            );
+                          });
+                        } : null,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: selectedCell > 0 ? () {
+                          setState(() {
+                            context.read<Sheet>().removePreviousCell(
+                              blockID: context.read<Sheet>().selectedBlockIndex,
+                              cellID: selectedCell,
+                            );
+                          });
+                        } : null,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.text_rotation_none),
+                        onPressed: selectedCell > -1 ? () {
+                          setState(() {});
+                        } : null,
+                      ),
+                    ],
+                  ),
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 44),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Text("가사 : ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
+                          Expanded(
+                            child: Container(
+                              color: Colors.black26,
+                              child: TextField(
+                                controller: _textController,
+                                onChanged: (text) {
+                                  context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
+                                },
+                                keyboardType: TextInputType.text,
+                                style: const TextStyle(fontSize: 18),
+                                decoration: const InputDecoration(
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  MediaQuery.of(context).viewInsets.bottom == 0 ? const ChordKeyboard() : const SizedBox.shrink(),
+                ],
               ),
             ),
-            MediaQuery.of(context).viewInsets.bottom == 0 ? const ChordKeyboard() : const SizedBox.shrink(),
           ],
         )));
   }
