@@ -1,5 +1,8 @@
+import 'package:chord_everdu/data_class/sheet.dart';
+import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/page/sheet_viewer/sheet_viewer.dart';
+import 'package:provider/provider.dart';
 class NewSheetDialog extends StatefulWidget {
   const NewSheetDialog({Key? key}) : super(key: key);
 
@@ -77,7 +80,7 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                     TextField(
                       focusNode: _focusNodeForSinger,
                       controller: _controllerForSinger,
-                      style: TextStyle(fontSize: 20),
+                      style: const TextStyle(fontSize: 20),
                       decoration: const InputDecoration(
                         labelText: "가수",
                         labelStyle: TextStyle(fontSize: 20),
@@ -165,8 +168,8 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                             top: 2,
                             child: Container(
                                 color: Theme.of(context).dialogBackgroundColor,
-                                padding: EdgeInsets.symmetric(horizontal: 3),
-                                child: Text("가사 줄 수", style: TextStyle(fontSize: 15, color: Colors.black54))),
+                                padding: const EdgeInsets.symmetric(horizontal: 3),
+                                child: const Text("가사 줄 수", style: TextStyle(fontSize: 15, color: Colors.black54))),
                           ),
                         ]
                     ),
@@ -182,11 +185,13 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
           child: const Text("확인"),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
+              context.read<Sheet>().updateSheetInfo(SheetInfo(
+                title: _controllerForTitle.text,
+                singer: _controllerForSinger.text,
+                songKey: 0,
+              ));
               Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (_) => SheetViewer(
-                      title: _controllerForTitle.text,
-                      sheetID: "",
-                  ))
+                  MaterialPageRoute(builder: (_) => const SheetViewer(sheetID: "",))
               );
             }
           },

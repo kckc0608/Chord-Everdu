@@ -1,4 +1,4 @@
-import 'package:chord_everdu/page/search_sheet/widget/new_sheet_dialog.dart';
+import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/edit_sheet_dialog.dart';
@@ -14,14 +14,10 @@ import '../../data_class/sheet_data.dart';
 
 class SheetViewer extends StatefulWidget {
   final String sheetID;
-  final String title;
-  final String singer;
 
   const SheetViewer({
     Key? key,
     required this.sheetID,
-    required this.title,
-    required this.singer,
   }) : super(key: key);
 
   @override
@@ -30,6 +26,7 @@ class SheetViewer extends StatefulWidget {
 
 class _SheetViewerState extends State<SheetViewer> {
   late int _songKey;
+  late SheetInfo sheetInfo;
   final _textController = TextEditingController();
 
   @override
@@ -55,7 +52,9 @@ class _SheetViewerState extends State<SheetViewer> {
     int selectedCell = context.select((Sheet sheet) => sheet.selectedCellIndex);
     int selectedBlock = context.read<Sheet>().selectedBlockIndex;
     Logger().d(context.read<Sheet>().chords);
+
     _songKey = context.select((Sheet s) => s.songKey);
+    sheetInfo = context.select((Sheet sheet) => sheet.sheetInfo);
 
     if (selectedCell > -1 && selectedBlock > -1) {
       _textController.text = context.read<Sheet>().lyrics[selectedBlock][selectedCell] ?? "";
@@ -63,7 +62,7 @@ class _SheetViewerState extends State<SheetViewer> {
 
     return Scaffold(
         appBar: AppBar(
-          title: Text(widget.title),
+          title: Text(sheetInfo.title),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
@@ -96,8 +95,8 @@ class _SheetViewerState extends State<SheetViewer> {
                 showDialog(
                   context: context,
                   builder: (context) => EditSheetDialog(
-                    title: widget.title,
-                    singer: widget.singer,
+                    title: sheetInfo.title,
+                    singer: sheetInfo.singer,
                     songKey: _songKey,
                   ),
                 );
@@ -144,7 +143,7 @@ class _SheetViewerState extends State<SheetViewer> {
                   future: FirebaseFirestore.instance
                       .collection('sheet_list')
                       .where("sheet_id", isEqualTo: widget.sheetID)
-                      .get(), /// 앱을 다시 빌드할 때마다 이걸 가져오는 건 비효율적 같아서 initState 부분으로 빼고 싶은데, 그러면 로딩창을 못띄울 거 같음.
+                      .get(), /// 앱을 다시 빌드할 때마다 이걸 가져오는 건 비효율적인 것 같아서 initState 부분으로 빼고 싶은데, 그러면 로딩창을 못띄울 거 같음.
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return ListView.builder(
@@ -278,10 +277,31 @@ class _SheetViewerState extends State<SheetViewer> {
         )));
   }
 
-  Future<SheetData> fetchSheet() async {
-    // TODO: DB 연동
+  /// TODO fetch 를 두번 하지 말고 한번만 하도록 수정하는 것이 나아보임.
+
+  Future<SheetInfo> fetchSheetInfo() {
     assert (widget.sheetID.isNotEmpty);
-    return await FirebaseFirestore.instance
+    return FirebaseFirestore.instance
+        .collection('sheet_list')
+        .doc(widget.sheetID)
+        .get()
+        .then((doc) {
+          if (doc.exists) {
+            var data = doc.data();
+            return SheetInfo(
+              title: data!["title"],
+              singer: data["singer"],
+              songKey: 0,
+            );
+          } else {
+            throw Exception("${widget.sheetID}의 데이터가 없습니다.");
+          }
+        });
+  }
+
+  Future<SheetData> fetchSheetData() {
+    assert (widget.sheetID.isNotEmpty);
+    return FirebaseFirestore.instance
         .collection('sheet_list')
         .doc(widget.sheetID)
         .get()
@@ -303,7 +323,8 @@ class _SheetViewerState extends State<SheetViewer> {
   }
 
   void fetchAndSetSheetToProvider() async {
-    SheetData sheetData = await fetchSheet();
+    SheetInfo sheetInfo = await fetchSheetInfo();
+    SheetData sheetData = await fetchSheetData();
     Logger().d(sheetData.chordData);
     if (context.mounted) {
       context.read<Sheet>().chords.clear();
@@ -311,6 +332,7 @@ class _SheetViewerState extends State<SheetViewer> {
       context.read<Sheet>().selectedCellIndex = -1;
       context.read<Sheet>().selectedBlockIndex = -1;
       context.read<Sheet>().copyFromData(sheetData);
+      context.read<Sheet>().updateSheetInfo(sheetInfo);
       setState(() {}); // 이걸 안하면 데이터만 받아 오고 위젯은 다시 안 그리는 경우가 있음
     }
   }
@@ -324,11 +346,16 @@ class _SheetViewerState extends State<SheetViewer> {
 
   void saveSheet() async {
     Map<String, dynamic> data = convertSheetToSaveData();
+    data["title"] = sheetInfo.title;
+    data["singer"] = sheetInfo.singer;
     if (widget.sheetID.isNotEmpty) {
       await FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).set(
         data, SetOptions(merge: true)
-      ).onError((error, stackTrace) => Logger().i(error));
+      ).onError((error, stackTrace) => Logger().e(error));
+    } else {
+      throw Exception("${widget.sheetID}이 비어있습니다.");
     }
+    Logger().i("saved");
   }
 
   void addSheet() async {

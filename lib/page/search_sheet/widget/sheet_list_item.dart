@@ -15,7 +15,7 @@ class SheetListItem extends StatelessWidget {
     return InkWell(
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return SheetViewer(title: title, sheetID: sheetID,);
+          return SheetViewer(sheetID: sheetID);
         }));
       },
       child: Padding(

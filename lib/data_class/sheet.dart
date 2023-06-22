@@ -1,4 +1,5 @@
 import 'package:chord_everdu/data_class/sheet_data.dart';
+import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
@@ -12,6 +13,12 @@ class Sheet with ChangeNotifier {
   List<String> blockNameList = [];
   List<List<Chord?>> chords = [];
   List<List<String?>> lyrics = [];
+
+  SheetInfo sheetInfo = SheetInfo(
+    songKey: 0,
+    singer: "",
+    title: "",
+  );
 
   void copyFromData(SheetData sheetData) {
     for (String chords in sheetData.chordData) {
@@ -91,6 +98,11 @@ class Sheet with ChangeNotifier {
 
   void updateLyric(int blockID, int cellID, String lyric) {
     lyrics[blockID][cellID] = lyric;
+    notifyListeners();
+  }
+
+  void updateSheetInfo(SheetInfo newInfo) {
+    sheetInfo = newInfo;
     notifyListeners();
   }
 
