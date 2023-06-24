@@ -1,6 +1,6 @@
 import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:chord_everdu/delegate/sheet_search_delegate.dart';
-import 'package:chord_everdu/environment/app_state.dart';
+import 'package:chord_everdu/page/my_page/my_page.dart';
 import 'package:chord_everdu/page/search_sheet/widget/new_sheet_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/page/search_sheet/search_sheet.dart';
@@ -82,7 +82,6 @@ class _MainFrameState extends State<MainFrame> {
           AppBar(title: const Text("그룹")),
           AppBar(title: const Text("내 정보"))
         ][_selectedIndex],
-        extendBodyBehindAppBar: true,
         bottomNavigationBar: BottomNavigationBar(
           items: const [
             BottomNavigationBarItem(
@@ -97,13 +96,13 @@ class _MainFrameState extends State<MainFrame> {
                 icon: Icon(Icons.my_library_music), label: "내 악보"),
           ],
           currentIndex: _selectedIndex,
-          onTap: (idx) => {
+          onTap: (idx) {
             setState(() {
               _selectedIndex = idx;
-            })
+            });
           },
         ),
-        body: const [SearchSheet(), null, null][_selectedIndex],
+        body: [SearchSheet(), SearchSheet(), MyPage()][_selectedIndex],
         floatingActionButton: [
           FloatingActionButton(
             onPressed: () {

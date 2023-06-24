@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "225963577293-fn321hnf51250sqt6jt0ba2bcr82pp5l.apps.googleusercontent.com",
+          "client_id": "225963577293-078gvo675gnufs0qa5sn4kcj6vno3jah.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.everdu.chord_everdu",
-            "certificate_hash": "661d50c8d31b5b224201f6a93d2d62da64c03a38"
+            "certificate_hash": "aaf44cd55d57adf60572f9a116cf6007b8babdb8"
           }
         },
         {
