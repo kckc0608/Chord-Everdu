@@ -86,7 +86,7 @@ class _MainFrameState extends State<MainFrame> {
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.search),
-              label: "악보검색",
+              label: "악보 검색",
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.people),
@@ -102,7 +102,7 @@ class _MainFrameState extends State<MainFrame> {
             });
           },
         ),
-        body: [SearchSheet(), SearchSheet(), MyPage()][_selectedIndex],
+        body: const [SearchSheet(), null, MyPage()][_selectedIndex],
         floatingActionButton: [
           FloatingActionButton(
             onPressed: () {
@@ -115,7 +115,7 @@ class _MainFrameState extends State<MainFrame> {
           null
         ][_selectedIndex],
       )
-      : Text("loading firebase"),
+      : const Text("loading firebase"),
     );
   }
 }

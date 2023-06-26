@@ -1,7 +1,6 @@
 import 'package:chord_everdu/page/search_sheet/widget/sheet_list_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 
 class SearchSheet extends StatefulWidget {
   const SearchSheet({Key? key}) : super(key: key);
@@ -39,7 +38,7 @@ class _SearchSheetState extends State<SearchSheet> {
                 },
             );
           } else {
-            return const Text("lodaing");
+            return const Text("loading");
           }
         },
       ),
