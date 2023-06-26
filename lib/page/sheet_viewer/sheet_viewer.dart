@@ -4,6 +4,7 @@ import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keybo
 import 'package:chord_everdu/page/sheet_viewer/widget/edit_sheet_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_block_button.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -363,6 +364,9 @@ class _SheetViewerState extends State<SheetViewer> {
 
   void addSheet() async {
     Map<String, dynamic> data = convertSheetToSaveData();
+    data["editor_email"] = FirebaseAuth.instance.currentUser!.email;
+    data["title"] = sheetInfo.title;
+    data["singer"] = sheetInfo.singer;
     await FirebaseFirestore.instance.collection('sheet_list').add(data);
   }
 

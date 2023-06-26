@@ -144,5 +144,7 @@ class Sheet with ChangeNotifier {
   void initializeSheet() {
     chords.clear();
     lyrics.clear();
+    chords.add([Chord.fromString("C")]);
+    lyrics.add([""]);
   }
 }
