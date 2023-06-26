@@ -55,13 +55,23 @@ class _ChordCellState extends State<ChordCell> {
               : Container(
                   padding: const EdgeInsets.symmetric(
                       vertical: 4.0, horizontal: 4.0),
-                  decoration: BoxDecoration(
+                  decoration: context.read<Sheet>().isReadOnly ? null : BoxDecoration(
                     color: isSelected ? Colors.yellow : Colors.white,
                     border: Border.all(),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                    children: context.read<Sheet>().isReadOnly ? [
+                      Text(
+                        chord!.toStringChord(),
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        lyric ?? "",
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ] : [
                       ConstrainedBox(
                         constraints: const BoxConstraints(minWidth: 36.0),
                         child: Text(
@@ -76,7 +86,6 @@ class _ChordCellState extends State<ChordCell> {
                           lyric ?? "",
                           style: const TextStyle(fontSize: 16),
                         ),
-                        //TextField(),
                       ),
                     ],
                   ),

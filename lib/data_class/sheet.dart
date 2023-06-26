@@ -9,6 +9,7 @@ class Sheet with ChangeNotifier {
   int songKey = 0;
   int selectedBlockIndex = -1;
   int selectedCellIndex = -1;
+  bool isReadOnly = true;
 
   List<String> blockNameList = [];
   List<List<Chord?>> chords = [];

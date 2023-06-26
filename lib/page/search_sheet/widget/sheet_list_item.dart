@@ -1,5 +1,7 @@
+import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:chord_everdu/page/sheet_viewer/sheet_viewer.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SheetListItem extends StatelessWidget {
   final String sheetID, title, singer;
@@ -14,6 +16,7 @@ class SheetListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
+        context.read<Sheet>().isReadOnly = true;
         Navigator.of(context).push(MaterialPageRoute(builder: (context) {
           return SheetViewer(sheetID: sheetID);
         }));

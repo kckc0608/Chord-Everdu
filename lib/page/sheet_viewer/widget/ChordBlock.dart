@@ -59,6 +59,7 @@ class _ChordBlockState extends State<ChordBlock> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  context.read<Sheet>().isReadOnly ? const SizedBox.shrink() :
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 8.0),
                     child: Row(
