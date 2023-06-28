@@ -182,6 +182,12 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
       ),
       actions: [
         TextButton(
+          child: const Text("취소"),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        ElevatedButton(
           child: const Text("확인"),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
@@ -194,12 +200,6 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                   MaterialPageRoute(builder: (_) => const SheetViewer(sheetID: "",))
               );
             }
-          },
-        ),
-        TextButton(
-          child: const Text("취소"),
-          onPressed: () {
-            Navigator.of(context).pop();
           },
         ),
       ],
