@@ -62,29 +62,58 @@ class _ChordCellState extends State<ChordCell> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: context.read<Sheet>().isReadOnly ? [
-                      Text(
-                        chord!.toStringChord(sheetKey: sheetKey),
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        lyric ?? "",
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ] : [
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 36.0),
+                      SizedBox(
+                        height: 18,
                         child: Text(
-                          chord!.toStringChord(sheetKey: sheetKey),
+                          chord?.toStringChord(sheetKey: sheetKey) ?? "",
                           style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            height: 1.1,
+                          ),
                         ),
                       ),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 36.0),
+                      SizedBox(
+                        height: 18,
                         child: Text(
                           lyric ?? "",
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            height: 1.1,
+                          ),
+                        ),
+                      ),
+                    ] : [
+                      Container(
+                        color: Colors.black12,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: 36.0, minHeight: 18),
+                          child: Text(
+                            chord!.toStringChord(sheetKey: sheetKey),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              height: 1.1,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        color: Colors.black12,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: 36.0,
+                            minHeight: 18,
+                            maxHeight: 18,
+                          ),
+                          child: Text(
+                            lyric ?? "",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              height: 1.1,
+                              textBaseline: TextBaseline.alphabetic
+                            ),
+                          ),
                         ),
                       ),
                     ],
