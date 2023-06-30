@@ -10,16 +10,16 @@ class SearchSheet extends StatefulWidget {
 }
 
 class _SearchSheetState extends State<SearchSheet> {
-  Future<QuerySnapshot<Map<String, dynamic>>> getSheetList() {
-    return FirebaseFirestore.instance.collection('sheet_list').get();
+  Stream<QuerySnapshot<Map<String, dynamic>>> getSheetList() {
+    return FirebaseFirestore.instance.collection('sheet_list').snapshots();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-      child: FutureBuilder(
-        future: getSheetList(),
+      child: StreamBuilder(
+        stream: getSheetList(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             var sheetsData = snapshot.data!.docs;
