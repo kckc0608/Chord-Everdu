@@ -52,14 +52,10 @@ class _SheetViewerState extends State<SheetViewer> {
     int blockCount = context.select((Sheet sheet) => sheet.chords.length);
     int selectedCell = context.select((Sheet sheet) => sheet.selectedCellIndex);
     int selectedBlock = context.read<Sheet>().selectedBlockIndex;
-    Logger().d(context.read<Sheet>().chords);
 
     _sheetKey = context.select((Sheet s) => s.sheetKey);
     sheetInfo = context.select((Sheet sheet) => sheet.sheetInfo);
     isReadOnly = context.read<Sheet>().isReadOnly;
-
-    Logger().d("sheet Key : ${_sheetKey}");
-    Logger().d("sheet Info : ${sheetInfo.songKey}");
 
     if (selectedCell > -1 && selectedBlock > -1) {
       _textController.text = context.read<Sheet>().lyrics[selectedBlock][selectedCell] ?? "";
@@ -319,6 +315,7 @@ class _SheetViewerState extends State<SheetViewer> {
         .then((doc) {
           List<String> chords = [];
           List<String> lyrics = [];
+          List<String> blockNames = [];
           if (doc.exists) {
             var data = doc.data();
             Logger().d(data);
@@ -328,18 +325,21 @@ class _SheetViewerState extends State<SheetViewer> {
             for (String lyricData in data["lyrics"]) {
               lyrics.add(lyricData);
             }
+            for (String blockName in data["block_names"]) {
+              blockNames.add(blockName);
+            }
           }
-          return SheetData(lyricData: lyrics, chordData: chords);
+          return SheetData(lyricData: lyrics, chordData: chords, blockNames: blockNames);
         });
   }
 
   void fetchAndSetSheetToProvider() async {
     SheetInfo sheetInfo = await fetchSheetInfo();
     SheetData sheetData = await fetchSheetData();
-    Logger().d(sheetData.chordData);
     if (context.mounted) {
       context.read<Sheet>().chords.clear();
       context.read<Sheet>().lyrics.clear();
+      context.read<Sheet>().blockNames.clear();
       context.read<Sheet>().selectedCellIndex = -1;
       context.read<Sheet>().selectedBlockIndex = -1;
       context.read<Sheet>().sheetKey = 0;
@@ -361,6 +361,7 @@ class _SheetViewerState extends State<SheetViewer> {
     data["title"] = sheetInfo.title;
     data["singer"] = sheetInfo.singer;
     data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
+    data["block_names"] = context.read<Sheet>().blockNames;
     if (widget.sheetID.isNotEmpty) {
       await FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).set(
         data, SetOptions(merge: true)
@@ -368,7 +369,6 @@ class _SheetViewerState extends State<SheetViewer> {
     } else {
       throw Exception("${widget.sheetID}이 비어있습니다.");
     }
-    Logger().i("saved");
   }
 
   void addSheet() async {
@@ -377,6 +377,7 @@ class _SheetViewerState extends State<SheetViewer> {
     data["title"] = sheetInfo.title;
     data["singer"] = sheetInfo.singer;
     data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
+    data["block_names"] = context.read<Sheet>().blockNames;
     await FirebaseFirestore.instance.collection('sheet_list').add(data);
   }
 
