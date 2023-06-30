@@ -194,8 +194,9 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
               context.read<Sheet>().updateSheetInfo(SheetInfo(
                 title: _controllerForTitle.text,
                 singer: _controllerForSinger.text,
-                songKey: 0,
+                songKey: _selectedKey,
               ));
+              context.read<Sheet>().isReadOnly = false;
               Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (_) => const SheetViewer(sheetID: "",))
               );
