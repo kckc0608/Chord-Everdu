@@ -1,3 +1,5 @@
+import 'package:chord_everdu/page/search_sheet/widget/sheet_list_item.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class SheetSearchDelegate extends SearchDelegate {
@@ -23,6 +25,7 @@ class SheetSearchDelegate extends SearchDelegate {
         ),
       ),
       inputDecorationTheme: const InputDecorationTheme(
+        border: InputBorder.none,
         hintStyle: TextStyle(
           color: Colors.white60
         )
@@ -55,18 +58,58 @@ class SheetSearchDelegate extends SearchDelegate {
 
   @override
   Widget buildResults(BuildContext context) {
-    return ListView(
-      children: const [
-        ListTile(
-          title: Text("item1"),
-        )
-      ],
-    );
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance.collection('sheet_list').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else {
+          var docs = snapshot.data!.docs;
+          return ListView.separated(
+            itemCount: docs.length,
+            separatorBuilder: (context, index) => const Divider(),
+            itemBuilder: (context, index) {
+              var data = docs[index].data();
+              String title = data["title"];
+              if (title.contains(query)) {
+                return SheetListItem(sheetID: docs[index].id,
+                    title: title,
+                    singer: data["singer"]);
+              } else {
+                return Container();
+              }
+            },
+          );
+        }
+      });
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
     if (query.isEmpty) return const Center(child: Text("검색어를 입력하세요."));
-    return const Center(child: Text("검색결과가 없습니다."));
+    return StreamBuilder(
+        stream: FirebaseFirestore.instance.collection('sheet_list').snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else {
+            var docs = snapshot.data!.docs;
+            return ListView.separated(
+              itemCount: docs.length,
+              separatorBuilder: (context, index) => const Divider(),
+              itemBuilder: (context, index) {
+                var data = docs[index].data();
+                String title = data["title"];
+                if (title.contains(query)) {
+                  return SheetListItem(sheetID: docs[index].id,
+                      title: title,
+                      singer: data["singer"]);
+                } else {
+                  return Container();
+                }
+              },
+            );
+          }
+        });
   }
 }
