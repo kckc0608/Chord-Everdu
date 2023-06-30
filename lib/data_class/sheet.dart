@@ -157,7 +157,9 @@ class Sheet with ChangeNotifier {
   void initializeSheet() {
     chords.clear();
     lyrics.clear();
+    blockNames.clear();
     chords.add([Chord.fromString("C")]);
     lyrics.add([""]);
+    blockNames.add("블럭 이름을 설정하세요.");
   }
 }
