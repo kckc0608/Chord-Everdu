@@ -18,6 +18,9 @@ class _MyPageState extends State<MyPage> {
     return StreamBuilder(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
         if (snapshot.hasData) {
           User user = snapshot.data!;
           return SingleChildScrollView(
@@ -26,13 +29,17 @@ class _MyPageState extends State<MyPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("내 정보", style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  )),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                    child: Text("내 정보", style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    )),
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
                     child: Row(
+                      //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         SizedBox(
                           width: 40,
@@ -40,15 +47,18 @@ class _MyPageState extends State<MyPage> {
                           child: Image.network(user.photoURL!),
                         ),
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                user.displayName ?? "표시할 이름이 없습니다.",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                child: Text(
+                                  user.displayName ?? "표시할 이름이 없습니다.",
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               Text(user.email!),
@@ -64,20 +74,33 @@ class _MyPageState extends State<MyPage> {
                       ],
                     ),
                   ),
-                  const Text("내 악보", style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  )),
-                  SizedBox(
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+                    child: Text("내 악보", style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    )),
+                  ),
+                  Container(
                     height: 180,
-                    child: FutureBuilder(
-                      future: FirebaseFirestore.instance.collection('sheet_list')
-                          .where("editor_email", isEqualTo: FirebaseAuth.instance.currentUser!.email).get(),
+                    padding: const EdgeInsets.all(4.0),
+                    decoration: const BoxDecoration(
+                      color: Colors.white70,
+                      boxShadow: [BoxShadow(
+                        color: Colors.grey,
+                        spreadRadius: -4,
+                        blurRadius: 4,
+                      )],
+                    ),
+                    child: StreamBuilder(
+                      stream: FirebaseFirestore.instance.collection('sheet_list')
+                          .where("editor_email", isEqualTo: FirebaseAuth.instance.currentUser!.email).snapshots(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           var docs = snapshot.data!.docs;
-                          return ListView.builder(
+                          return ListView.separated(
                             itemCount: docs.length,
+                            separatorBuilder: (context, index) => const Divider(),
                             itemBuilder:(context, index) {
                               var dicID = docs[index].id;
                               var doc = docs[index].data();
@@ -89,45 +112,53 @@ class _MyPageState extends State<MyPage> {
                             },
                           );
                         } else {
-                          return const Center(child: Text("loading..."));
+                          return const Center(child: CircularProgressIndicator());
                         }
                       },
                     ),
                   ),
-                  const Text("내 악보", style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  )),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+                    child: Text("좋아요 표시한 악보", style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    )),
+                  ),
                   SizedBox(
                     height: 180,
-                    child: FutureBuilder(
-                      future: FirebaseFirestore.instance.collection('sheet_list')
-                          .where("editor_email", isEqualTo: FirebaseAuth.instance.currentUser!.email).get(),
+                    child: StreamBuilder(
+                      stream: FirebaseFirestore.instance
+                          .collection('user_list')
+                          .doc(FirebaseAuth.instance.currentUser!.email)
+                          .snapshots(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
-                          var docs = snapshot.data!.docs;
+                          var data = snapshot.data!.data();
+                          List<dynamic> favoriteSheets = data!["favoriteSheet"];
                           return ListView.builder(
-                            itemCount: docs.length,
+                            itemCount: favoriteSheets.length,
                             itemBuilder:(context, index) {
-                              var dicID = docs[index].id;
-                              var doc = docs[index].data();
+                              var sheetInfo = favoriteSheets[index];
                               return SheetListItem(
-                                sheetID: dicID,
-                                title: doc["title"],
-                                singer: doc["singer"],
+                                sheetID: sheetInfo["sheet_id"],
+                                title: sheetInfo["title"],
+                                singer: sheetInfo["singer"],
                               );
                             },
                           );
                         } else {
-                          return const Center(child: Text("loading..."));
+                          return const Center(child: CircularProgressIndicator());
                         }
                       },
                     ),
                   ),
-                  const Text("내 그룹", style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  )),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 12),
+                    child: Text("내 그룹", style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    )),
+                  ),
                 ],
               ),
             ),
