@@ -91,6 +91,10 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               setState(() {
                 if (index == _chord.root) {
                   inputMode = InputMode.root;
+                  _rootAndBaseSelection[index][0] = false;
+                  _chord = Chord();
+                  context.read<Sheet>().updateChord(
+                      _selectedBlockIndex, _selectedCellIndex, _chord);
                   return;
                 }
 
@@ -113,6 +117,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                   case InputMode.root:
                     if (_chord.root > -1) {
                       _rootAndBaseSelection[_chord.root][0] = false;
+                      _chord.root = -1;
                     }
                     _rootAndBaseSelection[index][0] = true;
                     _chord.root = index;
