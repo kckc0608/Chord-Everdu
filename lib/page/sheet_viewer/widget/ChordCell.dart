@@ -26,7 +26,7 @@ class _ChordCellState extends State<ChordCell> {
 
   @override
   Widget build(BuildContext context) {
-    //logger.i("build:${widget.cellID}");
+    int sheetKey = context.watch<Sheet>().sheetKey;
     Chord? chord = context.watch<Sheet>().chords[widget.blockID][widget.cellID];
     String? lyric = context.watch<Sheet>().lyrics[widget.blockID][widget.cellID];
     return Focus(
@@ -39,7 +39,7 @@ class _ChordCellState extends State<ChordCell> {
         FocusNode focusNode = Focus.of(context);
         return GestureDetector(
           onTap: () {
-            if (focusNode.hasFocus) {
+            if (focusNode.hasFocus) { /// sheet 클래스에 조작 메소드를 추가하는 방식으로 수정하자
               focusNode.unfocus();
               context.read<Sheet>().selectedCellIndex = -1;
             } else {
@@ -63,7 +63,7 @@ class _ChordCellState extends State<ChordCell> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: context.read<Sheet>().isReadOnly ? [
                       Text(
-                        chord!.toStringChord(),
+                        chord!.toStringChord(sheetKey: sheetKey),
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
@@ -75,7 +75,7 @@ class _ChordCellState extends State<ChordCell> {
                       ConstrainedBox(
                         constraints: const BoxConstraints(minWidth: 36.0),
                         child: Text(
-                          chord!.toStringChord(),
+                          chord!.toStringChord(sheetKey: sheetKey),
                           style: const TextStyle(
                               fontSize: 16, fontWeight: FontWeight.bold),
                         ),

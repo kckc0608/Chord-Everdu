@@ -16,7 +16,7 @@ void main() {
       for (String chord in chordData[songKey]!) {
         Chord testChord = Chord.fromString(chord, songKey: songKey);
         test('test: ', () {
-          expect(testChord.toStringChord(songKey: songKey), equals(chord));
+          expect(testChord.toStringChord(sheetKey: songKey), equals(chord));
         });
       }
     }

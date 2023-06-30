@@ -6,7 +6,7 @@ import 'package:logger/logger.dart';
 import 'chord.dart';
 
 class Sheet with ChangeNotifier {
-  int songKey = 0;
+  int sheetKey = 0;
   int selectedBlockIndex = -1;
   int selectedCellIndex = -1;
   bool isReadOnly = true;
@@ -107,6 +107,19 @@ class Sheet with ChangeNotifier {
     notifyListeners();
   }
 
+  void increaseSheetKey() {
+    sheetKey += 1;
+    sheetKey %= 12;
+    notifyListeners();
+  }
+
+  void decreaseSheetKey() {
+    sheetKey -= 1;
+    sheetKey += 12;
+    sheetKey %= 12;
+    notifyListeners();
+  }
+
   List<String> convertChordsToStringList() {
     List<String> list = [];
     for (int i = 0; i < chords.length; i++) {
@@ -115,7 +128,7 @@ class Sheet with ChangeNotifier {
         if (chords[i][j] == null) {
           block += '\n';
         } else {
-          block += chords[i][j]!.toStringChord();
+          block += chords[i][j]!.toStringChord(sheetKey: sheetKey);
         }
         if (j < chords[i].length - 1) block += '|';
       }

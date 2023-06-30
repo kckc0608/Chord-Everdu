@@ -18,8 +18,8 @@ class _ChordBlockState extends State<ChordBlock> {
   bool isSelected = false;
   @override
   Widget build(BuildContext context) {
-    Logger().i("selected Cell : ${context.read<Sheet>().selectedBlockIndex}");
-    Logger().i("selected Cell : ${context.read<Sheet>().selectedCellIndex}");
+    //Logger().i("selected Cell : ${context.read<Sheet>().selectedBlockIndex}");
+    //Logger().i("selected Cell : ${context.read<Sheet>().selectedCellIndex}");
     List<ChordCell> cellList = [];
     /// 이렇게 하면 sheet.chords[blockID] 가 아니라 sheet.chords 를 추적하는 것 같음.
     List<Chord?> chordList = context.select((Sheet sheet) => sheet.chords[widget.blockID]);

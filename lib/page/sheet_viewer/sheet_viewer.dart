@@ -3,6 +3,7 @@ import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/edit_sheet_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_block_button.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/sheet_viewer_control_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ class SheetViewer extends StatefulWidget {
 }
 
 class _SheetViewerState extends State<SheetViewer> {
-  late int _songKey;
+  late int _sheetKey;
   late SheetInfo sheetInfo;
   late bool isReadOnly;
   final _textController = TextEditingController();
@@ -53,10 +54,12 @@ class _SheetViewerState extends State<SheetViewer> {
     int selectedBlock = context.read<Sheet>().selectedBlockIndex;
     Logger().d(context.read<Sheet>().chords);
 
-    _songKey = context.select((Sheet s) => s.songKey);
+    _sheetKey = context.select((Sheet s) => s.sheetKey);
     sheetInfo = context.select((Sheet sheet) => sheet.sheetInfo);
     isReadOnly = context.read<Sheet>().isReadOnly;
-    print(isReadOnly.toString());
+
+    Logger().d("sheet Key : ${_sheetKey}");
+    Logger().d("sheet Info : ${sheetInfo.songKey}");
 
     if (selectedCell > -1 && selectedBlock > -1) {
       _textController.text = context.read<Sheet>().lyrics[selectedBlock][selectedCell] ?? "";
@@ -99,7 +102,7 @@ class _SheetViewerState extends State<SheetViewer> {
                   builder: (context) => EditSheetDialog(
                     title: sheetInfo.title,
                     singer: sheetInfo.singer,
-                    songKey: _songKey,
+                    songKey: _sheetKey,
                   ),
                 );
               },
@@ -164,7 +167,7 @@ class _SheetViewerState extends State<SheetViewer> {
               ),
             ),
             isReadOnly
-                ? const SizedBox.shrink()
+                ? const SheetViewerControlBar()
                 : Container(
                   decoration: const BoxDecoration(
                     boxShadow: [BoxShadow(
@@ -295,7 +298,7 @@ class _SheetViewerState extends State<SheetViewer> {
             return SheetInfo(
               title: data!["title"],
               singer: data["singer"],
-              songKey: 0,
+              songKey: data["song_key"] ?? 0,
             );
           } else {
             throw Exception("${widget.sheetID}의 데이터가 없습니다.");
@@ -335,6 +338,7 @@ class _SheetViewerState extends State<SheetViewer> {
       context.read<Sheet>().lyrics.clear();
       context.read<Sheet>().selectedCellIndex = -1;
       context.read<Sheet>().selectedBlockIndex = -1;
+      context.read<Sheet>().sheetKey = 0;
       context.read<Sheet>().copyFromData(sheetData);
       context.read<Sheet>().updateSheetInfo(sheetInfo);
       setState(() {}); // 이걸 안하면 데이터만 받아 오고 위젯은 다시 안 그리는 경우가 있음
@@ -352,6 +356,7 @@ class _SheetViewerState extends State<SheetViewer> {
     Map<String, dynamic> data = convertSheetToSaveData();
     data["title"] = sheetInfo.title;
     data["singer"] = sheetInfo.singer;
+    data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
     if (widget.sheetID.isNotEmpty) {
       await FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).set(
         data, SetOptions(merge: true)
@@ -367,6 +372,7 @@ class _SheetViewerState extends State<SheetViewer> {
     data["editor_email"] = FirebaseAuth.instance.currentUser!.email;
     data["title"] = sheetInfo.title;
     data["singer"] = sheetInfo.singer;
+    data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
     await FirebaseFirestore.instance.collection('sheet_list').add(data);
   }
 
