@@ -71,7 +71,10 @@ class _SheetViewerState extends State<SheetViewer> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              showDialog(
+              if (isReadOnly) {
+                Navigator.of(context).pop();
+              } else {
+                showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
                         title: const Text("취소"),
@@ -91,6 +94,7 @@ class _SheetViewerState extends State<SheetViewer> {
                           // TODO : 뒤로 가기 버튼 작업을 해줘야 함.
                         ],
                       ));
+              }
             },
           ),
           actions: isReadOnly ? null : [
