@@ -1,6 +1,7 @@
 import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
 class EditSheetDialog extends StatefulWidget {
@@ -24,6 +25,7 @@ class _EditSheetDialogState extends State<EditSheetDialog> {
     "C", "C#/Db", "D", "Eb", "E", "F", "F#/Gb", "G", "Ab", "A", "Bb", "B"
   ];
   int _selectedKey = 0;
+  late int _songKey;
   final _titleController = TextEditingController();
   final _singerController = TextEditingController();
 
@@ -36,8 +38,18 @@ class _EditSheetDialogState extends State<EditSheetDialog> {
   }
 
   @override
+  void initState() {
+    if (context.mounted) {
+      int sheetKey = context.read<Sheet>().sheetKey;
+      _songKey = context.read<Sheet>().sheetInfo.songKey;
+      _selectedKey = (_songKey + sheetKey + 12) % 12;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     _titleController.text = widget.title;
+    _singerController.text = widget.singer;
     return AlertDialog(
       title: const Text("악보 정보 수정"),
       titlePadding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
@@ -115,7 +127,8 @@ class _EditSheetDialogState extends State<EditSheetDialog> {
                       ).toList(),
                       onChanged: (value) {
                         setState(() {
-                          _selectedKey = value ?? 0; //int.parse(value.toString());
+                          _selectedKey = value ?? 0;
+                          Logger().d(_selectedKey);
                         });
                       },
                     ),
@@ -197,8 +210,10 @@ class _EditSheetDialogState extends State<EditSheetDialog> {
               SheetInfo newInfo = SheetInfo(
                 title: _titleController.text,
                 singer: _singerController.text,
-                songKey: _selectedKey,
+                songKey: _songKey,
               );
+              context.read<Sheet>().sheetKey =
+                  (_selectedKey - _songKey + 12) % 12;
               context.read<Sheet>().updateSheetInfo(newInfo);
               Navigator.of(context).pop();
             }

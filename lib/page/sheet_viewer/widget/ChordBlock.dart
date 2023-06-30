@@ -16,10 +16,13 @@ class ChordBlock extends StatefulWidget {
 
 class _ChordBlockState extends State<ChordBlock> {
   bool isSelected = false;
+  late bool isReadOnly;
+  late String blockName;
   @override
   Widget build(BuildContext context) {
-    Logger().i("selected Cell : ${context.read<Sheet>().selectedBlockIndex}");
-    Logger().i("selected Cell : ${context.read<Sheet>().selectedCellIndex}");
+    isReadOnly = context.read<Sheet>().isReadOnly;
+    blockName = context.watch<Sheet>().blockNames[widget.blockID];
+
     List<ChordCell> cellList = [];
     /// 이렇게 하면 sheet.chords[blockID] 가 아니라 sheet.chords 를 추적하는 것 같음.
     List<Chord?> chordList = context.select((Sheet sheet) => sheet.chords[widget.blockID]);
@@ -59,18 +62,20 @@ class _ChordBlockState extends State<ChordBlock> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 8.0),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
                     child: Row(
                       children: [
                         Padding(
-                          padding: EdgeInsets.fromLTRB(0, 0, 4, 0),
-                          child: Text("change block name"),
+                          padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
+                          child: Text(blockName ?? "", style: const TextStyle(
+                            fontStyle: FontStyle.italic,
+                          ),),
                         ),
-                        InkWell(
+                        isReadOnly ? const SizedBox.shrink() : const InkWell(
                           child: Icon(Icons.edit_outlined),
                         ),
-                        InkWell(
+                        isReadOnly ? const SizedBox.shrink() : const InkWell(
                           child: Icon(Icons.delete_forever_outlined, color: Colors.red,),
                         )
                       ],

@@ -182,24 +182,25 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
       ),
       actions: [
         TextButton(
+          child: const Text("취소"),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        ElevatedButton(
           child: const Text("확인"),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               context.read<Sheet>().updateSheetInfo(SheetInfo(
                 title: _controllerForTitle.text,
                 singer: _controllerForSinger.text,
-                songKey: 0,
+                songKey: _selectedKey,
               ));
+              context.read<Sheet>().isReadOnly = false;
               Navigator.of(context).pushReplacement(
                   MaterialPageRoute(builder: (_) => const SheetViewer(sheetID: "",))
               );
             }
-          },
-        ),
-        TextButton(
-          child: const Text("취소"),
-          onPressed: () {
-            Navigator.of(context).pop();
           },
         ),
       ],

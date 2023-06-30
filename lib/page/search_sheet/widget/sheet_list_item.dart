@@ -1,5 +1,9 @@
+import 'package:chord_everdu/data_class/sheet.dart';
+import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:chord_everdu/page/sheet_viewer/sheet_viewer.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SheetListItem extends StatelessWidget {
   final String sheetID, title, singer;
@@ -14,6 +18,11 @@ class SheetListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
+        context.read<Sheet>().isReadOnly = true;
+        /// 이전 악보 정보가 잠깐 뜨는 문제가 있어 임시로 업데이트
+        context.read<Sheet>().updateSheetInfo(
+            SheetInfo(title: title, songKey: 0, singer: singer)
+        );
         Navigator.of(context).push(MaterialPageRoute(builder: (context) {
           return SheetViewer(sheetID: sheetID);
         }));
@@ -30,7 +39,29 @@ class SheetListItem extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(singer, style: const TextStyle(color: Colors.black54),),
               ],
-            ))
+            )),
+            IconButton(
+              color: Colors.redAccent,
+              icon: const Icon(Icons.favorite_border),
+              onPressed: () {
+                User? currentUser = FirebaseAuth.instance.currentUser;
+                if (currentUser == null) {
+                  showDialog(context: context, builder: (context) => AlertDialog(
+                    content: const Text("로그인이  필요합니다."),
+                    actions: [
+                      ElevatedButton(
+                        child: const Text("확인"),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),);
+                } else {
+                  /// DB 유저 리스트 내 좋아요 악보에 이 악보 추가
+                }
+              },
+            ),
           ],
         ),
       ),

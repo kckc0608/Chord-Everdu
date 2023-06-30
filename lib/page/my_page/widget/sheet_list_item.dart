@@ -16,7 +16,7 @@ class SheetListItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        //context.read<Sheet>().isReadOnly = true;
+        context.read<Sheet>().isReadOnly = true;
         Navigator.of(context).push(MaterialPageRoute(builder: (context) {
           return SheetViewer(sheetID: sheetID);
         }));
@@ -37,7 +37,7 @@ class SheetListItem extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
-                //context.read<Sheet>().isReadOnly = false;
+                context.read<Sheet>().isReadOnly = false;
                 Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                   return SheetViewer(sheetID: sheetID);
                 }));
@@ -46,7 +46,7 @@ class SheetListItem extends StatelessWidget {
                 icon: const Icon(Icons.delete),
                 color: Colors.redAccent,
                 onPressed: () {
-                  //context.read<Sheet>().isReadOnly = false;
+                  context.read<Sheet>().isReadOnly = false;
                   Navigator.of(context).push(MaterialPageRoute(builder: (context) {
                     return SheetViewer(sheetID: sheetID);
                   }));

@@ -26,7 +26,7 @@ class _ChordCellState extends State<ChordCell> {
 
   @override
   Widget build(BuildContext context) {
-    //logger.i("build:${widget.cellID}");
+    int sheetKey = context.watch<Sheet>().sheetKey;
     Chord? chord = context.watch<Sheet>().chords[widget.blockID][widget.cellID];
     String? lyric = context.watch<Sheet>().lyrics[widget.blockID][widget.cellID];
     return Focus(
@@ -39,7 +39,7 @@ class _ChordCellState extends State<ChordCell> {
         FocusNode focusNode = Focus.of(context);
         return GestureDetector(
           onTap: () {
-            if (focusNode.hasFocus) {
+            if (focusNode.hasFocus) { /// sheet 클래스에 조작 메소드를 추가하는 방식으로 수정하자
               focusNode.unfocus();
               context.read<Sheet>().selectedCellIndex = -1;
             } else {
@@ -55,28 +55,66 @@ class _ChordCellState extends State<ChordCell> {
               : Container(
                   padding: const EdgeInsets.symmetric(
                       vertical: 4.0, horizontal: 4.0),
-                  decoration: BoxDecoration(
+                  decoration: context.read<Sheet>().isReadOnly ? null : BoxDecoration(
                     color: isSelected ? Colors.yellow : Colors.white,
                     border: Border.all(),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 36.0),
+                    children: context.read<Sheet>().isReadOnly ? [
+                      SizedBox(
+                        height: 18,
                         child: Text(
-                          chord!.toStringChord(),
+                          chord?.toStringChord(sheetKey: sheetKey) ?? "",
                           style: const TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.bold),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            height: 1.1,
+                          ),
                         ),
                       ),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 36.0),
+                      SizedBox(
+                        height: 18,
                         child: Text(
                           lyric ?? "",
-                          style: const TextStyle(fontSize: 16),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            height: 1.1,
+                          ),
                         ),
-                        //TextField(),
+                      ),
+                    ] : [
+                      Container(
+                        color: Colors.black12,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minWidth: 36.0, minHeight: 18),
+                          child: Text(
+                            chord!.toStringChord(sheetKey: sheetKey),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              height: 1.1,
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        color: Colors.black12,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: 36.0,
+                            minHeight: 18,
+                            maxHeight: 18,
+                          ),
+                          child: Text(
+                            lyric ?? "",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              height: 1.1,
+                              textBaseline: TextBaseline.alphabetic
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),

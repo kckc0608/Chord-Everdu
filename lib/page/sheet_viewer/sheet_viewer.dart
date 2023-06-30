@@ -3,7 +3,9 @@ import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/edit_sheet_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_block_button.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/sheet_viewer_control_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +16,6 @@ import '../../data_class/sheet_data.dart';
 
 class SheetViewer extends StatefulWidget {
   final String sheetID;
-
   const SheetViewer({
     Key? key,
     required this.sheetID,
@@ -25,8 +26,9 @@ class SheetViewer extends StatefulWidget {
 }
 
 class _SheetViewerState extends State<SheetViewer> {
-  late int _songKey;
+  late int _sheetKey;
   late SheetInfo sheetInfo;
+  late bool isReadOnly;
   final _textController = TextEditingController();
 
   @override
@@ -39,7 +41,6 @@ class _SheetViewerState extends State<SheetViewer> {
     }
   }
 
-
   @override
   void dispose() {
     _textController.dispose();
@@ -51,10 +52,10 @@ class _SheetViewerState extends State<SheetViewer> {
     int blockCount = context.select((Sheet sheet) => sheet.chords.length);
     int selectedCell = context.select((Sheet sheet) => sheet.selectedCellIndex);
     int selectedBlock = context.read<Sheet>().selectedBlockIndex;
-    Logger().d(context.read<Sheet>().chords);
 
-    _songKey = context.select((Sheet s) => s.songKey);
+    _sheetKey = context.select((Sheet s) => s.sheetKey);
     sheetInfo = context.select((Sheet sheet) => sheet.sheetInfo);
+    isReadOnly = context.read<Sheet>().isReadOnly;
 
     if (selectedCell > -1 && selectedBlock > -1) {
       _textController.text = context.read<Sheet>().lyrics[selectedBlock][selectedCell] ?? "";
@@ -66,7 +67,10 @@ class _SheetViewerState extends State<SheetViewer> {
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
-              showDialog(
+              if (isReadOnly) {
+                Navigator.of(context).pop();
+              } else {
+                showDialog(
                   context: context,
                   builder: (_) => AlertDialog(
                         title: const Text("취소"),
@@ -86,9 +90,10 @@ class _SheetViewerState extends State<SheetViewer> {
                           // TODO : 뒤로 가기 버튼 작업을 해줘야 함.
                         ],
                       ));
+              }
             },
           ),
-          actions: [
+          actions: isReadOnly ? null : [
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
@@ -97,7 +102,7 @@ class _SheetViewerState extends State<SheetViewer> {
                   builder: (context) => EditSheetDialog(
                     title: sheetInfo.title,
                     singer: sheetInfo.singer,
-                    songKey: _songKey,
+                    songKey: _sheetKey,
                   ),
                 );
               },
@@ -138,7 +143,7 @@ class _SheetViewerState extends State<SheetViewer> {
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 child: FutureBuilder(
                   future: FirebaseFirestore.instance
                       .collection('sheet_list')
@@ -147,7 +152,7 @@ class _SheetViewerState extends State<SheetViewer> {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return ListView.builder(
-                        itemCount: blockCount + 1,
+                        itemCount: isReadOnly ? blockCount : blockCount + 1,
                         itemBuilder: (context, index) {
                           return index == blockCount
                               ? const NewChordBlockButton()
@@ -161,27 +166,29 @@ class _SheetViewerState extends State<SheetViewer> {
                 ),
               ),
             ),
-            Container(
-              decoration: const BoxDecoration(
-                boxShadow: [BoxShadow(
-                  color: Colors.black54,
-                  blurRadius: 15.0,
-                  offset: Offset(0, 0.75),
-                )],
-                color: Colors.white,
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+            isReadOnly
+                ? const SheetViewerControlBar()
+                : Container(
+                  decoration: const BoxDecoration(
+                    boxShadow: [BoxShadow(
+                      color: Colors.black54,
+                      blurRadius: 15.0,
+                      offset: Offset(0, 0.75),
+                    )],
+                    color: Colors.white,
+                  ),
+                  child: Column(
                     children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.add_box_outlined,
-                        ),
-                        color: Colors.green,
-                        onPressed: selectedCell > -1
-                            ? () {
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: const Icon(
+                              Icons.add_box_outlined,
+                            ),
+                            color: Colors.green,
+                            onPressed: selectedCell > -1
+                                ? () {
                               setState(() {
                                 context.read<Sheet>().addCell(
                                   context.read<Sheet>().selectedBlockIndex,
@@ -190,15 +197,15 @@ class _SheetViewerState extends State<SheetViewer> {
                                 );
                               });
                             }
-                            : null,
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.indeterminate_check_box_outlined,
-                        ),
-                        color: Colors.red,
-                        onPressed: selectedCell > -1
-                            ? () {
+                                : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.indeterminate_check_box_outlined,
+                            ),
+                            color: Colors.red,
+                            onPressed: selectedCell > -1
+                                ? () {
                               setState(() {
                                 context.read<Sheet>().removeCell(
                                   blockID: context.read<Sheet>().selectedBlockIndex,
@@ -207,72 +214,72 @@ class _SheetViewerState extends State<SheetViewer> {
                                 context.read<Sheet>().setSelectedCellIndex(-1);
                               });
                             }
-                            : null,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.subdirectory_arrow_left),
-                        onPressed: selectedCell > -1 ? () {
-                          setState(() {
-                            context.read<Sheet>().addNewLineCell(
-                              blockID: context.read<Sheet>().selectedBlockIndex,
-                              cellID: selectedCell,
-                            );
-                          });
-                        } : null,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: selectedCell > 0 ? () {
-                          setState(() {
-                            context.read<Sheet>().removePreviousCell(
-                              blockID: context.read<Sheet>().selectedBlockIndex,
-                              cellID: selectedCell,
-                            );
-                          });
-                        } : null,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.text_rotation_none),
-                        onPressed: selectedCell > -1 ? () {
-                          setState(() {});
-                        } : null,
-                      ),
-                    ],
-                  ),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 44),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Text("가사 : ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
-                          Expanded(
-                            child: Container(
-                              color: Colors.black26,
-                              child: TextField(
-                                controller: _textController,
-                                onChanged: (text) {
-                                  context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
-                                },
-                                keyboardType: TextInputType.text,
-                                style: const TextStyle(fontSize: 18),
-                                decoration: const InputDecoration(
-                                  isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                                  border: InputBorder.none,
-                                ),
-                              ),
-                            ),
+                                : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.subdirectory_arrow_left),
+                            onPressed: selectedCell > -1 ? () {
+                              setState(() {
+                                context.read<Sheet>().addNewLineCell(
+                                  blockID: context.read<Sheet>().selectedBlockIndex,
+                                  cellID: selectedCell,
+                                );
+                              });
+                            } : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: selectedCell > 0 ? () {
+                              setState(() {
+                                context.read<Sheet>().removePreviousCell(
+                                  blockID: context.read<Sheet>().selectedBlockIndex,
+                                  cellID: selectedCell,
+                                );
+                              });
+                            } : null,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.text_rotation_none),
+                            onPressed: selectedCell > -1 ? () {
+                              setState(() {});
+                            } : null,
                           ),
                         ],
                       ),
-                    ),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxHeight: 44),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const Text("가사 : ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
+                              Expanded(
+                                child: Container(
+                                  color: Colors.black26,
+                                  child: TextField(
+                                    controller: _textController,
+                                    onChanged: (text) {
+                                      context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
+                                    },
+                                    keyboardType: TextInputType.text,
+                                    style: const TextStyle(fontSize: 18),
+                                    decoration: const InputDecoration(
+                                      isDense: true,
+                                      contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                      border: InputBorder.none,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      MediaQuery.of(context).viewInsets.bottom == 0 ? const ChordKeyboard() : const SizedBox.shrink(),
+                    ],
                   ),
-                  MediaQuery.of(context).viewInsets.bottom == 0 ? const ChordKeyboard() : const SizedBox.shrink(),
-                ],
-              ),
-            ),
+                ),
           ],
         )));
   }
@@ -291,7 +298,7 @@ class _SheetViewerState extends State<SheetViewer> {
             return SheetInfo(
               title: data!["title"],
               singer: data["singer"],
-              songKey: 0,
+              songKey: data["song_key"] ?? 0,
             );
           } else {
             throw Exception("${widget.sheetID}의 데이터가 없습니다.");
@@ -308,6 +315,7 @@ class _SheetViewerState extends State<SheetViewer> {
         .then((doc) {
           List<String> chords = [];
           List<String> lyrics = [];
+          List<String> blockNames = [];
           if (doc.exists) {
             var data = doc.data();
             Logger().d(data);
@@ -317,20 +325,24 @@ class _SheetViewerState extends State<SheetViewer> {
             for (String lyricData in data["lyrics"]) {
               lyrics.add(lyricData);
             }
+            for (String blockName in data["block_names"]) {
+              blockNames.add(blockName);
+            }
           }
-          return SheetData(lyricData: lyrics, chordData: chords);
+          return SheetData(lyricData: lyrics, chordData: chords, blockNames: blockNames);
         });
   }
 
   void fetchAndSetSheetToProvider() async {
     SheetInfo sheetInfo = await fetchSheetInfo();
     SheetData sheetData = await fetchSheetData();
-    Logger().d(sheetData.chordData);
     if (context.mounted) {
       context.read<Sheet>().chords.clear();
       context.read<Sheet>().lyrics.clear();
+      context.read<Sheet>().blockNames.clear();
       context.read<Sheet>().selectedCellIndex = -1;
       context.read<Sheet>().selectedBlockIndex = -1;
+      context.read<Sheet>().sheetKey = 0;
       context.read<Sheet>().copyFromData(sheetData);
       context.read<Sheet>().updateSheetInfo(sheetInfo);
       setState(() {}); // 이걸 안하면 데이터만 받아 오고 위젯은 다시 안 그리는 경우가 있음
@@ -348,6 +360,8 @@ class _SheetViewerState extends State<SheetViewer> {
     Map<String, dynamic> data = convertSheetToSaveData();
     data["title"] = sheetInfo.title;
     data["singer"] = sheetInfo.singer;
+    data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
+    data["block_names"] = context.read<Sheet>().blockNames;
     if (widget.sheetID.isNotEmpty) {
       await FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).set(
         data, SetOptions(merge: true)
@@ -355,11 +369,15 @@ class _SheetViewerState extends State<SheetViewer> {
     } else {
       throw Exception("${widget.sheetID}이 비어있습니다.");
     }
-    Logger().i("saved");
   }
 
   void addSheet() async {
     Map<String, dynamic> data = convertSheetToSaveData();
+    data["editor_email"] = FirebaseAuth.instance.currentUser!.email;
+    data["title"] = sheetInfo.title;
+    data["singer"] = sheetInfo.singer;
+    data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
+    data["block_names"] = context.read<Sheet>().blockNames;
     await FirebaseFirestore.instance.collection('sheet_list').add(data);
   }
 
