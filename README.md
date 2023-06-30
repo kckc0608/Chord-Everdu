@@ -1,17 +1,20 @@
-# chord_everdu
+# 🎵 Chord Everdu
 
-당신 만의 아름다운 코드 진행을 공유해보세요.
-플러터 버전 업데이트에 따라 리뉴얼 중입니다.
+당신 만의 아름다운 코드 진행을 공유해보세요.   
+* 플러터 버전 업데이트에 따라 리뉴얼 중입니다.
 
-## Getting Started
+## 💡 프로젝트 소개
 
-This project is a starting point for a Flutter application.
+- 왜 코드 악보는 누군가가 작성한 코드악보로만 봐야할까?
+- 다른 사람의 코드 진행에서 나만의 개성을 더해 편곡을 해볼 수는 없을까?
+- 내가 만든 코드 진행을 공유해보고 싶어!
 
-A few resources to get you started if this is your first Flutter project:
+코드 에버듀는 쉽게 코드 악보를 작성하고 공유할 수 있는 플랫폼입니다.   
+이제 쉽고 간단하게 자신만의 코드를 공유해보세요!
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🛠 기술 스택
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Front-End
+  - Flutter
+- Back-End
+  - Firebase
