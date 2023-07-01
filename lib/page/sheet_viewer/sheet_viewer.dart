@@ -29,11 +29,13 @@ class _SheetViewerState extends State<SheetViewer> {
   late int _sheetKey;
   late SheetInfo sheetInfo;
   late bool isReadOnly;
+  late FocusNode lyricFocusNode;
   final _textController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    lyricFocusNode = FocusNode();
     if (widget.sheetID.isNotEmpty) {
       fetchAndSetSheetToProvider();
     } else {
@@ -44,6 +46,7 @@ class _SheetViewerState extends State<SheetViewer> {
   @override
   void dispose() {
     _textController.dispose();
+    lyricFocusNode.dispose();
     super.dispose();
   }
 
@@ -87,7 +90,6 @@ class _SheetViewerState extends State<SheetViewer> {
                                 Navigator.of(context).pop();
                                 Navigator.of(context).pop();
                               }),
-                          // TODO : 뒤로 가기 버튼 작업을 해줘야 함.
                         ],
                       ));
               }
@@ -126,7 +128,7 @@ class _SheetViewerState extends State<SheetViewer> {
                         if (widget.sheetID.isNotEmpty) {
                           saveSheet();
                         } else {
-                          addSheet(); // TODO : 악보 정보만 추가되고, 악보 이름, 가수 정보는 추가가 안됨.
+                          addSheet();
                         }
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
@@ -191,34 +193,30 @@ class _SheetViewerState extends State<SheetViewer> {
                                 ? () {
                               setState(() {
                                 context.read<Sheet>().addCell(
-                                  context.read<Sheet>().selectedBlockIndex,
-                                  Chord(),
-                                  "",
+                                  blockID: context.read<Sheet>().selectedBlockIndex,
+                                  cellID: selectedCell,
+                                  chord: Chord(),
+                                  lyric: "",
                                 );
                               });
                             }
                                 : null,
                           ),
                           IconButton(
-                            icon: const Icon(
-                              Icons.indeterminate_check_box_outlined,
-                            ),
+                            icon: const Icon(Icons.arrow_back),
                             color: Colors.red,
-                            onPressed: selectedCell > -1
-                                ? () {
+                            onPressed: selectedCell > 0 ? () {
                               setState(() {
-                                context.read<Sheet>().removeCell(
-                                  blockID: context.read<Sheet>().selectedBlockIndex,
+                                context.read<Sheet>().removePreviousCell(
+                                  blockID: selectedBlock,
                                   cellID: selectedCell,
                                 );
-                                context.read<Sheet>().setSelectedCellIndex(-1);
                               });
-                            }
-                                : null,
+                            } : null,
                           ),
                           IconButton(
                             icon: const Icon(Icons.subdirectory_arrow_left),
-                            onPressed: selectedCell > -1 ? () {
+                            onPressed: selectedCell > 0 ? () {
                               setState(() {
                                 context.read<Sheet>().addNewLineCell(
                                   blockID: context.read<Sheet>().selectedBlockIndex,
@@ -228,20 +226,15 @@ class _SheetViewerState extends State<SheetViewer> {
                             } : null,
                           ),
                           IconButton(
-                            icon: const Icon(Icons.arrow_back),
-                            onPressed: selectedCell > 0 ? () {
+                            icon: const Icon(Icons.text_rotation_none),
+                            onPressed: selectedCell > -1 && lyricFocusNode.hasFocus ? () {
                               setState(() {
-                                context.read<Sheet>().removePreviousCell(
-                                  blockID: context.read<Sheet>().selectedBlockIndex,
+                                context.read<Sheet>().moveLyricToNextCell(
+                                  blockID: selectedBlock,
                                   cellID: selectedCell,
+                                  selectPosition: _textController.selection.base.offset,
                                 );
                               });
-                            } : null,
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.text_rotation_none),
-                            onPressed: selectedCell > -1 ? () {
-                              setState(() {});
                             } : null,
                           ),
                         ],
@@ -258,6 +251,7 @@ class _SheetViewerState extends State<SheetViewer> {
                                 child: Container(
                                   color: Colors.black26,
                                   child: TextField(
+                                    focusNode: lyricFocusNode,
                                     controller: _textController,
                                     onChanged: (text) {
                                       context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
