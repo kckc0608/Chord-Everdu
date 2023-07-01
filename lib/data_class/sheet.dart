@@ -55,9 +55,19 @@ class Sheet with ChangeNotifier {
     notifyListeners();
   }
 
-  void addCell(int blockID, Chord chord, String lyric) {
-    chords[blockID].add(chord);
-    lyrics[blockID].add(lyric);
+  void addCell({
+    required int blockID,
+    int? cellID,
+    required Chord chord,
+    required String lyric
+  }) {
+    if (cellID == null || cellID == chords[blockID].length - 1) {
+      chords[blockID].add(chord);
+      lyrics[blockID].add(lyric);
+    } else {
+      chords[blockID].insert(cellID+1, chord);
+      lyrics[blockID].insert(cellID+1, lyric);
+    }
     notifyListeners();
   }
 
@@ -77,7 +87,9 @@ class Sheet with ChangeNotifier {
     if (cellID == 0) return;
     chords[blockID].removeAt((cellID-1));
     lyrics[blockID].removeAt((cellID-1));
-    selectedCellIndex = -1;
+    if (selectedCellIndex > 0) {
+      selectedCellIndex -= 1;
+    }
     notifyListeners();
   }
 
@@ -85,6 +97,13 @@ class Sheet with ChangeNotifier {
     chords.add([]);
     lyrics.add([]);
     blockNames.add("");
+    notifyListeners();
+  }
+
+  void moveLyricToNextCell({required int blockID, required int cellID, required int selectPosition}) {
+    String lyric = lyrics[blockID][cellID]!;
+    lyrics[blockID][cellID+1] = lyric.substring(selectPosition) + lyrics[blockID][cellID+1]!;
+    lyrics[blockID][cellID] = lyric.substring(0, selectPosition);
     notifyListeners();
   }
 
