@@ -55,6 +55,11 @@ class Sheet with ChangeNotifier {
     notifyListeners();
   }
 
+  void unsetSelectedCellIndex() {
+    selectedCellIndex = -1;
+    notifyListeners();
+  }
+
   void addCell({
     required int blockID,
     int? cellID,
@@ -104,10 +109,6 @@ class Sheet with ChangeNotifier {
     String lyric = lyrics[blockID][cellID]!;
     lyrics[blockID][cellID+1] = lyric.substring(selectPosition) + lyrics[blockID][cellID+1]!;
     lyrics[blockID][cellID] = lyric.substring(0, selectPosition);
-    notifyListeners();
-  }
-
-  void notifyChange() {
     notifyListeners();
   }
 
