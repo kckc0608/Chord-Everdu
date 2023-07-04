@@ -22,31 +22,31 @@ class ChordCell extends StatefulWidget {
 
 class _ChordCellState extends State<ChordCell> {
   bool isSelected = false;
-  Logger logger = Logger();
 
   @override
   Widget build(BuildContext context) {
     int sheetKey = context.watch<Sheet>().sheetKey;
+    int selectedCellID = context.select((Sheet sheet) => sheet.selectedCellIndex);
     Chord? chord = context.watch<Sheet>().chords[widget.blockID][widget.cellID];
     String? lyric = context.watch<Sheet>().lyrics[widget.blockID][widget.cellID];
+
+    Logger().d("build cell : ${widget.blockID} ${widget.cellID}");
+    isSelected = selectedCellID == widget.cellID;
     return Focus(
       onFocusChange: (hasFocus) {
-        setState(() {
-          isSelected = hasFocus;
-        });
+
       },
       child: Builder(builder: (context) {
         FocusNode focusNode = Focus.of(context);
         return GestureDetector(
           onTap: () {
-            if (focusNode.hasFocus) { /// sheet 클래스에 조작 메소드를 추가하는 방식으로 수정하자
+            if (focusNode.hasFocus) {
               focusNode.unfocus();
-              context.read<Sheet>().selectedCellIndex = -1;
+              context.read<Sheet>().unsetSelectedCellIndex();
             } else {
               focusNode.requestFocus();
-              context.read<Sheet>().selectedCellIndex = widget.cellID;
+              context.read<Sheet>().setSelectedCellIndex(widget.cellID);
             }
-            context.read<Sheet>().notifyChange();
           },
           child: (chord == null && lyric == null)
               ? NullCell(
