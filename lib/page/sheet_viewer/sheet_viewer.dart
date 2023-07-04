@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
@@ -30,12 +32,15 @@ class _SheetViewerState extends State<SheetViewer> {
   late SheetInfo sheetInfo;
   late bool isReadOnly;
   late FocusNode lyricFocusNode;
+  late ScrollController scrollController;
   final _textController = TextEditingController();
+  bool isAutoScroll = false;
 
   @override
   void initState() {
     super.initState();
     lyricFocusNode = FocusNode();
+    scrollController = ScrollController();
     if (widget.sheetID.isNotEmpty) {
       fetchAndSetSheetToProvider();
     } else {
@@ -47,6 +52,7 @@ class _SheetViewerState extends State<SheetViewer> {
   void dispose() {
     _textController.dispose();
     lyricFocusNode.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -154,6 +160,7 @@ class _SheetViewerState extends State<SheetViewer> {
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return ListView.builder(
+                        controller: scrollController,
                         itemCount: isReadOnly ? blockCount : blockCount + 1,
                         itemBuilder: (context, index) {
                           return index == blockCount
@@ -169,7 +176,7 @@ class _SheetViewerState extends State<SheetViewer> {
               ),
             ),
             isReadOnly
-                ? const SheetViewerControlBar()
+                ? SheetViewerControlBar(scrollController: scrollController)
                 : Container(
                   decoration: const BoxDecoration(
                     boxShadow: [BoxShadow(
