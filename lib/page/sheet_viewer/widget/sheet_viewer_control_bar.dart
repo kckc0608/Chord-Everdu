@@ -3,13 +3,23 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 class SheetViewerControlBar extends StatefulWidget {
-  const SheetViewerControlBar({super.key});
+  final ScrollController scrollController;
+  const SheetViewerControlBar({super.key, required this.scrollController});
 
   @override
   State<SheetViewerControlBar> createState() => _SheetViewerControlBarState();
 }
 
 class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
+  bool isAutoScroll = false;
+  double scrollSpeed = 1;
+
+  @override
+  void dispose() {
+    widget.scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     int songKey = context.watch<Sheet>().sheetKey;//context.select((Sheet sheet) => sheet.songKey);
@@ -35,7 +45,7 @@ class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
                     IconButton(
                       icon: const Icon(Icons.exposure_minus_1),
                       iconSize: 24,
-                      onPressed: () {
+                      onPressed: isAutoScroll ? null : () {
                         context.read<Sheet>().decreaseSheetKey();
                       },
                     ),
@@ -49,7 +59,7 @@ class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
                     IconButton(
                       icon: const Icon(Icons.exposure_plus_1),
                       iconSize: 24,
-                      onPressed: () {
+                      onPressed: isAutoScroll ? null : () {
                         context.read<Sheet>().increaseSheetKey();
                       },
                     ),
@@ -59,10 +69,30 @@ class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
               ],
             ),
             IconButton(
-              icon: const Icon(Icons.play_arrow),
+              icon: Icon(isAutoScroll ? Icons.pause : Icons.play_arrow),
               iconSize: 36,
               onPressed: () {
-                // TODO 자동 스크롤 구현
+                setState(() {
+                  isAutoScroll = !isAutoScroll;
+                });
+                if (isAutoScroll) {
+                  /// TODO : auto 스크롤 중에 화면 터치해서 스크롤 바꾸면 그 뒤로는 auto scoll이 안됨.
+                  double maxExtent = widget.scrollController.position.maxScrollExtent;
+                  double distanceDifference = maxExtent - widget.scrollController.offset;
+                  double durationDouble = distanceDifference / (scrollSpeed*2);
+
+                  widget.scrollController.animateTo(
+                    maxExtent,
+                    duration: Duration(seconds: durationDouble.toInt()),
+                    curve: Curves.linear,
+                  );
+                } else {
+                  widget.scrollController.animateTo(
+                    widget.scrollController.offset,
+                    duration: const Duration(seconds: 1),
+                    curve: Curves.linear,
+                  );
+                }
               },
             ),
             Column(
@@ -73,13 +103,17 @@ class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
                     IconButton(
                       icon: const Icon(Icons.exposure_minus_1),
                       iconSize: 24,
-                      onPressed: () {
-                        context.read<Sheet>().decreaseSheetKey();
+                      onPressed: isAutoScroll ? null : () {
+                        setState(() {
+                          if (scrollSpeed > 1) {
+                            scrollSpeed -= 1;
+                          }
+                        });
                       },
                     ),
-                    const Text(
-                      "스크롤 속도",
-                      style: TextStyle(
+                    Text(
+                      scrollSpeed.toInt().toString(),
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 24,
                       ),
@@ -87,8 +121,12 @@ class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
                     IconButton(
                       icon: const Icon(Icons.exposure_plus_1),
                       iconSize: 24,
-                      onPressed: () {
-                        context.read<Sheet>().increaseSheetKey();
+                      onPressed: isAutoScroll ? null : () {
+                        setState(() {
+                          if (scrollSpeed < 10) {
+                            scrollSpeed += 1;
+                          }
+                        });
                       },
                     ),
                   ],
