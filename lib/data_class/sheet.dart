@@ -99,9 +99,38 @@ class Sheet with ChangeNotifier {
   }
 
   void addBlock() {
-    chords.add([]);
-    lyrics.add([]);
-    blockNames.add("");
+    chords.add([Chord()]);
+    lyrics.add([""]);
+    blockNames.add("블럭 이름을 설정하세요.");
+    notifyListeners();
+  }
+
+  void removeBlock({required int blockID}) {
+    chords.removeAt(blockID);
+    lyrics.removeAt(blockID);
+    blockNames.removeAt(blockID);
+    selectedBlockIndex = -1;
+    notifyListeners();
+  }
+
+  void setNameOfBlockAt({required int blockID, required String name}) {
+    assert (0 <= blockID && blockID < blockNames.length);
+    blockNames[blockID] = name;
+    notifyListeners();
+  }
+
+  void copyBlock({required int blockID}) {
+    List<Chord?> copiedChordList = [];
+    List<String?> copiedLyricList = [];
+    for (Chord? chord in chords[blockID]) {
+      copiedChordList.add(chord);
+    }
+    for (String? lyric in lyrics[blockID]) {
+      copiedLyricList.add(lyric);
+    }
+    chords.add(copiedChordList);
+    lyrics.add(copiedLyricList);
+    blockNames.add(blockNames[blockID]);
     notifyListeners();
   }
 

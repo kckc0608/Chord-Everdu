@@ -18,6 +18,22 @@ class _ChordBlockState extends State<ChordBlock> {
   bool isSelected = false;
   late bool isReadOnly;
   late String blockName;
+  late TextEditingController blockNameController;
+
+
+  @override
+  void initState() {
+    blockNameController = TextEditingController();
+    super.initState();
+  }
+
+
+  @override
+  void dispose() {
+    blockNameController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     isReadOnly = context.read<Sheet>().isReadOnly;
@@ -72,11 +88,53 @@ class _ChordBlockState extends State<ChordBlock> {
                             fontStyle: FontStyle.italic,
                           ),),
                         ),
-                        isReadOnly ? const SizedBox.shrink() : const InkWell(
-                          child: Icon(Icons.edit_outlined),
+                        if (isReadOnly) const SizedBox.shrink() else InkWell(
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.0),
+                            child: Icon(Icons.edit_outlined),
+                          ),
+                          onTap: () {
+                            blockNameController.text = context.read<Sheet>().blockNames[widget.blockID];
+                            showDialog(context: context, builder: (context) => 
+                              AlertDialog(
+                                content: Column(
+                                  children: [
+                                    const Text("새 이름을 입력하세요."),
+                                    TextField(
+                                      controller: blockNameController,
+                                    ),
+                                  ],
+                                ),
+                                actions: [
+                                  TextButton(onPressed: () {
+                                    Navigator.of(context).pop();
+                                  }, child: const Text("취소")),
+                                  TextButton(onPressed: () {
+                                    context.read<Sheet>().setNameOfBlockAt(blockID: widget.blockID, name: blockNameController.text);
+                                    Navigator.of(context).pop();
+                                  }, child: const Text("확인")),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                        isReadOnly ? const SizedBox.shrink() : const InkWell(
-                          child: Icon(Icons.delete_forever_outlined, color: Colors.red,),
+                        isReadOnly ? const SizedBox.shrink() : InkWell(
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.0),
+                            child: Icon(Icons.copy,),
+                          ),
+                          onTap: () {
+                            context.read<Sheet>().copyBlock(blockID: widget.blockID);
+                          },
+                        ),
+                        isReadOnly ? const SizedBox.shrink() : InkWell(
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4.0),
+                            child: Icon(Icons.delete_forever_outlined, color: Colors.red,),
+                          ),
+                          onTap: () {
+                            context.read<Sheet>().removeBlock(blockID: widget.blockID);
+                          },
                         )
                       ],
                     ),
