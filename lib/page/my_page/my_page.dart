@@ -134,7 +134,7 @@ class _MyPageState extends State<MyPage> {
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           var data = snapshot.data!.data();
-                          List<dynamic> favoriteSheets = data!["favoriteSheet"];
+                          List<dynamic> favoriteSheets = data!["favorite_sheet"];
                           return ListView.builder(
                             itemCount: favoriteSheets.length,
                             itemBuilder:(context, index) {
