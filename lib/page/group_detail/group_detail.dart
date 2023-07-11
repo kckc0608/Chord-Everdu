@@ -1,20 +1,26 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 
-class GroupDetail extends StatelessWidget {
+class GroupDetail extends StatefulWidget {
   final String groupID, groupName;
   const GroupDetail({super.key, required this.groupName, required this.groupID});
 
   @override
+  State<GroupDetail> createState() => _GroupDetailState();
+}
+
+class _GroupDetailState extends State<GroupDetail> {
+  int dropDownValue = 1;
+  @override
   Widget build(BuildContext context) {
-    int dropDownValue = 1;
     return Scaffold(
-      appBar: AppBar(title: Text(groupName)),
+      appBar: AppBar(title: Text(widget.groupName)),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(4.0),
           child: StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance.collection('group_list').doc(groupID).snapshots(),
+              stream: FirebaseFirestore.instance.collection('group_list').doc(widget.groupID).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -22,42 +28,65 @@ class GroupDetail extends StatelessWidget {
 
                 var doc = snapshot.data!.data() as Map<String, dynamic>;
                 List<dynamic> members = doc['member'];
+                List<dynamic> sheetGroups = doc['sheet_groups'];
 
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(
-                      "멤버 (${members.length})",
-                      //style: _headerStyle,
+                    Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Text(
+                        "멤버 (${members.length})",
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
                     ),
                     Wrap(
                       children: members.map((memberEmail) => Text(memberEmail)).toList(),
                     ),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
                       children: [
-                        Text("일정",
-                            // style: _headerStyle
+                        Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Text("일정",
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
                         ),
-                        DropdownButton<int>(
-                          items: [
-                            DropdownMenuItem(child: Text("아가페 8/15 콘티"), value: 1),
-                            DropdownMenuItem(child: Text("2"), value: 2),
-                            DropdownMenuItem(child: Text("3"), value: 3),
-                            DropdownMenuItem(child: Text("4"), value: 4),
-                          ],
-                          onChanged: (value) {
-                            // setState(() {
-                            dropDownValue = value!;
-                            // });
-                          },
-                          value: dropDownValue,
+                        Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              style: BorderStyle.solid,
+                            ),
+                          ),
+                          child: DropdownButton2(
+                            items: List.generate(sheetGroups.length, (index) =>
+                                DropdownMenuItem(
+                                  child: Text(sheetGroups[index]["group_name"]),
+                                  value: index,
+                                )),
+                            onChanged: (value) {
+                              setState(() {
+                                dropDownValue = value!;
+                              });
+                            },
+                            value: dropDownValue,
+                            style: Theme.of(context).textTheme.titleSmall,
+                            isDense: true,
+                            underline: Container(),
+                          ),
                         ),
                       ],
                     ),
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
                       children: [
-                        // Text("악보", style: _headerStyle),
+                        Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Text("악보", style: Theme.of(context).textTheme.titleMedium),
+                        ),
                         TextButton(onPressed: () {
                           showDialog(context: context, builder: (context) => SimpleDialog(
                             children: [
@@ -77,8 +106,18 @@ class GroupDetail extends StatelessWidget {
                       ],
                     ),
                     Expanded(
-                      child: ListView(
-
+                      child: ListView.separated(
+                        itemBuilder: (context, index) {
+                          return Container(
+                            color: Colors.yellow,
+                            child: ListTile(
+                              title: Text(sheetGroups[dropDownValue]['sheets'][index]['title'], style: Theme.of(context).textTheme.titleSmall,),
+                              subtitle: Text("singer"),
+                            ),
+                          );
+                        },
+                        separatorBuilder: (context, index) => const Divider(),
+                        itemCount: sheetGroups[dropDownValue]['sheets'].length,
                       ),
                     ),
                   ],

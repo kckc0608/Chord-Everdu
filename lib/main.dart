@@ -24,9 +24,15 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       title: 'Chord Everdu',
-      home: MainFrame(),
+      theme: ThemeData(
+        textTheme: const TextTheme(
+          titleMedium: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          titleSmall: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
+        )
+      ),
+      home: const MainFrame(),
     );
   }
 }
