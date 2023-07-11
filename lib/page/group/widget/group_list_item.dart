@@ -7,7 +7,8 @@ class GroupListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return ListTile(
+      title: Text(groupName, style: Theme.of(context).textTheme.titleSmall,),
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => GroupDetail(
@@ -16,16 +17,7 @@ class GroupListItem extends StatelessWidget {
           ),
         ));
       },
-      child: Container(
-        height: 40,
-        width: 40,
-        color: Colors.yellow,
-        child: Row(
-          children: [
-            Text(groupName),
-          ],
-        ),
-      ),
+      tileColor: Colors.yellow,
     );
   }
 }
