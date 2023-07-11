@@ -1,3 +1,4 @@
+import 'package:chord_everdu/page/common_widget/section_title.dart';
 import 'package:chord_everdu/page/group/widget/group_list_item.dart';
 import 'package:chord_everdu/page/login/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,39 +25,32 @@ class Group extends StatelessWidget {
         if (snapshot.hasData) {
           var data = snapshot.data!.data();
           List<dynamic> groupIn = data!["group_in"];
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("그룹 찾기", style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                  )),
-                  const Text("그룹 검색 기능 추가 예정"),
-                  const Text("내가 속한 그룹", style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                  )),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: SizedBox(
-                      height: 300,
-                      child: ListView.builder(
-                        itemCount: groupIn.length,
-                        itemBuilder: (context, index) {
-                          var groupData = groupIn[index];
-                          return GroupListItem(
-                            groupID: groupData["group_id"],
-                            groupName: groupData["group_name"],
-                          );
-                        },
-                      ),
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SectionTitle("내가 속한 그룹"),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SizedBox(
+                    height: 300,
+                    child: ListView.separated(
+                      separatorBuilder: (context, index) => const Divider(),
+                      itemCount: groupIn.length,
+                      itemBuilder: (context, index) {
+                        var groupData = groupIn[index];
+                        return GroupListItem(
+                          groupID: groupData["group_id"],
+                          groupName: groupData["group_name"],
+                        );
+                      },
                     ),
                   ),
-                ],
-              ),
+                ),
+                const SectionTitle("그룹 찾기"),
+                const Expanded(child: Center(child: Text("그룹 검색 기능 추가 예정"))),
+              ],
             ),
           );
         }

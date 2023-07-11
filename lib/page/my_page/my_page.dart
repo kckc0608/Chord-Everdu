@@ -1,3 +1,4 @@
+import 'package:chord_everdu/page/common_widget/section_title.dart';
 import 'package:chord_everdu/page/login/login.dart';
 import 'package:chord_everdu/page/my_page/widget/sheet_list_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -29,13 +30,7 @@ class _MyPageState extends State<MyPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                    child: Text("내 정보", style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    )),
-                  ),
+                  const SectionTitle("내 정보"),
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
                     child: Row(
@@ -74,13 +69,7 @@ class _MyPageState extends State<MyPage> {
                       ],
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-                    child: Text("내 악보", style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    )),
-                  ),
+                  const SectionTitle("내 악보"),
                   Container(
                     height: 180,
                     padding: const EdgeInsets.all(4.0),
@@ -117,13 +106,7 @@ class _MyPageState extends State<MyPage> {
                       },
                     ),
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-                    child: Text("좋아요 표시한 악보", style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    )),
-                  ),
+                  const SectionTitle("좋아요 표시한 악보"),
                   SizedBox(
                     height: 180,
                     child: StreamBuilder(
@@ -151,13 +134,6 @@ class _MyPageState extends State<MyPage> {
                         }
                       },
                     ),
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 12),
-                    child: Text("내 그룹", style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 24,
-                    )),
                   ),
                 ],
               ),
