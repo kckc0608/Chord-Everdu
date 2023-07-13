@@ -1,5 +1,6 @@
 import 'package:chord_everdu/page/common_widget/section_title.dart';
 import 'package:chord_everdu/page/login/login.dart';
+import 'package:chord_everdu/page/my_page/widget/delete_account_dialog.dart';
 import 'package:chord_everdu/page/my_page/widget/sheet_list_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -34,7 +35,7 @@ class _MyPageState extends State<MyPage> {
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
                     child: Row(
-                      //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         SizedBox(
                           width: 40,
@@ -60,11 +61,27 @@ class _MyPageState extends State<MyPage> {
                             ],
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () async {
-                            GoogleSignIn().disconnect(); // 매 로그인 시 구글 계정 선택
-                            await FirebaseAuth.instance.signOut();
-                          }, child: const Text("로그아웃"),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              GoogleSignIn().disconnect(); // 매 로그인 시 구글 계정 선택
+                              await FirebaseAuth.instance.signOut();
+                            }, child: const Text("로그아웃"),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              showDialog(
+                                context: context,
+                                builder: (context) => const DeleteAccountDialog(),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                            child: const Text("계정 삭제"),
+                          ),
                         ),
                       ],
                     ),
