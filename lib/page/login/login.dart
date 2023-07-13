@@ -16,18 +16,21 @@ class LoginPage extends StatelessWidget {
           const Text("로그인이 필요합니다."),
           ElevatedButton(
             child: const Text("Google 로그인"),
-            onPressed: () {
-              signInWithGoogle();
+            onPressed: () async {
+              await signInWithGoogle();
               String userEmail = FirebaseAuth.instance.currentUser!.email!;
               FirebaseFirestore.instance
                   .collection('user_list')
                   .doc(userEmail)
-                  .get().then((snapshot) {
+                  .get().then((snapshot) async {
                     if (!snapshot.exists) {
-                      FirebaseFirestore.instance
+                      await FirebaseFirestore.instance
                           .collection('user_list')
                           .doc(userEmail)
-                          .set({});
+                          .set({
+                        "favorite_sheet" : [],
+                        "group_in": [],
+                      }); /// TODO : 초기 유저 데이터 세팅 필요
                     }
               });
             },
