@@ -88,7 +88,7 @@ class _MyPageState extends State<MyPage> {
                   ),
                   const SectionTitle("내 악보"),
                   Container(
-                    height: 180,
+                    height: 230,
                     padding: const EdgeInsets.all(4.0),
                     decoration: const BoxDecoration(
                       color: Colors.white70,
@@ -125,7 +125,7 @@ class _MyPageState extends State<MyPage> {
                   ),
                   const SectionTitle("좋아요 표시한 악보"),
                   SizedBox(
-                    height: 180,
+                    height: 230,
                     child: StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('user_list')
