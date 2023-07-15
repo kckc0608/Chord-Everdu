@@ -87,7 +87,17 @@ class _MainFrameState extends State<MainFrame> {
             centerTitle: true,
           ),
           AppBar(title: const Text("그룹")),
-          AppBar(title: const Text("내 정보"))
+          AppBar(
+            title: const Text("내 정보"),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings),
+                onPressed: () {
+                  /// TODO :  설정 버튼 구현
+                },
+              )
+            ],
+          ),
         ][_selectedIndex],
         bottomNavigationBar: BottomNavigationBar(
           items: const [
@@ -100,7 +110,7 @@ class _MainFrameState extends State<MainFrame> {
               label: "그룹",
             ),
             BottomNavigationBarItem(
-                icon: Icon(Icons.my_library_music), label: "내 악보"),
+                icon: Icon(Icons.my_library_music), label: "내 정보"),
           ],
           currentIndex: _selectedIndex,
           onTap: (idx) {
