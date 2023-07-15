@@ -38,7 +38,7 @@ class _SearchSheetState extends State<SearchSheet> {
                 },
             );
           } else {
-            return const Text("loading");
+            return const Text("loading"); /// TODO : 원형 진행 바로 수정
           }
         },
       ),

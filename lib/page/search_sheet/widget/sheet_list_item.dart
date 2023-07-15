@@ -7,17 +7,20 @@ import 'package:provider/provider.dart';
 
 class SheetListItem extends StatelessWidget {
   final String sheetID, title, singer;
-  const SheetListItem({
+  VoidCallback? onTap;
+
+  SheetListItem({
     Key? key,
     required this.sheetID,
     required this.title,
     required this.singer,
+    this.onTap,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {
+      onTap: onTap ?? () {
         context.read<Sheet>().isReadOnly = true;
         /// 이전 악보 정보가 잠깐 뜨는 문제가 있어 임시로 업데이트
         context.read<Sheet>().updateSheetInfo(
