@@ -1,6 +1,7 @@
 import 'package:chord_everdu/page/search_sheet/widget/sheet_list_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 
 class SheetSearchDelegate extends SearchDelegate {
   @override
@@ -65,19 +66,22 @@ class SheetSearchDelegate extends SearchDelegate {
           return const Center(child: CircularProgressIndicator());
         } else {
           var docs = snapshot.data!.docs;
+          List<QueryDocumentSnapshot<Map<String, dynamic>>> results = docs.where((doc) {
+            var data = doc.data();
+            String title = data["title"];
+            return (title.contains(query));
+          },).toList();
+          Logger().d(results);
           return ListView.separated(
-            itemCount: docs.length,
+            itemCount: results.length,
             separatorBuilder: (context, index) => const Divider(),
             itemBuilder: (context, index) {
-              var data = docs[index].data();
-              String title = data["title"];
-              if (title.contains(query)) {
-                return SheetListItem(sheetID: docs[index].id,
-                    title: title,
-                    singer: data["singer"]);
-              } else {
-                return Container();
-              }
+              var data = results[index].data();
+              return SheetListItem(
+                sheetID: results[index].id,
+                title: data["title"],
+                singer: data["singer"],
+              );
             },
           );
         }
@@ -88,28 +92,31 @@ class SheetSearchDelegate extends SearchDelegate {
   Widget buildSuggestions(BuildContext context) {
     if (query.isEmpty) return const Center(child: Text("검색어를 입력하세요."));
     return StreamBuilder(
-        stream: FirebaseFirestore.instance.collection('sheet_list').snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else {
-            var docs = snapshot.data!.docs;
-            return ListView.separated(
-              itemCount: docs.length,
-              separatorBuilder: (context, index) => const Divider(),
-              itemBuilder: (context, index) {
-                var data = docs[index].data();
-                String title = data["title"];
-                if (title.contains(query)) {
-                  return SheetListItem(sheetID: docs[index].id,
-                      title: title,
-                      singer: data["singer"]);
-                } else {
-                  return Container();
-                }
-              },
-            );
-          }
-        });
+      stream: FirebaseFirestore.instance.collection('sheet_list').snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else {
+          var docs = snapshot.data!.docs;
+          List<QueryDocumentSnapshot<Map<String, dynamic>>> results = docs.where((doc) {
+            var data = doc.data();
+            String title = data["title"];
+            return (title.contains(query));
+          },).toList();
+          Logger().d(results);
+          return ListView.separated(
+            itemCount: results.length,
+            separatorBuilder: (context, index) => const Divider(),
+            itemBuilder: (context, index) {
+              var data = results[index].data();
+              return SheetListItem(
+                sheetID: results[index].id,
+                title: data["title"],
+                singer: data["singer"],
+              );
+            },
+          );
+        }
+      });
   }
 }
