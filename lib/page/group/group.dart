@@ -24,7 +24,6 @@ class Group extends StatelessWidget {
         }
         if (snapshot.hasData) {
           var data = snapshot.data!.data();
-          print(snapshot.data!.exists);
           List<dynamic> groupIn = data!["group_in"];
           return Padding(
             padding: const EdgeInsets.all(8.0),
