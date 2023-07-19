@@ -1,6 +1,9 @@
 import 'package:chord_everdu/delegate/sheet_search_for_group_set_list_delegate.dart';
 import 'package:chord_everdu/page/common_widget/section_title.dart';
+import 'package:chord_everdu/page/group_detail/widget/add_new_member_dialog.dart';
 import 'package:chord_everdu/page/group_detail/widget/group_detail_sheet_list_item.dart';
+import 'package:chord_everdu/page/group_detail/widget/manager_list_item.dart';
+import 'package:chord_everdu/page/group_detail/widget/member_list_item.dart';
 import 'package:chord_everdu/page/group_detail/widget/new_schecule_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -34,26 +37,56 @@ class _GroupDetailState extends State<GroupDetail> {
 
                 var doc = snapshot.data!.data() as Map<String, dynamic>;
                 List<dynamic> members = doc['member'];
+                List<dynamic> managers = doc['manager'];
 
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    SectionTitle("멤버 (${members.length})"),
+                    Row(
+                      children: [
+                        SectionTitle("멤버 (${members.length})"),
+                        TextButton(
+                          child: const Text("멤버 추가"),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) =>
+                                  AddNewMemberDialog(groupID: widget.groupID),
+                            );
+                          },
+                        )
+                      ],
+                    ),
                     Wrap(
-                      children: members.map((memberEmail) => Text(memberEmail)).toList(),
+                      children: managers.map((memberEmail) =>
+                          ManagerListItem(managerEmail: memberEmail,)).toList(),
+                    ),
+                    Wrap(
+                      children: members.map((memberEmail) =>
+                          MemberListItem(
+                            memberEmail: memberEmail,
+                            onTapDelete: () async {
+                              await FirebaseFirestore.instance.collection('group_list')
+                                  .doc(widget.groupID)
+                                  .update({"member": FieldValue.arrayRemove([memberEmail])})
+                                  .then((value) {
+                                Logger().i("멤버 $memberEmail 가 삭제되었습니다.");
+                              },onError: (e) => Logger().e(e));
+                              Navigator.of(context).pop();
+                            },
+                          )).toList(),
                     ),
                     Expanded(
                       child: StreamBuilder(
-                          stream: _db.collection('group_list')
-                              .doc(widget.groupID)
-                              .collection('set_lists').snapshots(),
+                        stream: _db.collection('group_list')
+                            .doc(widget.groupID)
+                            .collection('set_lists').snapshots(),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState == ConnectionState.waiting) {
                             return const Center(child: CircularProgressIndicator());
                           }
                           List<QueryDocumentSnapshot> setLists = snapshot.data!.docs;
-                          print(setLists);
 
                           return Column(
                             children: [
@@ -168,7 +201,7 @@ class _GroupDetailState extends State<GroupDetail> {
                               const Expanded(child: Center(child: Text("일정이 없습니다."),))
                             ],
                           );
-                        }
+                        },
                       ),
                     ),
                   ],
