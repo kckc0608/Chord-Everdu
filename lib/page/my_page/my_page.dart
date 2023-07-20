@@ -2,6 +2,7 @@ import 'package:chord_everdu/page/common_widget/section_title.dart';
 import 'package:chord_everdu/page/login/login.dart';
 import 'package:chord_everdu/page/my_page/widget/delete_account_dialog.dart';
 import 'package:chord_everdu/page/my_page/widget/sheet_list_item.dart';
+import 'package:chord_everdu/page/search_sheet/widget/sheet_list_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,7 @@ class _MyPageState extends State<MyPage> {
                 children: [
                   const SectionTitle("내 정보"),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
@@ -89,7 +90,7 @@ class _MyPageState extends State<MyPage> {
                   const SectionTitle("내 악보"),
                   Container(
                     height: 230,
-                    padding: const EdgeInsets.all(4.0),
+                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
                     decoration: const BoxDecoration(
                       color: Colors.white70,
                       boxShadow: [BoxShadow(
@@ -110,7 +111,7 @@ class _MyPageState extends State<MyPage> {
                             itemBuilder:(context, index) {
                               var dicID = docs[index].id;
                               var doc = docs[index].data();
-                              return SheetListItem(
+                              return MySheetListItem(
                                 sheetID: dicID,
                                 title: doc["title"],
                                 singer: doc["singer"],
