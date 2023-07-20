@@ -4,9 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class SheetListItem extends StatelessWidget {
+class MySheetListItem extends StatelessWidget {
   final String sheetID, title, singer;
-  const SheetListItem({
+  const MySheetListItem({
     Key? key,
     required this.sheetID,
     required this.title,
