@@ -17,7 +17,6 @@ class GroupListItem extends StatelessWidget {
           ),
         ));
       },
-      tileColor: Colors.yellow,
     );
   }
 }

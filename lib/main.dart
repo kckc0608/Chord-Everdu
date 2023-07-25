@@ -1,6 +1,7 @@
 import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:chord_everdu/delegate/sheet_search_delegate.dart';
 import 'package:chord_everdu/page/group/group.dart';
+import 'package:chord_everdu/page/group/widget/group_add_floating_button.dart';
 import 'package:chord_everdu/page/my_page/my_page.dart';
 import 'package:chord_everdu/page/search_sheet/widget/new_sheet_dialog.dart';
 import 'package:flutter/material.dart';
@@ -119,7 +120,7 @@ class _MainFrameState extends State<MainFrame> {
             });
           },
         ),
-        body: const [SearchSheet(), Group(), MyPage()][_selectedIndex],
+        body: [const SearchSheet(), Group(), const MyPage()][_selectedIndex],
         floatingActionButton: [
           FloatingActionButton(
             onPressed: () {
@@ -128,7 +129,7 @@ class _MainFrameState extends State<MainFrame> {
             },
             child: const Icon(Icons.add),
           ),
-          null,
+          const GroupAddFloatingButton(),
           null
         ][_selectedIndex],
       )

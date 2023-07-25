@@ -1,6 +1,7 @@
 import 'package:chord_everdu/delegate/sheet_search_for_group_set_list_delegate.dart';
 import 'package:chord_everdu/page/common_widget/section_title.dart';
 import 'package:chord_everdu/page/group_detail/widget/add_new_member_dialog.dart';
+import 'package:chord_everdu/page/group_detail/widget/delete_group_check_dialog.dart';
 import 'package:chord_everdu/page/group_detail/widget/group_detail_sheet_list_item.dart';
 import 'package:chord_everdu/page/group_detail/widget/manager_list_item.dart';
 import 'package:chord_everdu/page/group_detail/widget/member_list_item.dart';
@@ -21,10 +22,24 @@ class GroupDetail extends StatefulWidget {
 class _GroupDetailState extends State<GroupDetail> {
   int dropDownValue = 0;
   final _db = FirebaseFirestore.instance;
+  late VoidCallback onDeleteGroup;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.groupName)),
+      appBar: AppBar(
+        title: Text(widget.groupName),
+        actions: [
+          IconButton(onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => DeleteGroupCheckDialog(
+                groupID: widget.groupID,
+                onDeleteGroup: onDeleteGroup,
+              ),
+            );
+          }, icon: const Icon(Icons.delete,))
+        ],
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(4.0),
@@ -39,13 +54,46 @@ class _GroupDetailState extends State<GroupDetail> {
                 List<dynamic> members = doc['member'];
                 List<dynamic> managers = doc['manager'];
 
+                onDeleteGroup = () async {
+                  await FirebaseFirestore.instance
+                      .collection('group_list')
+                      .doc(widget.groupID)
+                      .delete().then((value) {
+                    Logger().i("그룹이 삭제되었습니다.");
+                    /// 그룹 하나 삭제하면 멤버 돌면서 그 멤버의 group_in을 도는게 맞나
+                    for (String userEmail in members) {
+                      _db.collection('user_list')
+                          .doc(userEmail)
+                          .update({
+                        "group_in": FieldValue.arrayRemove([{
+                          "group_id": widget.groupID,
+                          "group_name": widget.groupName,
+                        }])
+                      }).then((value) => Logger().i("유저에서도 그룹 삭제됨"));
+                    }
+
+                    for (String userEmail in managers) {
+                      _db.collection('user_list')
+                          .doc(userEmail)
+                          .update({
+                        "group_in": FieldValue.arrayRemove([{
+                          "group_id": widget.groupID,
+                          "group_name": widget.groupName,
+                        }])
+                      }).then((value) => Logger().i("유저에서도 그룹 삭제됨"));
+                    }
+                  }, onError: (e) => Logger().e(e));
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                };
+
                 return Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Row(
                       children: [
-                        SectionTitle("멤버 (${members.length})"),
+                        SectionTitle("멤버 (${members.length + managers.length})"),
                         TextButton(
                           child: const Text("멤버 추가"),
                           onPressed: () {
