@@ -1,3 +1,4 @@
+import 'package:chord_everdu/page/common_widget/loading_circle.dart';
 import 'package:chord_everdu/page/common_widget/section_title.dart';
 import 'package:chord_everdu/page/login/login.dart';
 import 'package:chord_everdu/page/my_page/widget/delete_account_dialog.dart';
@@ -26,97 +27,97 @@ class _MyPageState extends State<MyPage> {
         }
         if (snapshot.hasData) {
           User user = snapshot.data!;
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SectionTitle("내 정보"),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: Image.network(user.photoURL!),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 4.0),
-                                child: Text(
-                                  user.displayName ?? "표시할 이름이 없습니다.",
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SectionTitle("내 정보"),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: Image.network(user.photoURL!),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4.0),
+                              child: Text(
+                                user.displayName ?? "표시할 이름이 없습니다.",
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(user.email!),
-                            ],
-                          ),
+                            ),
+                            Text(user.email!),
+                          ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              GoogleSignIn().disconnect(); // 매 로그인 시 구글 계정 선택
-                              await FirebaseAuth.instance.signOut();
-                            }, child: const Text("로그아웃"),
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            GoogleSignIn().disconnect(); // 매 로그인 시 구글 계정 선택
+                            await FirebaseAuth.instance.signOut();
+                          }, child: const Text("로그아웃"),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: ElevatedButton(
-                            onPressed: () async {
-                              showDialog(
-                                context: context,
-                                builder: (context) => const DeleteAccountDialog(),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-                            child: const Text("계정 삭제"),
-                          ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const DeleteAccountDialog(),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                          child: const Text("계정 삭제"),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const SectionTitle("내 악보"),
-                  Container(
-                    height: 230,
-                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                    decoration: const BoxDecoration(
-                      color: Colors.white70,
-                      boxShadow: [BoxShadow(
-                        color: Colors.grey,
-                        spreadRadius: -4,
-                        blurRadius: 4,
-                      )],
-                    ),
+                ),
+                const SectionTitle("내 악보"),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                  child: SizedBox(
+                    height: 220,
                     child: StreamBuilder(
                       stream: FirebaseFirestore.instance.collection('sheet_list')
                           .where("editor_email", isEqualTo: FirebaseAuth.instance.currentUser!.email).snapshots(),
                       builder: (context, snapshot) {
                         if (snapshot.hasData) {
                           var docs = snapshot.data!.docs;
-                          return ListView.separated(
-                            itemCount: docs.length,
-                            separatorBuilder: (context, index) => const Divider(),
-                            itemBuilder:(context, index) {
-                              var dicID = docs[index].id;
-                              var doc = docs[index].data();
-                              return MySheetListItem(
-                                sheetID: dicID,
-                                title: doc["title"],
-                                singer: doc["singer"],
-                              );
-                            },
+                          return Container(
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    style: BorderStyle.solid,
+                                    color: Colors.black12
+                                )
+                            ),
+                            child: ListView.separated(
+                              itemCount: docs.length,
+                              separatorBuilder: (context, index) => const Divider(),
+                              itemBuilder:(context, index) {
+                                var dicID = docs[index].id;
+                                var doc = docs[index].data();
+                                return MySheetListItem(
+                                  sheetID: dicID,
+                                  title: doc["title"],
+                                  singer: doc["singer"],
+                                );
+                              },
+                            ),
                           );
                         } else {
                           return const Center(child: CircularProgressIndicator());
@@ -124,19 +125,31 @@ class _MyPageState extends State<MyPage> {
                       },
                     ),
                   ),
-                  const SectionTitle("좋아요 표시한 악보"),
-                  SizedBox(
-                    height: 230,
+                ),
+                const SectionTitle("좋아요 표시한 악보"),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('user_list')
                           .doc(FirebaseAuth.instance.currentUser!.email)
                           .snapshots(),
                       builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          var data = snapshot.data!.data();
-                          List<dynamic> favoriteSheets = data!["favorite_sheet"];
-                          return ListView.builder(
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const LoadingCircle();
+                        }
+
+                        var data = snapshot.data!.data();
+                        List<dynamic> favoriteSheets = data!["favorite_sheet"];
+                        return Container(
+                          decoration: BoxDecoration(
+                              border: Border.all(
+                                  style: BorderStyle.solid,
+                                  color: Colors.black12
+                              )
+                          ),
+                          child: ListView.separated(
                             itemCount: favoriteSheets.length,
                             itemBuilder:(context, index) {
                               var sheetInfo = favoriteSheets[index];
@@ -146,15 +159,14 @@ class _MyPageState extends State<MyPage> {
                                 singer: sheetInfo["singer"],
                               );
                             },
-                          );
-                        } else {
-                          return const Center(child: CircularProgressIndicator());
-                        }
+                            separatorBuilder: (context, index) => const Divider(),
+                          ),
+                        );
                       },
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         } else {
