@@ -81,6 +81,8 @@ class SheetSearchDelegate extends SearchDelegate {
                 sheetID: results[index].id,
                 title: data["title"],
                 singer: data["singer"],
+                /// TODO 나의 favorite 연동
+                isFavorite: false,
               );
             },
           );
@@ -113,6 +115,8 @@ class SheetSearchDelegate extends SearchDelegate {
                 sheetID: results[index].id,
                 title: data["title"],
                 singer: data["singer"],
+                /// TODO 나의 favorite 연동
+                isFavorite: false,
               );
             },
           );

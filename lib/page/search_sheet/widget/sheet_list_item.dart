@@ -1,12 +1,16 @@
 import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:chord_everdu/data_class/sheet_info.dart';
+import 'package:chord_everdu/page/common_widget/common_alert_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/sheet_viewer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
-class SheetListItem extends StatelessWidget {
+class SheetListItem extends StatefulWidget {
   final String sheetID, title, singer;
+  final bool isFavorite;
   VoidCallback? onTap;
 
   SheetListItem({
@@ -14,22 +18,38 @@ class SheetListItem extends StatelessWidget {
     required this.sheetID,
     required this.title,
     required this.singer,
+    required this.isFavorite,
     this.onTap,
   }) : super(key: key);
 
   @override
+  State<SheetListItem> createState() => _SheetListItemState();
+}
+
+class _SheetListItemState extends State<SheetListItem> {
+  late bool isFavorite;
+  final _db = FirebaseFirestore.instance;
+
+
+  @override
+  void initState() {
+    isFavorite = widget.isFavorite;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap ?? () {
-        context.read<Sheet>().isReadOnly = true;
-        /// 이전 악보 정보가 잠깐 뜨는 문제가 있어 임시로 업데이트
-        context.read<Sheet>().updateSheetInfo(
-            SheetInfo(title: title, songKey: 0, singer: singer)
-        );
-        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-          return SheetViewer(sheetID: sheetID);
-        }));
-      },
+      onTap: widget.onTap ??
+              () {
+            context.read<Sheet>().isReadOnly = true;
+
+            /// 이전 악보 정보가 뜨는 문제가 있어 먼저 업데이트
+            context.read<Sheet>().updateSheetInfo(
+                SheetInfo(title: widget.title, songKey: 0, singer: widget.singer));
+            Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+              return SheetViewer(sheetID: widget.sheetID);
+            }));
+          },
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
@@ -38,30 +58,60 @@ class SheetListItem extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(widget.title,
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
-                  Text(singer, style: const TextStyle(color: Colors.black54),),
-              ],
-            )),
+                  Text(
+                    widget.singer,
+                    style: const TextStyle(color: Colors.black54),
+                  ),
+                ],
+              ),
+            ),
             IconButton(
               color: Colors.redAccent,
-              icon: const Icon(Icons.favorite_border),
+              icon: isFavorite ? const Icon(Icons.favorite) : const Icon(Icons.favorite_border),
               onPressed: () {
                 User? currentUser = FirebaseAuth.instance.currentUser;
                 if (currentUser == null) {
-                  showDialog(context: context, builder: (context) => AlertDialog(
-                    content: const Text("로그인이  필요합니다."),
-                    actions: [
-                      ElevatedButton(
-                        child: const Text("확인"),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  ),);
+                  showDialog(
+                      context: context,
+                      builder: (context) =>
+                      const CommonAlertDialog(content: "로그인이 필요합니다."));
                 } else {
-                  /// DB 유저 리스트 내 좋아요 악보에 이 악보 추가
+                  setState(() {
+                    isFavorite = !isFavorite;
+                    if (isFavorite) {
+                      _db.collection('user_list')
+                          .doc(currentUser.email)
+                          .update({
+                            "favorite_sheet": FieldValue.arrayUnion([{
+                              "sheet_id": widget.sheetID,
+                              "singer": widget.singer,
+                              "title": widget.title,
+                            }])
+                          })
+                          .then(
+                            (value) => Logger().i("즐겨찾기에 추가되었습니다."),
+                            onError: (e) => Logger().e(e)
+                      );
+                    } else {
+                      _db.collection('user_list')
+                          .doc(currentUser.email)
+                          .update({
+                            "favorite_sheet": FieldValue.arrayRemove([{
+                              "sheet_id": widget.sheetID,
+                              "singer": widget.singer,
+                              "title": widget.title,
+                            }])
+                          })
+                          .then(
+                              (value) => Logger().i("즐겨찾기에서 삭제되었습니다."),
+                          onError: (e) => Logger().e(e)
+                      );
+                    }
+                  });
                 }
               },
             ),
