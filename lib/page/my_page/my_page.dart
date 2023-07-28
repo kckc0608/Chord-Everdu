@@ -1,4 +1,5 @@
 import 'package:chord_everdu/page/common_widget/loading_circle.dart';
+import 'package:chord_everdu/page/common_widget/section_content.dart';
 import 'package:chord_everdu/page/common_widget/section_title.dart';
 import 'package:chord_everdu/page/login/login.dart';
 import 'package:chord_everdu/page/my_page/widget/delete_account_dialog.dart';
@@ -23,7 +24,7 @@ class _MyPageState extends State<MyPage> {
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator();
+          return const LoadingCircle();
         }
         if (snapshot.hasData) {
           User user = snapshot.data!;
@@ -34,7 +35,7 @@ class _MyPageState extends State<MyPage> {
               children: [
                 const SectionTitle("내 정보"),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -88,48 +89,39 @@ class _MyPageState extends State<MyPage> {
                   ),
                 ),
                 const SectionTitle("내 악보"),
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                  child: SizedBox(
-                    height: 220,
-                    child: StreamBuilder(
-                      stream: FirebaseFirestore.instance.collection('sheet_list')
-                          .where("editor_email", isEqualTo: FirebaseAuth.instance.currentUser!.email).snapshots(),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          var docs = snapshot.data!.docs;
-                          return Container(
-                            decoration: BoxDecoration(
-                                border: Border.all(
-                                    style: BorderStyle.solid,
-                                    color: Colors.black12
-                                )
-                            ),
-                            child: ListView.separated(
-                              itemCount: docs.length,
-                              separatorBuilder: (context, index) => const Divider(),
-                              itemBuilder:(context, index) {
-                                var dicID = docs[index].id;
-                                var doc = docs[index].data();
-                                return MySheetListItem(
-                                  sheetID: dicID,
-                                  title: doc["title"],
-                                  singer: doc["singer"],
-                                );
-                              },
-                            ),
+                SectionContent(
+                  height: 220,
+                  child: StreamBuilder(
+                    stream: FirebaseFirestore.instance.collection('sheet_list')
+                        .where(
+                      "editor_email",
+                      isEqualTo: FirebaseAuth.instance.currentUser!.email,
+                    ).snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const LoadingCircle();
+                      }
+
+                      var docs = snapshot.data!.docs;
+                      return ListView.separated(
+                        itemCount: docs.length,
+                        separatorBuilder: (context, index) => const Divider(),
+                        itemBuilder:(context, index) {
+                          var dicID = docs[index].id;
+                          var doc = docs[index].data();
+                          return MySheetListItem(
+                            sheetID: dicID,
+                            title: doc["title"],
+                            singer: doc["singer"],
                           );
-                        } else {
-                          return const Center(child: CircularProgressIndicator());
-                        }
-                      },
-                    ),
+                        },
+                      );
+                    },
                   ),
                 ),
                 const SectionTitle("좋아요 표시한 악보"),
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                  child: SectionContent(
                     child: StreamBuilder(
                       stream: FirebaseFirestore.instance
                           .collection('user_list')
@@ -142,25 +134,17 @@ class _MyPageState extends State<MyPage> {
 
                         var data = snapshot.data!.data();
                         List<dynamic> favoriteSheets = data!["favorite_sheet"];
-                        return Container(
-                          decoration: BoxDecoration(
-                              border: Border.all(
-                                  style: BorderStyle.solid,
-                                  color: Colors.black12
-                              )
-                          ),
-                          child: ListView.separated(
-                            itemCount: favoriteSheets.length,
-                            itemBuilder:(context, index) {
-                              var sheetInfo = favoriteSheets[index];
-                              return SheetListItem(
-                                sheetID: sheetInfo["sheet_id"],
-                                title: sheetInfo["title"],
-                                singer: sheetInfo["singer"],
-                              );
-                            },
-                            separatorBuilder: (context, index) => const Divider(),
-                          ),
+                        return ListView.separated(
+                          itemCount: favoriteSheets.length,
+                          itemBuilder:(context, index) {
+                            var sheetInfo = favoriteSheets[index];
+                            return SheetListItem(
+                              sheetID: sheetInfo["sheet_id"],
+                              title: sheetInfo["title"],
+                              singer: sheetInfo["singer"],
+                            );
+                          },
+                          separatorBuilder: (context, index) => const Divider(),
                         );
                       },
                     ),
