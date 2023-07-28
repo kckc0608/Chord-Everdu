@@ -142,6 +142,7 @@ class _MyPageState extends State<MyPage> {
                               sheetID: sheetInfo["sheet_id"],
                               title: sheetInfo["title"],
                               singer: sheetInfo["singer"],
+                              isFavorite: true,
                             );
                           },
                           separatorBuilder: (context, index) => const Divider(),

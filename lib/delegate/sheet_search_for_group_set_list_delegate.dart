@@ -97,6 +97,8 @@ class SheetSearchFroGroupSetListDelegate extends SearchDelegate {
                         .then((value) => Logger().i("set list updated!"), onError: (e) => print(e));
                     Navigator.of(context).pop();
                   },
+                  /// TODO 나의 favorite 연동
+                  isFavorite: false,
                 );
               },
             );
@@ -139,6 +141,8 @@ class SheetSearchFroGroupSetListDelegate extends SearchDelegate {
                         .then((value) => Logger().i("set list updated!"), onError: (e) => print(e));
                     Navigator.of(context).pop();
                   },
+                  /// TODO 나의 favorite 연동
+                  isFavorite: false,
                 );
               },
             );
