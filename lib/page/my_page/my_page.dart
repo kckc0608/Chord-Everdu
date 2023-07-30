@@ -103,6 +103,10 @@ class _MyPageState extends State<MyPage> {
                       }
 
                       var docs = snapshot.data!.docs;
+                      if (docs.isEmpty) {
+                        return const Center(child: Text("내가 만든 악보가 없습니다."));
+                      }
+
                       return ListView.separated(
                         itemCount: docs.length,
                         separatorBuilder: (context, index) => const Divider(),
@@ -134,6 +138,9 @@ class _MyPageState extends State<MyPage> {
 
                         var data = snapshot.data!.data();
                         List<dynamic> favoriteSheets = data!["favorite_sheet"];
+                        if (favoriteSheets.isEmpty) {
+                          return const Center(child: Text("내가 좋아요 표시한 악보가 없습니다."));
+                        }
                         return ListView.separated(
                           itemCount: favoriteSheets.length,
                           itemBuilder:(context, index) {
