@@ -43,7 +43,16 @@ class _SearchSheetState extends State<SearchSheet> {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const LoadingCircle();
                 }
-                List<dynamic> favoriteSheets = snapshot.data!.data()!["favorite_sheet"];
+
+                if (snapshot.hasError) {
+                  return Center(child: Text(snapshot.error.toString()));
+                }
+
+                List<dynamic> favoriteSheets = [];
+                if (snapshot.hasData) {
+                  favoriteSheets = snapshot.data!.data()!["favorite_sheet"];
+                }
+
                 return ListView.separated(
                   itemCount: sheetsData.length,
                   itemBuilder: (context, idx) => SheetListItem(
