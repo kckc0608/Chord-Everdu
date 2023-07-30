@@ -1,7 +1,9 @@
 import 'package:chord_everdu/delegate/sheet_search_for_group_set_list_delegate.dart';
+import 'package:chord_everdu/page/common_widget/section_content.dart';
 import 'package:chord_everdu/page/common_widget/section_title.dart';
 import 'package:chord_everdu/page/group_detail/widget/add_new_member_dialog.dart';
 import 'package:chord_everdu/page/group_detail/widget/delete_group_check_dialog.dart';
+import 'package:chord_everdu/page/group_detail/widget/delete_schedule_check_dialog.dart';
 import 'package:chord_everdu/page/group_detail/widget/group_detail_sheet_list_item.dart';
 import 'package:chord_everdu/page/group_detail/widget/manager_list_item.dart';
 import 'package:chord_everdu/page/group_detail/widget/member_list_item.dart';
@@ -151,7 +153,7 @@ class _GroupDetailState extends State<GroupDetail> {
                                           style: BorderStyle.solid,
                                         ),
                                       ),
-                                      child: setLists.isNotEmpty 
+                                      child: setLists.isNotEmpty
                                           ? DropdownButton2<int>(
                                               items: List.generate(setLists.length, (index) =>
                                                 DropdownMenuItem(
@@ -176,14 +178,45 @@ class _GroupDetailState extends State<GroupDetail> {
                                       ),
                                     ),
                                   ),
-                                  TextButton(onPressed: () {
-                                    showDialog(
-                                      context: context,
-                                      builder: (context) => NewScheduleDialog(
-                                        groupID: widget.groupID,
-                                      ),
-                                    );
-                                  }, child: const Text("일정 추가"))
+                                  TextButton(
+                                    child: const Text("일정 추가"),
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => NewScheduleDialog(
+                                          groupID: widget.groupID,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  TextButton(
+                                    child: const Text("일정 삭제"),
+                                    onPressed: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) =>
+                                            DeleteScheduleCheckDialog(
+                                                onDeleteGroup: () {
+                                                  _db.collection('group_list')
+                                                      .doc(widget.groupID)
+                                                      .collection('set_lists')
+                                                      .doc(setLists[dropDownValue].id)
+                                                      .delete()
+                                                      .then(
+                                                        (value) {
+                                                          setState(() {
+                                                            dropDownValue = 0;
+                                                          });
+                                                          Logger().i("일정이 삭제되었습니다.");
+                                                          Navigator.of(context).pop();
+                                                        },
+                                                    onError: (e) => Logger().e(e)
+                                                  );
+                                                }
+                                            ),
+                                      );
+                                    },
+                                  ),
                                 ],
                               ),
                               Row(
@@ -199,54 +232,59 @@ class _GroupDetailState extends State<GroupDetail> {
                                   }, child: const Text("악보 추가"))
                                 ],
                               ),
-                              setLists.isNotEmpty ?
                               Expanded(
-                                child: StreamBuilder(
-                                    stream: _db.collection('group_list').doc(widget.groupID).collection('set_lists').doc(setLists[dropDownValue].id).snapshots(),
-                                    builder: (context, snapshot) {
-                                      if (snapshot.connectionState == ConnectionState.waiting) {
-                                        return const Center(child: CircularProgressIndicator());
-                                      }
-                                      List<dynamic> sheets = snapshot.data!.data()!['sheets'];
-                                      return ListView.separated(
-                                        itemBuilder: (context, index) {
-                                          DocumentReference ref = sheets[index];
-                                          return StreamBuilder(
-                                              stream: ref.snapshots(),
-                                              builder: (context, snapshot) {
-                                                if (snapshot.connectionState == ConnectionState.waiting) {
-                                                  return const Center(child: CircularProgressIndicator());
+                                child: SectionContent(
+                                  child: setLists.isNotEmpty
+                                      ? StreamBuilder(
+                                      stream: _db.collection('group_list').doc(widget.groupID).collection('set_lists').doc(setLists[dropDownValue].id).snapshots(),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return const Center(child: CircularProgressIndicator());
+                                        }
+                                        List<dynamic> sheets = snapshot.data!.data()!['sheets'];
+                                        if (sheets.isEmpty) {
+                                          return const Center(child: Text("악보가 없습니다."));
+                                        }
+                                        return ListView.separated(
+                                          itemBuilder: (context, index) {
+                                            DocumentReference ref = sheets[index];
+                                            return StreamBuilder(
+                                                stream: ref.snapshots(),
+                                                builder: (context, snapshot) {
+                                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                                    return const Center(child: CircularProgressIndicator());
+                                                  }
+                                                  var sheet = snapshot.data!.data() as Map<String, dynamic>;
+                                                  return GroupDetailSheetList(
+                                                    sheetID: ref.id,
+                                                    title: sheet['title'],
+                                                    singer: sheet["singer"],
+                                                    onDelete: () {
+                                                      sheets.removeAt(index);
+                                                      _db.collection('group_list')
+                                                          .doc(widget.groupID)
+                                                          .collection('set_lists')
+                                                          .doc(setLists[dropDownValue].id)
+                                                          .update({"sheets": sheets})
+                                                          .then(
+                                                            (value) => Logger().i("set list updated"),
+                                                        onError: (e) {
+                                                          Logger().e(e);
+                                                        },
+                                                      );
+                                                    },
+                                                  );
                                                 }
-                                                var sheet = snapshot.data!.data() as Map<String, dynamic>;
-                                                return GroupDetailSheetList(
-                                                  sheetID: ref.id,
-                                                  title: sheet['title'],
-                                                  singer: sheet["singer"],
-                                                  onDelete: () {
-                                                    sheets.removeAt(index);
-                                                    _db.collection('group_list')
-                                                        .doc(widget.groupID)
-                                                        .collection('set_lists')
-                                                        .doc(setLists[dropDownValue].id)
-                                                        .update({"sheets": sheets})
-                                                        .then(
-                                                          (value) => Logger().i("set list updated"),
-                                                      onError: (e) {
-                                                        Logger().e(e);
-                                                      },
-                                                    );
-                                                  },
-                                                );
-                                              }
-                                          );
-                                        },
-                                        separatorBuilder: (context, index) => const Divider(),
-                                        itemCount: sheets.length,
-                                      );
-                                    }
-                                ),
-                              ) :
-                              const Expanded(child: Center(child: Text("일정이 없습니다."),))
+                                            );
+                                          },
+                                          separatorBuilder: (context, index) => const Divider(),
+                                          itemCount: sheets.length,
+                                        );
+                                      }
+                                  )
+                                      : const Center(child: Text("일정이 없습니다."),),
+                                )
+                              )
                             ],
                           );
                         },

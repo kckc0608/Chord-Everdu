@@ -40,8 +40,7 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
       titlePadding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
       contentPadding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
       content: SizedBox(
-        width: 300,
-        height: 300,
+        height: 240,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: SingleChildScrollView(
@@ -115,63 +114,6 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                           _selectedKey = int.parse(value.toString());
                         });
                       },
-                    ),
-                    const SizedBox(height: 12),
-                    Stack(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                  border: Border.fromBorderSide(BorderSide(color: Colors.grey[300]!,)),
-                                  borderRadius: BorderRadius.circular(4.0)
-                              ),
-                              child: Row(
-                                //mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Radio<int>(
-                                    value: 1,
-                                    groupValue: lyricLine,
-                                    onChanged: (line) {
-                                      setState(() {
-                                        lyricLine = line!;
-                                      });
-                                    },
-                                  ),
-                                  const Text("1줄"),
-                                  Radio<int>(
-                                    value: 2,
-                                    groupValue: lyricLine,
-                                    onChanged: (line) {
-                                      setState(() {
-                                        lyricLine = line!;
-                                      });
-                                    },
-                                  ),
-                                  const Text("2줄"),
-                                  Radio<int>(
-                                    value: 3,
-                                    groupValue: lyricLine,
-                                    onChanged: (line) {
-                                      setState(() {
-                                        lyricLine = line!;
-                                      });
-                                    },
-                                  ),
-                                  const Text("3줄"),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 8,
-                            top: 2,
-                            child: Container(
-                                color: Theme.of(context).dialogBackgroundColor,
-                                padding: const EdgeInsets.symmetric(horizontal: 3),
-                                child: const Text("가사 줄 수", style: TextStyle(fontSize: 15, color: Colors.black54))),
-                          ),
-                        ]
                     ),
                   ],
                 ),

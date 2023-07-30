@@ -37,14 +37,6 @@ class GroupDetailSheetList extends StatelessWidget {
                   ],
                 )),
             IconButton(
-                icon: const Icon(Icons.edit_outlined),
-                onPressed: () {
-                  context.read<Sheet>().isReadOnly = false;
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                    return SheetViewer(sheetID: sheetID);
-                  }));
-                }),
-            IconButton(
                 icon: const Icon(Icons.delete_outline),
                 color: Colors.redAccent,
                 onPressed: onDelete ?? () {
