@@ -24,115 +24,113 @@ class _NewGroupDialogState extends State<NewGroupDialog> {
       title: const Text("새 그룹"),
       content: Form(
         key: _formKey,
-        child: SizedBox(
-          height: 180,
-          child: Column(
-            children: [
-              /// 그룹 이름
-              TextFormField(
-                controller: _groupNameController,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return '값을 입력하세요.';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: "그룹 이름",
-                  labelStyle: TextStyle(fontSize: 16),
-                  helperText: "* 필수 입력값입니다.",
-                  border: OutlineInputBorder(),
-                  contentPadding: EdgeInsets.fromLTRB(8, 12, 12, 8),
-                  isCollapsed: true,
-                ),
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            /// 그룹 이름
+            TextFormField(
+              controller: _groupNameController,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return '값을 입력하세요.';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(
+                labelText: "그룹 이름",
+                labelStyle: TextStyle(fontSize: 16),
+                helperText: "* 필수 입력값입니다.",
+                border: OutlineInputBorder(),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                isCollapsed: true,
               ),
-              /// 공개 여부
+              autofocus: true,
+            ),
+            /// 공개 여부
 
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                            border: Border.fromBorderSide(BorderSide(color: Colors.grey[300]!,)),
-                            borderRadius: BorderRadius.circular(4.0)
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  isPrivate = false;
-                                });
-                              },
-                              child: Row(
-                                children: [
-                                  Radio(value: false, groupValue: isPrivate,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        isPrivate = value!;
-                                      });
-                                    },
-                                  ),
-                                  Text(
-                                    "공개",
-                                    style: Theme.of(context).textTheme.bodyLarge,
-                                  ),
-                                ],
-                              ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          border: Border.fromBorderSide(BorderSide(color: Colors.grey[300]!,)),
+                          borderRadius: BorderRadius.circular(4.0)
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                isPrivate = false;
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Radio(value: false, groupValue: isPrivate,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      isPrivate = value!;
+                                    });
+                                  },
+                                ),
+                                Text(
+                                  "공개",
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                              ],
                             ),
-                            InkWell(
-                              onTap: () {
-                                setState(() {
-                                  isPrivate = true;
-                                });
-                              },
-                              child: Row(
-                                children: [
-                                  Radio(
-                                    value: true,
-                                    groupValue: isPrivate,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        isPrivate = value!;
-                                      });
-                                    },
-                                  ),
-                                  Text(
-                                    "비공개",
-                                    style: Theme.of(context).textTheme.bodyMedium,
-                                  ),
-                                ],
-                              ),
+                          ),
+                          InkWell(
+                            onTap: () {
+                              setState(() {
+                                isPrivate = true;
+                              });
+                            },
+                            child: Row(
+                              children: [
+                                Radio(
+                                  value: true,
+                                  groupValue: isPrivate,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      isPrivate = value!;
+                                    });
+                                  },
+                                ),
+                                Text(
+                                  "비공개",
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                    Positioned(
-                      left: 8,
-                      top: 5,
-                      child: Container(
-                          color: Theme.of(context).dialogBackgroundColor,
-                          padding: const EdgeInsets.symmetric(horizontal: 3),
-                          child: const Text(
-                            "그룹 공개 여부",
-                            style: TextStyle(
-                              fontWeight: FontWeight.normal,
-                              fontSize: 14,
-                              color: Colors.black54,
-                            ),
-                          )),
-                    ),
-                  ],
-                ),
+                  ),
+                  Positioned(
+                    left: 8,
+                    top: 5,
+                    child: Container(
+                        color: Theme.of(context).dialogBackgroundColor,
+                        padding: const EdgeInsets.symmetric(horizontal: 3),
+                        child: const Text(
+                          "그룹 공개 여부",
+                          style: TextStyle(
+                            fontWeight: FontWeight.normal,
+                            fontSize: 14,
+                            color: Colors.black54,
+                          ),
+                        )),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       actions: [

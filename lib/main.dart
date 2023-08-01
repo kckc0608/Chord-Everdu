@@ -30,7 +30,11 @@ class MyApp extends StatelessWidget {
       title: 'Chord Everdu',
       theme: ThemeData(
         textTheme: const TextTheme(
-          titleMedium: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+          displayLarge: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
           titleSmall: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
         )
       ),
