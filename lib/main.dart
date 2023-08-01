@@ -4,6 +4,7 @@ import 'package:chord_everdu/page/group/group.dart';
 import 'package:chord_everdu/page/group/widget/group_add_floating_button.dart';
 import 'package:chord_everdu/page/my_page/my_page.dart';
 import 'package:chord_everdu/page/search_sheet/widget/new_sheet_dialog.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:chord_everdu/page/search_sheet/search_sheet.dart';
 import 'package:provider/provider.dart';
@@ -129,7 +130,7 @@ class _MainFrameState extends State<MainFrame> {
             },
             child: const Icon(Icons.add),
           ),
-          const GroupAddFloatingButton(),
+          FirebaseAuth.instance.currentUser == null ? null : const GroupAddFloatingButton(),
           null
         ][_selectedIndex],
       )
