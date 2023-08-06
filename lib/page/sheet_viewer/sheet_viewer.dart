@@ -5,6 +5,7 @@ import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/edit_sheet_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_block_button.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/sheet_report_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/sheet_viewer_control_bar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -101,7 +102,27 @@ class _SheetViewerState extends State<SheetViewer> {
               }
             },
           ),
-          actions: isReadOnly ? null : [
+          actions: isReadOnly
+              ? [
+                PopupMenuButton<String>(
+                  offset: const Offset(0, 55),
+                  onSelected: (value) {
+                    showDialog(
+                      context: context,
+                      builder: (context) => SheetReportDialog(
+                        sheetID: widget.sheetID,
+                      ),
+                    );
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: "test",
+                      child: Text("악보 신고하기"),
+                    ),
+                  ],
+                  icon: const Icon(Icons.more_vert),
+                ),
+          ] : [
             IconButton(
               icon: const Icon(Icons.edit),
               onPressed: () {
