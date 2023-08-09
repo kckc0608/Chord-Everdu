@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 class GroupDetailSheetList extends StatelessWidget {
   final String sheetID, title, singer;
   VoidCallback? onDelete;
+
   GroupDetailSheetList({
     Key? key,
     required this.sheetID,
@@ -24,38 +25,45 @@ class GroupDetailSheetList extends StatelessWidget {
         }));
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+        padding: const EdgeInsets.all(8.0),
         child: Row(
           children: [
             Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    Text(singer, style: const TextStyle(color: Colors.black54),),
-                  ],
-                )),
-            IconButton(
-                icon: const Icon(Icons.delete_outline),
-                color: Colors.redAccent,
-                onPressed: onDelete ?? () {
-                  showDialog(context: context, builder: (context) => AlertDialog(
-                    content: const Text("선택한 악보를 정말로 삭제하시겠습니까?"),
-                    actions: [
-                      TextButton(onPressed: () {
-                        Navigator.of(context).pop();
-                      }, child: const Text("취소")),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.redAccent
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text(
+                  singer,
+                  style: const TextStyle(color: Colors.black54),
+                ),
+              ],
+            )),
+            if (onDelete == null) const SizedBox.shrink() else IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    color: Colors.redAccent,
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text("악보 삭제"),
+                          content: const Text("선택한 악보를 현재 일정에서 삭제하시겠습니까?"),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text("취소")),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+                              onPressed: onDelete,
+                              child: const Text("삭제"),
+                            ),
+                          ],
                         ),
-                        onPressed: onDelete,
-                        child: const Text("삭제"),
-                      ),
-                    ],
-                  ),);
-                }),
+                      );
+                    }),
           ],
         ),
       ),
