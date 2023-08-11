@@ -1,9 +1,11 @@
+import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:chord_everdu/page/search_sheet/widget/sheet_list_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
 class SheetSearchDelegate extends SearchDelegate {
+  VoidCallback? onSelectSheet;
   @override
   String? get searchFieldLabel => "악보를 검색하세요.";
 
@@ -79,10 +81,10 @@ class SheetSearchDelegate extends SearchDelegate {
               var data = results[index].data();
               return SheetListItem(
                 sheetID: results[index].id,
-                title: data["title"],
-                singer: data["singer"],
+                sheetInfo: SheetInfo.fromMap(data),
                 /// TODO 나의 favorite 연동
                 isFavorite: false,
+                onTap: onSelectSheet,
               );
             },
           );
@@ -113,10 +115,10 @@ class SheetSearchDelegate extends SearchDelegate {
               var data = results[index].data();
               return SheetListItem(
                 sheetID: results[index].id,
-                title: data["title"],
-                singer: data["singer"],
+                sheetInfo: SheetInfo.fromMap(data),
                 /// TODO 나의 favorite 연동
                 isFavorite: false,
+                onTap: onSelectSheet,
               );
             },
           );

@@ -1,8 +1,10 @@
+import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:chord_everdu/page/search_sheet/widget/sheet_list_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
+/// TODO : 기존 search delegate 하고 통합하고 이 파일은 없애기
 class SheetSearchFroGroupSetListDelegate extends SearchDelegate {
   String groupID, setList;
   SheetSearchFroGroupSetListDelegate({
@@ -85,8 +87,7 @@ class SheetSearchFroGroupSetListDelegate extends SearchDelegate {
                 var data = results[index].data();
                 return SheetListItem(
                   sheetID: results[index].id,
-                  title: data["title"],
-                  singer: data["singer"],
+                  sheetInfo: SheetInfo.fromMap(data),
                   onTap: () async {
                     DocumentReference setListRef = FirebaseFirestore.instance.collection('group_list').doc(groupID).collection('set_lists').doc(setList);
                     var doc = await setListRef.get();
@@ -129,8 +130,7 @@ class SheetSearchFroGroupSetListDelegate extends SearchDelegate {
                 var data = results[index].data();
                 return SheetListItem(
                   sheetID: results[index].id,
-                  title: data["title"],
-                  singer: data["singer"],
+                  sheetInfo: SheetInfo.fromMap(data),
                   onTap: () async {
                     DocumentReference setListRef = FirebaseFirestore.instance.collection('group_list').doc(groupID).collection('set_lists').doc(setList);
                     var doc = await setListRef.get();

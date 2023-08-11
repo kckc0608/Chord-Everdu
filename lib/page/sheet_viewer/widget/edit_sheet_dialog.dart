@@ -1,18 +1,18 @@
 import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:chord_everdu/data_class/sheet_info.dart';
+import 'package:chord_everdu/data_class/tag_content.dart';
+import 'package:chord_everdu/page/common_widget/tag.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 
 class EditSheetDialog extends StatefulWidget {
-  final int songKey;
-  final String title;
-  final String singer;
+  final SheetInfo sheetInfo;
   const EditSheetDialog({
     Key? key,
-    required this.songKey,
-    required this.title,
-    required this.singer,
+    /// TODO : SheetInfo 클래스 이용하도록 수정
+    required this.sheetInfo,
   }) : super(key: key);
 
   @override
@@ -24,174 +24,267 @@ class _EditSheetDialogState extends State<EditSheetDialog> {
   final _majorKeyList = [
     "C", "C#/Db", "D", "Eb", "E", "F", "F#/Gb", "G", "Ab", "A", "Bb", "B"
   ];
+
   int _selectedKey = 0;
+  TagContent selectedSongLevel = TagContent.level1;
+  TagContent selectedSongGenre = TagContent.kpop;
+
   late int _songKey;
-  final _titleController = TextEditingController();
-  final _singerController = TextEditingController();
+
+  final _controllerForTitle = TextEditingController();
+  final _controllerForSinger = TextEditingController();
+  final _focusNodeForTitle = FocusNode();
+  final _focusNodeForSinger = FocusNode();
 
 
   @override
   void dispose() {
-    _titleController.dispose();
-    _singerController.dispose();
+    _controllerForTitle.dispose();
+    _controllerForSinger.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
+    _controllerForTitle.text = widget.sheetInfo.title;
+    _controllerForSinger.text = widget.sheetInfo.singer;
+    selectedSongLevel = widget.sheetInfo.level;
+    selectedSongGenre = widget.sheetInfo.genre;
+    _songKey = widget.sheetInfo.songKey;
+
     if (context.mounted) {
       int sheetKey = context.read<Sheet>().sheetKey;
-      _songKey = context.read<Sheet>().sheetInfo.songKey;
       _selectedKey = (_songKey + sheetKey + 12) % 12;
     }
+
+    /// TODO : 악보 키 로직 수정
+    // sheet key 는 어디까지나 악보 뷰어 모드일 때 키를 바꾸려고 활용하는 값임.
+    // 악보 수정 모드일 때는 키를 바꾸면 그냥 다 바뀌는게 맞으니까 sheet key 가 필요 없음.
+    // 그런데 sheet viewer 에서 코드 데이터를 그냥 쌩 코드로 가져와서 수정시에도 sheet key 를 이용해 키를 바꾸고 있음
+    // 악보 수정 모드에서는 sheet key가 전혀 의미 없어야하고, 모든 키는 철저하게 song key 에 의존해야 함.
   }
 
   @override
   Widget build(BuildContext context) {
-    _titleController.text = widget.title;
-    _singerController.text = widget.singer;
     return AlertDialog(
-      title: const Text("악보 정보 수정"),
-      titlePadding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
-      contentPadding: const EdgeInsets.fromLTRB(8.0, 0, 8.0, 0),
-      content: SizedBox(
-        width: 300,
-        height: 300,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 20),
-                    TextFormField(
-                      controller: _titleController,
-                      //focusNode: _focusNodeForTitle,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "곡 제목은 필수 입력값입니다.";
-                        }
-                        return null;
-                      },
-                      style: const TextStyle(fontSize: 20),
-                      decoration: const InputDecoration(
-                        labelText: "곡 제목",
-                        labelStyle: TextStyle(fontSize: 20),
-                        helperText: "* 필수 입력값입니다.",
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.fromLTRB(12, 16, 12, 8),
-                        isCollapsed: true,
-                      ),
-                      onEditingComplete: () {
-                        //_focusNodeForTitle.unfocus();
-                      },
+      title: const Text("새 악보"),
+      content: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                /// Song Title
+                TextFormField(
+                  controller: _controllerForTitle,
+                  focusNode: _focusNodeForTitle,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "곡 제목은 필수 입력값입니다.";
+                    }
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    labelText: "곡 제목",
+                    helperText: "* 필수 입력값입니다.",
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                    isCollapsed: true,
+                  ),
+                  onEditingComplete: () {
+                    _focusNodeForTitle.unfocus();
+                  },
+                  autofocus: true,
+                ),
 
+                /// Singer
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  child: TextField(
+                    focusNode: _focusNodeForSinger,
+                    controller: _controllerForSinger,
+                    decoration: const InputDecoration(
+                      labelText: "가수",
+                      border: OutlineInputBorder(),
+                      isCollapsed: true,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                     ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      //focusNode: _focusNodeForSinger,
-                      controller: _singerController,
-                      style: const TextStyle(fontSize: 20),
-                      decoration: const InputDecoration(
-                        labelText: "가수",
-                        labelStyle: TextStyle(fontSize: 20),
-                        border: OutlineInputBorder(),
-                        isCollapsed: true,
-                        contentPadding: EdgeInsets.fromLTRB(12, 16, 12, 8),
+                    onEditingComplete: () {
+                      _focusNodeForSinger.unfocus();
+                    },
+                  ),
+                ),
+
+                ///  Song Key
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  child: DropdownButtonFormField2(
+                    style: const TextStyle(fontSize: 18, color: Colors.black),
+                    decoration: const InputDecoration(
+                      labelText: "키",
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
+                      isCollapsed: true,
+                    ),
+                    dropdownStyleData: const DropdownStyleData(maxHeight: 200, offset: Offset(0, -2)),
+                    value: _selectedKey,
+                    items: _majorKeyList.map((value) {
+                      return DropdownMenuItem(
+                        value: _majorKeyList.indexOf(value),
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedKey = int.parse(value.toString());
+                      });
+                    },
+                  ),
+                ),
+
+                /// Song Level
+                Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 2.0),
+                        decoration: BoxDecoration(
+                          border: const Border.fromBorderSide(BorderSide(
+                            color: Colors.black26,
+                            style: BorderStyle.solid,
+                            width: 0.8,
+                          )),
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Tag(
+                              tagContent: TagContent.level1,
+                              isSelected: selectedSongLevel == TagContent.level1,
+                              onTap: () {
+                                setState(() {
+                                  selectedSongLevel = TagContent.level1;
+                                });
+                              },
+                            ),
+                            Tag(
+                              tagContent: TagContent.level2,
+                              isSelected: selectedSongLevel == TagContent.level2,
+                              onTap: () {
+                                setState(() {
+                                  selectedSongLevel = TagContent.level2;
+                                });
+                              },
+                            ),
+                            Tag(
+                              tagContent: TagContent.level3,
+                              isSelected: selectedSongLevel == TagContent.level3,
+                              onTap: () {
+                                setState(() {
+                                  selectedSongLevel = TagContent.level3;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                      onEditingComplete: () {
-                        //_focusNodeForSinger.unfocus();
-                      },
                     ),
-                    const SizedBox(height: 24),
-                    DropdownButtonFormField(
-                      style: const TextStyle(fontSize: 20, color: Colors.black),
-                      decoration: const InputDecoration(
-                        labelText: "키",
-                        labelStyle: TextStyle(fontSize: 20),
-                        border: OutlineInputBorder(),
-                        contentPadding: EdgeInsets.fromLTRB(12, 12, 12, 8),
-                        isCollapsed: true,
+                    Positioned(
+                      top: 4.0,
+                      left: 8.0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                        color: Theme.of(context).dialogBackgroundColor,
+                        child: Text("난이도", style: TextStyle(color: Theme.of(context).hintColor, fontSize: Theme.of(context).textTheme.labelMedium!.fontSize),),
                       ),
-                      value: _selectedKey,
-                      items: _majorKeyList.map((value) {
-                        return DropdownMenuItem(
-                          value: _majorKeyList.indexOf(value),
-                          child: Text(value),
-                        );
-                      }
-                      ).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedKey = value ?? 0;
-                          Logger().d(_selectedKey);
-                        });
-                      },
                     ),
-                    const SizedBox(height: 12),
-                    // Stack(
-                    //     children: [
-                    //       Padding(
-                    //         padding: const EdgeInsets.fromLTRB(0, 10, 0, 0),
-                    //         child: Container(
-                    //           decoration: BoxDecoration(
-                    //               border: Border.fromBorderSide(BorderSide(color: Colors.grey[300]!,)),
-                    //               borderRadius: BorderRadius.circular(4.0)
-                    //           ),
-                    //           child: Row(
-                    //             //mainAxisSize: MainAxisSize.min,
-                    //             children: [
-                    //               Radio<int>(
-                    //                 value: 1,
-                    //                 groupValue: lyricLine,
-                    //                 onChanged: (line) {
-                    //                   setState(() {
-                    //                     lyricLine = line!;
-                    //                   });
-                    //                 },
-                    //               ),
-                    //               const Text("1줄"),
-                    //               Radio<int>(
-                    //                 value: 2,
-                    //                 groupValue: lyricLine,
-                    //                 onChanged: (line) {
-                    //                   setState(() {
-                    //                     lyricLine = line!;
-                    //                   });
-                    //                 },
-                    //               ),
-                    //               const Text("2줄"),
-                    //               Radio<int>(
-                    //                 value: 3,
-                    //                 groupValue: lyricLine,
-                    //                 onChanged: (line) {
-                    //                   setState(() {
-                    //                     lyricLine = line!;
-                    //                   });
-                    //                 },
-                    //               ),
-                    //               const Text("3줄"),
-                    //             ],
-                    //           ),
-                    //         ),
-                    //       ),
-                    //       Positioned(
-                    //         left: 8,
-                    //         top: 2,
-                    //         child: Container(
-                    //             color: Theme.of(context).dialogBackgroundColor,
-                    //             padding: EdgeInsets.symmetric(horizontal: 3),
-                    //             child: Text("가사 줄 수", style: TextStyle(fontSize: 15, color: Colors.black54))),
-                    //       ),
-                    //     ]
-                    // ),
                   ],
                 ),
-              ),
+                /// Song Genre
+                Stack(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        padding: const EdgeInsets.symmetric(vertical: 2.0),
+                        decoration: BoxDecoration(
+                          border: const Border.fromBorderSide(BorderSide(
+                            color: Colors.black26,
+                            style: BorderStyle.solid,
+                            width: 0.8,
+                          )),
+                          borderRadius: BorderRadius.circular(4.0),
+                        ),
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            Tag(
+                              tagContent: TagContent.kpop,
+                              isSelected: selectedSongGenre == TagContent.kpop,
+                              onTap: () {
+                                setState(() {
+                                  selectedSongGenre = TagContent.kpop;
+                                });
+                              },
+                            ),
+                            Tag(
+                              tagContent: TagContent.jpop,
+                              isSelected: selectedSongGenre == TagContent.jpop,
+                              onTap: () {
+                                setState(() {
+                                  selectedSongGenre = TagContent.jpop;
+                                });
+                              },
+                            ),
+                            Tag(
+                              tagContent: TagContent.pop,
+                              isSelected: selectedSongGenre == TagContent.pop,
+                              onTap: () {
+                                setState(() {
+                                  selectedSongGenre = TagContent.pop;
+                                });
+                              },
+                            ),
+                            Tag(
+                              tagContent: TagContent.ccm,
+                              isSelected: selectedSongGenre == TagContent.ccm,
+                              onTap: () {
+                                setState(() {
+                                  selectedSongGenre = TagContent.ccm;
+                                });
+                              },
+                            ),
+                            Tag(
+                              tagContent: TagContent.hiphop,
+                              isSelected: selectedSongGenre == TagContent.hiphop,
+                              onTap: () {
+                                setState(() {
+                                  selectedSongGenre = TagContent.hiphop;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 4.0,
+                      left: 8.0,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 3.0),
+                        color: Theme.of(context).dialogBackgroundColor,
+                        child: Text("장르", style: TextStyle(color: Theme.of(context).hintColor, fontSize: Theme.of(context).textTheme.labelMedium!.fontSize),),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
@@ -203,14 +296,16 @@ class _EditSheetDialogState extends State<EditSheetDialog> {
             Navigator.of(context).pop();
           },
         ),
-        TextButton(
+        ElevatedButton(
           child: const Text("확인"),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
               SheetInfo newInfo = SheetInfo(
-                title: _titleController.text,
-                singer: _singerController.text,
+                title: _controllerForTitle.text,
+                singer: _controllerForSinger.text,
                 songKey: _songKey,
+                level: selectedSongLevel,
+                genre: selectedSongGenre,
               );
               context.read<Sheet>().sheetKey =
                   (_selectedKey - _songKey + 12) % 12;
@@ -220,6 +315,6 @@ class _EditSheetDialogState extends State<EditSheetDialog> {
           },
         ),
       ],
-    );;
+    );
   }
 }
