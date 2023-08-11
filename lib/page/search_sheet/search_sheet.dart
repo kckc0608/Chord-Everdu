@@ -1,3 +1,4 @@
+import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:chord_everdu/page/common_widget/loading_circle.dart';
 import 'package:chord_everdu/page/search_sheet/widget/sheet_list_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -57,8 +58,7 @@ class _SearchSheetState extends State<SearchSheet> {
                   itemCount: sheetsData.length,
                   itemBuilder: (context, idx) => SheetListItem(
                     sheetID: sheetsData[idx].id,
-                    title: sheetsData[idx].data()["title"],
-                    singer: sheetsData[idx].data()["singer"],
+                    sheetInfo: SheetInfo.fromMap(sheetsData[idx].data()),
                     isFavorite: isFavoriteSheet(sheetsData[idx].id, favoriteSheets),
                   ),
                   separatorBuilder: (context, idx) {

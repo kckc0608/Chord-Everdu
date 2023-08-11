@@ -129,9 +129,7 @@ class _SheetViewerState extends State<SheetViewer> {
                 showDialog(
                   context: context,
                   builder: (context) => EditSheetDialog(
-                    title: sheetInfo.title,
-                    singer: sheetInfo.singer,
-                    songKey: _sheetKey,
+                    sheetInfo: sheetInfo,
                   ),
                 );
               },
@@ -316,12 +314,8 @@ class _SheetViewerState extends State<SheetViewer> {
         .get()
         .then((doc) {
           if (doc.exists) {
-            var data = doc.data();
-            return SheetInfo(
-              title: data!["title"],
-              singer: data["singer"],
-              songKey: data["song_key"] ?? 0,
-            );
+            var data = doc.data()!;
+            return SheetInfo.fromMap(data);
           } else {
             throw Exception("${widget.sheetID}의 데이터가 없습니다.");
           }
@@ -383,6 +377,8 @@ class _SheetViewerState extends State<SheetViewer> {
     data["title"] = sheetInfo.title;
     data["singer"] = sheetInfo.singer;
     data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
+    data["level"] = sheetInfo.level.code;
+    data["genre"] = sheetInfo.genre.code;
     data["block_names"] = context.read<Sheet>().blockNames;
     if (widget.sheetID.isNotEmpty) {
       await FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).set(
@@ -399,6 +395,8 @@ class _SheetViewerState extends State<SheetViewer> {
     data["title"] = sheetInfo.title;
     data["singer"] = sheetInfo.singer;
     data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
+    data["level"] = sheetInfo.level.code;
+    data["genre"] = sheetInfo.genre.code;
     data["block_names"] = context.read<Sheet>().blockNames;
     await FirebaseFirestore.instance.collection('sheet_list').add(data);
   }

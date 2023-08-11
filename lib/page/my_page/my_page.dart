@@ -1,3 +1,4 @@
+import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:chord_everdu/page/common_widget/loading_circle.dart';
 import 'package:chord_everdu/page/common_widget/section_content.dart';
 import 'package:chord_everdu/page/common_widget/section_title.dart';
@@ -147,8 +148,7 @@ class _MyPageState extends State<MyPage> {
                             var sheetInfo = favoriteSheets[index];
                             return SheetListItem(
                               sheetID: sheetInfo["sheet_id"],
-                              title: sheetInfo["title"],
-                              singer: sheetInfo["singer"],
+                              sheetInfo: SheetInfo.fromMap(sheetInfo),
                               isFavorite: true,
                             );
                           },
