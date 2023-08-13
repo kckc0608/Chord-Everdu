@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:chord_everdu/data_class/sheet_info.dart';
+import 'package:chord_everdu/page/common_widget/common_check_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/dialog/edit_sheet_dialog.dart';
-import 'package:chord_everdu/page/sheet_viewer/widget/dialog/sheet_delete_check_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_block_button.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/dialog/sheet_report_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/sheet_viewer_control_bar.dart';
@@ -77,7 +77,7 @@ class _SheetViewerState extends State<SheetViewer> {
       onWillPop: () async {
         bool? isWillPop = await showDialog<bool>(
           context: context,
-          builder: (context) => const SheetDeleteCheckDialog(),
+          builder: (context) => const CommonCheckDialog(title: "작성 취소", content: "악보 작성 페이지를 나가시겠습니까?"),
         );
         return isWillPop ?? false;
       },
@@ -92,7 +92,7 @@ class _SheetViewerState extends State<SheetViewer> {
                 } else {
                   showDialog(
                     context: context,
-                    builder: (_) => const SheetDeleteCheckDialog(),
+                    builder: (_) => const CommonCheckDialog(title: "작성 취소", content: "악보 작성 페이지를 나가시겠습니까?"),
                   ).then((isWillPop) {
                     if (isWillPop) {
                       Navigator.of(context).pop();
@@ -138,31 +138,21 @@ class _SheetViewerState extends State<SheetViewer> {
                       icon: const Icon(Icons.save),
                       onPressed: () {
                         showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                                  title: const Text("저장"),
-                                  content: const Text("저장하고 화면을 나가시겠습니까?"),
-                                  actions: [
-                                    TextButton(
-                                      child: const Text("취소"),
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                    ElevatedButton(
-                                      child: const Text("저장"),
-                                      onPressed: () {
-                                        if (widget.sheetID.isNotEmpty) {
-                                          saveSheet();
-                                        } else {
-                                          addSheet();
-                                        }
-                                        Navigator.of(context).pop();
-                                        Navigator.of(context).pop();
-                                      },
-                                    ),
-                                  ],
-                                ));
+                          context: context,
+                          builder: (context) => const CommonCheckDialog(
+                            title: "저장",
+                            content: "저장하고 화면을 나가시겠습니까?",
+                          ),
+                        ).then((isYes) {
+                          if (isYes) {
+                            if (widget.sheetID.isNotEmpty) {
+                              saveSheet();
+                            } else {
+                              addSheet();
+                            }
+                            Navigator.of(context).pop();
+                          }
+                        });
                       },
                     ),
                   ],

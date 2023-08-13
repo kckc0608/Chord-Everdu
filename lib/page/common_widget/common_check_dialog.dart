@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-class SheetDeleteCheckDialog extends StatelessWidget {
-  const SheetDeleteCheckDialog({super.key});
+class CommonCheckDialog extends StatelessWidget {
+  final String title, content;
+  const CommonCheckDialog({super.key, required this.title, required this.content});
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("작성 취소"),
-      content: const Text("악보 작성 페이지를 나가시겠습니까?"),
+      title: Text(title),
+      content: Text(content),
       actions: [
         TextButton(
           child: const Text("취소"),
