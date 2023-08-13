@@ -1,8 +1,7 @@
 import 'package:chord_everdu/page/sheet_viewer/widget/ChordCell.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/dialog/block_name_edit_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-
 import '../../../data_class/chord.dart';
 import '../../../data_class/sheet.dart';
 
@@ -18,21 +17,6 @@ class _ChordBlockState extends State<ChordBlock> {
   bool isSelected = false;
   late bool isReadOnly;
   late String blockName;
-  late TextEditingController blockNameController;
-
-
-  @override
-  void initState() {
-    blockNameController = TextEditingController();
-    super.initState();
-  }
-
-
-  @override
-  void dispose() {
-    blockNameController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,27 +78,8 @@ class _ChordBlockState extends State<ChordBlock> {
                             child: Icon(Icons.edit_outlined),
                           ),
                           onTap: () {
-                            blockNameController.text = context.read<Sheet>().blockNames[widget.blockID];
-                            showDialog(context: context, builder: (context) => 
-                              AlertDialog(
-                                content: Column(
-                                  children: [
-                                    const Text("새 이름을 입력하세요."),
-                                    TextField(
-                                      controller: blockNameController,
-                                    ),
-                                  ],
-                                ),
-                                actions: [
-                                  TextButton(onPressed: () {
-                                    Navigator.of(context).pop();
-                                  }, child: const Text("취소")),
-                                  TextButton(onPressed: () {
-                                    context.read<Sheet>().setNameOfBlockAt(blockID: widget.blockID, name: blockNameController.text);
-                                    Navigator.of(context).pop();
-                                  }, child: const Text("확인")),
-                                ],
-                              ),
+                            showDialog(context: context, builder: (context) =>
+                                BlockNameEditDialog(blockID: widget.blockID)
                             );
                           },
                         ),
