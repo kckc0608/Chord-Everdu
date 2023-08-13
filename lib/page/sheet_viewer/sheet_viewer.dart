@@ -71,6 +71,8 @@ class _SheetViewerState extends State<SheetViewer> {
 
     if (selectedCell > -1 && selectedBlock > -1) {
       _textController.text = context.read<Sheet>().lyrics[selectedBlock][selectedCell] ?? "";
+    } else {
+      _textController.text = "";
     }
 
     return WillPopScope(
@@ -271,16 +273,17 @@ class _SheetViewerState extends State<SheetViewer> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const Text(
+                                  Text(
                                     "가사 : ",
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: selectedCell > -1 ? Colors.black : Colors.grey),
                                   ),
                                   Expanded(
                                     child: Container(
-                                      color: Colors.black26,
+                                      color: selectedCell > -1 ? Colors.black26 : Colors.black12,
                                       child: TextField(
                                         focusNode: lyricFocusNode,
                                         controller: _textController,
+                                        enabled: selectedCell > -1,
                                         onChanged: (text) {
                                           context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
                                         },
