@@ -4,6 +4,7 @@ import 'package:chord_everdu/data_class/sheet_info.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/ChordBlock.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/dialog/edit_sheet_dialog.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/dialog/sheet_delete_check_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/new_chord_block_button.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/dialog/sheet_report_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/sheet_viewer_control_bar.dart';
@@ -19,6 +20,7 @@ import '../../data_class/sheet_data.dart';
 
 class SheetViewer extends StatefulWidget {
   final String sheetID;
+
   const SheetViewer({
     Key? key,
     required this.sheetID,
@@ -71,282 +73,287 @@ class _SheetViewerState extends State<SheetViewer> {
       _textController.text = context.read<Sheet>().lyrics[selectedBlock][selectedCell] ?? "";
     }
 
-    return Scaffold(
-        appBar: AppBar(
-          title: Text(sheetInfo.title),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              if (isReadOnly) {
-                Navigator.of(context).pop();
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (_) => AlertDialog(
-                        title: const Text("취소"),
-                        content: const Text("악보 작성 페이지를 나가시겠습니까?"),
-                        actions: [
-                          TextButton(
-                              child: const Text("취소"),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              }),
-                          TextButton(
-                              child: const Text("확인"),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                                Navigator.of(context).pop();
-                              }),
-                        ],
-                      ));
-              }
-            },
-          ),
-          actions: isReadOnly
-              ? [
-                PopupMenuButton<String>(
-                  offset: const Offset(0, 55),
-                  onSelected: (value) {
-                    showDialog(
-                      context: context,
-                      builder: (context) => SheetReportDialog(
-                        sheetID: widget.sheetID,
-                      ),
-                    );
-                  },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
-                      value: "test",
-                      child: Text("악보 신고하기"),
-                    ),
-                  ],
-                  icon: const Icon(Icons.more_vert),
-                ),
-          ] : [
-            IconButton(
-              icon: const Icon(Icons.edit),
+    return WillPopScope(
+      onWillPop: () async {
+        bool? isWillPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => const SheetDeleteCheckDialog(),
+        );
+        return isWillPop ?? false;
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text(sheetInfo.title),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
               onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => EditSheetDialog(
-                    sheetInfo: sheetInfo,
-                  ),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: () {
-                showDialog(context: context, builder: (context) => AlertDialog(
-                  title: const Text("저장"),
-                  content: const Text("저장하고 화면을 나가시겠습니까?"),
-                  actions: [
-                    TextButton(
-                      child: const Text("취소"),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    TextButton(
-                      child: const Text("저장"),
-                      onPressed: () {
-                        if (widget.sheetID.isNotEmpty) {
-                          saveSheet();
-                        } else {
-                          addSheet();
-                        }
-                        Navigator.of(context).pop();
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                ));
-              },
-            ),
-          ],
-        ),
-        body: SafeArea(
-            child: Column(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                child: FutureBuilder(
-                  future: FirebaseFirestore.instance
-                      .collection('sheet_list')
-                      .where("sheet_id", isEqualTo: widget.sheetID)
-                      .get(), /// 앱을 다시 빌드할 때마다 이걸 가져오는 건 비효율적인 것 같아서 initState 부분으로 빼고 싶은데, 그러면 로딩창을 못띄울 거 같음.
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return ListView.builder(
-                        controller: scrollController,
-                        itemCount: isReadOnly ? blockCount : blockCount + 1,
-                        itemBuilder: (context, index) {
-                          return index == blockCount
-                              ? const NewChordBlockButton()
-                              : ChordBlock(blockID: index);
-                        },
-                      );
-                    } else {
-                      return const Text("loading sheet");
+                if (isReadOnly) {
+                  Navigator.of(context).pop();
+                } else {
+                  showDialog(
+                    context: context,
+                    builder: (_) => const SheetDeleteCheckDialog(),
+                  ).then((isWillPop) {
+                    if (isWillPop) {
+                      Navigator.of(context).pop();
                     }
-                  }
+                  });
+                }
+              },
+            ),
+            actions: isReadOnly
+                ? [
+                    PopupMenuButton<String>(
+                      offset: const Offset(0, 55),
+                      onSelected: (value) {
+                        showDialog(
+                          context: context,
+                          builder: (context) => SheetReportDialog(
+                            sheetID: widget.sheetID,
+                          ),
+                        );
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: "test",
+                          child: Text("악보 신고하기"),
+                        ),
+                      ],
+                      icon: const Icon(Icons.more_vert),
+                    ),
+                  ]
+                : [
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (context) => EditSheetDialog(
+                            sheetInfo: sheetInfo,
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.save),
+                      onPressed: () {
+                        showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                                  title: const Text("저장"),
+                                  content: const Text("저장하고 화면을 나가시겠습니까?"),
+                                  actions: [
+                                    TextButton(
+                                      child: const Text("취소"),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    ElevatedButton(
+                                      child: const Text("저장"),
+                                      onPressed: () {
+                                        if (widget.sheetID.isNotEmpty) {
+                                          saveSheet();
+                                        } else {
+                                          addSheet();
+                                        }
+                                        Navigator.of(context).pop();
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                  ],
+                                ));
+                      },
+                    ),
+                  ],
+          ),
+          body: SafeArea(
+              child: Column(
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  child: FutureBuilder(
+                      future: FirebaseFirestore.instance
+                          .collection('sheet_list')
+                          .where("sheet_id", isEqualTo: widget.sheetID)
+                          .get(),
+
+                      /// 앱을 다시 빌드할 때마다 이걸 가져오는 건 비효율적인 것 같아서 initState 부분으로 빼고 싶은데, 그러면 로딩창을 못띄울 거 같음.
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData) {
+                          return ListView.builder(
+                            controller: scrollController,
+                            itemCount: isReadOnly ? blockCount : blockCount + 1,
+                            itemBuilder: (context, index) {
+                              return index == blockCount ? const NewChordBlockButton() : ChordBlock(blockID: index);
+                            },
+                          );
+                        } else {
+                          return const Text("loading sheet");
+                        }
+                      }),
                 ),
               ),
-            ),
-            isReadOnly
-                ? SheetViewerControlBar(scrollController: scrollController)
-                : Container(
-                  decoration: const BoxDecoration(
-                    boxShadow: [BoxShadow(
-                      color: Colors.black54,
-                      blurRadius: 15.0,
-                      offset: Offset(0, 0.75),
-                    )],
-                    color: Colors.white,
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          IconButton(
-                            icon: const Icon(
-                              Icons.add_box_outlined,
-                            ),
-                            color: Colors.green,
-                            onPressed: selectedCell > -1
-                                ? () {
-                              setState(() {
-                                context.read<Sheet>().addCell(
-                                  blockID: context.read<Sheet>().selectedBlockIndex,
-                                  cellID: selectedCell,
-                                  chord: Chord(),
-                                  lyric: "",
-                                );
-                              });
-                            }
-                                : null,
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.arrow_back),
-                            color: Colors.red,
-                            onPressed: selectedCell > 0 ? () {
-                              setState(() {
-                                context.read<Sheet>().removePreviousCell(
-                                  blockID: selectedBlock,
-                                  cellID: selectedCell,
-                                );
-                              });
-                            } : null,
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.subdirectory_arrow_left),
-                            onPressed: selectedCell > 0 ? () {
-                              setState(() {
-                                context.read<Sheet>().addNewLineCell(
-                                  blockID: context.read<Sheet>().selectedBlockIndex,
-                                  cellID: selectedCell,
-                                );
-                              });
-                            } : null,
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.text_rotation_none),
-                            onPressed: selectedCell > -1 && lyricFocusNode.hasFocus ? () {
-                              setState(() {
-                                context.read<Sheet>().moveLyricToNextCell(
-                                  blockID: selectedBlock,
-                                  cellID: selectedCell,
-                                  selectPosition: _textController.selection.base.offset,
-                                );
-                              });
-                            } : null,
-                          ),
+              isReadOnly
+                  ? SheetViewerControlBar(scrollController: scrollController)
+                  : Container(
+                      decoration: const BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black54,
+                            blurRadius: 15.0,
+                            offset: Offset(0, 0.75),
+                          )
                         ],
+                        color: Colors.white,
                       ),
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(maxHeight: 44),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text("가사 : ", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),),
-                              Expanded(
-                                child: Container(
-                                  color: Colors.black26,
-                                  child: TextField(
-                                    focusNode: lyricFocusNode,
-                                    controller: _textController,
-                                    onChanged: (text) {
-                                      context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
-                                    },
-                                    keyboardType: TextInputType.text,
-                                    style: const TextStyle(fontSize: 18),
-                                    decoration: const InputDecoration(
-                                      isDense: true,
-                                      contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
-                                      border: InputBorder.none,
-                                    ),
-                                  ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.add_box_outlined,
                                 ),
+                                color: Colors.green,
+                                onPressed: selectedCell > -1
+                                    ? () {
+                                        setState(() {
+                                          context.read<Sheet>().addCell(
+                                                blockID: context.read<Sheet>().selectedBlockIndex,
+                                                cellID: selectedCell,
+                                                chord: Chord(),
+                                                lyric: "",
+                                              );
+                                        });
+                                      }
+                                    : null,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.arrow_back),
+                                color: Colors.red,
+                                onPressed: selectedCell > 0
+                                    ? () {
+                                        setState(() {
+                                          context.read<Sheet>().removePreviousCell(
+                                                blockID: selectedBlock,
+                                                cellID: selectedCell,
+                                              );
+                                        });
+                                      }
+                                    : null,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.subdirectory_arrow_left),
+                                onPressed: selectedCell > 0
+                                    ? () {
+                                        setState(() {
+                                          context.read<Sheet>().addNewLineCell(
+                                                blockID: context.read<Sheet>().selectedBlockIndex,
+                                                cellID: selectedCell,
+                                              );
+                                        });
+                                      }
+                                    : null,
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.text_rotation_none),
+                                onPressed: selectedCell > -1 && lyricFocusNode.hasFocus
+                                    ? () {
+                                        setState(() {
+                                          context.read<Sheet>().moveLyricToNextCell(
+                                                blockID: selectedBlock,
+                                                cellID: selectedCell,
+                                                selectPosition: _textController.selection.base.offset,
+                                              );
+                                        });
+                                      }
+                                    : null,
                               ),
                             ],
                           ),
-                        ),
+                          ConstrainedBox(
+                            constraints: const BoxConstraints(maxHeight: 44),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text(
+                                    "가사 : ",
+                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      color: Colors.black26,
+                                      child: TextField(
+                                        focusNode: lyricFocusNode,
+                                        controller: _textController,
+                                        onChanged: (text) {
+                                          context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
+                                        },
+                                        keyboardType: TextInputType.text,
+                                        style: const TextStyle(fontSize: 18),
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+                                          border: InputBorder.none,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          MediaQuery.of(context).viewInsets.bottom == 0
+                              ? const ChordKeyboard()
+                              : const SizedBox.shrink(),
+                        ],
                       ),
-                      MediaQuery.of(context).viewInsets.bottom == 0 ? const ChordKeyboard() : const SizedBox.shrink(),
-                    ],
-                  ),
-                ),
-          ],
-        )));
+                    ),
+            ],
+          ))),
+    );
   }
 
   /// TODO fetch 를 두번 하지 말고 한번만 하도록 수정하는 것이 나아보임.
 
   Future<SheetInfo> fetchSheetInfo() {
-    assert (widget.sheetID.isNotEmpty);
-    return FirebaseFirestore.instance
-        .collection('sheet_list')
-        .doc(widget.sheetID)
-        .get()
-        .then((doc) {
-          if (doc.exists) {
-            var data = doc.data()!;
-            return SheetInfo.fromMap(data);
-          } else {
-            throw Exception("${widget.sheetID}의 데이터가 없습니다.");
-          }
-        });
+    assert(widget.sheetID.isNotEmpty);
+    return FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).get().then((doc) {
+      if (doc.exists) {
+        var data = doc.data()!;
+        return SheetInfo.fromMap(data);
+      } else {
+        throw Exception("${widget.sheetID}의 데이터가 없습니다.");
+      }
+    });
   }
 
   Future<SheetData> fetchSheetData() {
-    assert (widget.sheetID.isNotEmpty);
-    return FirebaseFirestore.instance
-        .collection('sheet_list')
-        .doc(widget.sheetID)
-        .get()
-        .then((doc) {
-          List<String> chords = [];
-          List<String> lyrics = [];
-          List<String> blockNames = [];
-          if (doc.exists) {
-            var data = doc.data();
-            Logger().d(data);
-            for (String chordData in data!["chords"]) {
-              chords.add(chordData);
-            }
-            for (String lyricData in data["lyrics"]) {
-              lyrics.add(lyricData);
-            }
-            for (String blockName in data["block_names"]) {
-              blockNames.add(blockName);
-            }
-          }
-          return SheetData(lyricData: lyrics, chordData: chords, blockNames: blockNames);
-        });
+    assert(widget.sheetID.isNotEmpty);
+    return FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).get().then((doc) {
+      List<String> chords = [];
+      List<String> lyrics = [];
+      List<String> blockNames = [];
+      if (doc.exists) {
+        var data = doc.data();
+        Logger().d(data);
+        for (String chordData in data!["chords"]) {
+          chords.add(chordData);
+        }
+        for (String lyricData in data["lyrics"]) {
+          lyrics.add(lyricData);
+        }
+        for (String blockName in data["block_names"]) {
+          blockNames.add(blockName);
+        }
+      }
+      return SheetData(lyricData: lyrics, chordData: chords, blockNames: blockNames);
+    });
   }
 
   void fetchAndSetSheetToProvider() async {
@@ -381,9 +388,11 @@ class _SheetViewerState extends State<SheetViewer> {
     data["genre"] = sheetInfo.genre.code;
     data["block_names"] = context.read<Sheet>().blockNames;
     if (widget.sheetID.isNotEmpty) {
-      await FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).set(
-        data, SetOptions(merge: true)
-      ).onError((error, stackTrace) => Logger().e(error));
+      await FirebaseFirestore.instance
+          .collection('sheet_list')
+          .doc(widget.sheetID)
+          .set(data, SetOptions(merge: true))
+          .onError((error, stackTrace) => Logger().e(error));
     } else {
       throw Exception("${widget.sheetID}이 비어있습니다.");
     }
