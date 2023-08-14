@@ -27,11 +27,12 @@ class _ChordCellState extends State<ChordCell> {
   Widget build(BuildContext context) {
     int sheetKey = context.watch<Sheet>().sheetKey;
     int selectedCellID = context.select((Sheet sheet) => sheet.selectedCellIndex);
+    int selectedBlockID = context.select((Sheet sheet) => sheet.selectedBlockIndex);
     Chord? chord = context.watch<Sheet>().chords[widget.blockID][widget.cellID];
     String? lyric = context.watch<Sheet>().lyrics[widget.blockID][widget.cellID];
 
     Logger().d("build cell : ${widget.blockID} ${widget.cellID}");
-    isSelected = selectedCellID == widget.cellID;
+    isSelected = selectedCellID == widget.cellID && selectedBlockID == widget.blockID;
     return Focus(
       onFocusChange: (hasFocus) {
 

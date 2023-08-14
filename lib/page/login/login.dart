@@ -1,3 +1,4 @@
+import 'package:chord_everdu/page/common_widget/common_alert_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -17,7 +18,7 @@ class LoginPage extends StatelessWidget {
           ElevatedButton(
             child: const Text("Google 로그인"),
             onPressed: () async {
-              await signInWithGoogle();
+              await signInWithGoogle(context);
               String userEmail = FirebaseAuth.instance.currentUser!.email!;
               FirebaseFirestore.instance
                   .collection('user_list')
@@ -40,14 +41,19 @@ class LoginPage extends StatelessWidget {
     );
   }
 
-  Future<UserCredential> signInWithGoogle() async {
+  Future<UserCredential> signInWithGoogle(BuildContext context) async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn()
-        .onError((error, stackTrace) {Logger().e(error); return null;});
+        .onError((error, stackTrace) {
+          Logger().e(error);
+          showDialog(context: context, builder: (context) => CommonAlertDialog(content: error.toString()));
+        });
     final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
     );
-    return await FirebaseAuth.instance.signInWithCredential(credential);
+    return await FirebaseAuth.instance.signInWithCredential(credential).then((value) => value, onError: (error) {
+      showDialog(context: context, builder: (context) => CommonAlertDialog(content: error));
+    });
   }
 }

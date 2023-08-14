@@ -77,6 +77,9 @@ class _SheetViewerState extends State<SheetViewer> {
 
     return WillPopScope(
       onWillPop: () async {
+        if (isReadOnly) {
+          return true;
+        }
         bool? isWillPop = await showDialog<bool>(
           context: context,
           builder: (context) => const CommonCheckDialog(title: "작성 취소", content: "악보 작성 페이지를 나가시겠습니까?"),

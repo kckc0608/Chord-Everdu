@@ -72,9 +72,7 @@ class _ChordBlockState extends State<ChordBlock> {
                         padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
                         child: Text(
                           blockName ?? "",
-                          style: const TextStyle(
-                            fontStyle: FontStyle.italic,
-                          ),
+                          style: const TextStyle(fontStyle: FontStyle.italic),
                         ),
                       ),
                       if (isReadOnly)
@@ -95,9 +93,7 @@ class _ChordBlockState extends State<ChordBlock> {
                           : InkWell(
                               child: const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                child: Icon(
-                                  Icons.copy,
-                                ),
+                                child: Icon(Icons.copy),
                               ),
                               onTap: () {
                                 context.read<Sheet>().copyBlock(blockID: widget.blockID);
