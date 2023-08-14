@@ -16,7 +16,20 @@ class NewSheetDialog extends StatefulWidget {
 
 class _NewSheetDialogState extends State<NewSheetDialog> {
   final _minorKeyList = []; // TODO : Minor Key List Set
-  final _majorKeyList = ["C", "C#/Db", "D", "Eb", "E", "F", "F#/Gb", "G", "Ab", "A", "Bb", "B"];
+  final _majorKeyList = [
+    "C",
+    "C#/Db",
+    "D",
+    "Eb",
+    "E",
+    "F",
+    "F#/Gb",
+    "G",
+    "Ab",
+    "A",
+    "Bb",
+    "B"
+  ];
 
   final _controllerForTitle = TextEditingController();
   final _controllerForSinger = TextEditingController();
@@ -64,7 +77,8 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                     labelText: "곡 제목",
                     helperText: "* 필수 입력값입니다.",
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                     isCollapsed: true,
                   ),
                   onEditingComplete: () {
@@ -83,7 +97,8 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                       labelText: "가수",
                       border: OutlineInputBorder(),
                       isCollapsed: true,
-                      contentPadding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 8.0, vertical: 12.0),
                     ),
                     onEditingComplete: () {
                       _focusNodeForSinger.unfocus();
@@ -102,7 +117,8 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                       contentPadding: EdgeInsets.fromLTRB(12, 8, 12, 8),
                       isCollapsed: true,
                     ),
-                    dropdownStyleData: const DropdownStyleData(maxHeight: 200, offset: Offset(0, -2)),
+                    dropdownStyleData: const DropdownStyleData(
+                        maxHeight: 200, offset: Offset(0, -2)),
                     value: _selectedKey,
                     items: _majorKeyList.map((value) {
                       return DropdownMenuItem(
@@ -138,7 +154,8 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                           children: [
                             Tag(
                               tagContent: TagContent.level1,
-                              isSelected: selectedSongLevel == TagContent.level1,
+                              isSelected:
+                                  selectedSongLevel == TagContent.level1,
                               onTap: () {
                                 setState(() {
                                   selectedSongLevel = TagContent.level1;
@@ -147,7 +164,8 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                             ),
                             Tag(
                               tagContent: TagContent.level2,
-                              isSelected: selectedSongLevel == TagContent.level2,
+                              isSelected:
+                                  selectedSongLevel == TagContent.level2,
                               onTap: () {
                                 setState(() {
                                   selectedSongLevel = TagContent.level2;
@@ -156,7 +174,8 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                             ),
                             Tag(
                               tagContent: TagContent.level3,
-                              isSelected: selectedSongLevel == TagContent.level3,
+                              isSelected:
+                                  selectedSongLevel == TagContent.level3,
                               onTap: () {
                                 setState(() {
                                   selectedSongLevel = TagContent.level3;
@@ -173,11 +192,20 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 3.0),
                         color: Theme.of(context).dialogBackgroundColor,
-                        child: Text("난이도", style: TextStyle(color: Theme.of(context).hintColor, fontSize: Theme.of(context).textTheme.labelMedium!.fontSize),),
+                        child: Text(
+                          "난이도",
+                          style: TextStyle(
+                              color: Theme.of(context).hintColor,
+                              fontSize: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium!
+                                  .fontSize),
+                        ),
                       ),
                     ),
                   ],
                 ),
+
                 /// Song Genre
                 Stack(
                   children: [
@@ -236,7 +264,8 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                             ),
                             Tag(
                               tagContent: TagContent.hiphop,
-                              isSelected: selectedSongGenre == TagContent.hiphop,
+                              isSelected:
+                                  selectedSongGenre == TagContent.hiphop,
                               onTap: () {
                                 setState(() {
                                   selectedSongGenre = TagContent.hiphop;
@@ -253,7 +282,15 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 3.0),
                         color: Theme.of(context).dialogBackgroundColor,
-                        child: Text("장르", style: TextStyle(color: Theme.of(context).hintColor, fontSize: Theme.of(context).textTheme.labelMedium!.fontSize),),
+                        child: Text(
+                          "장르",
+                          style: TextStyle(
+                              color: Theme.of(context).hintColor,
+                              fontSize: Theme.of(context)
+                                  .textTheme
+                                  .labelMedium!
+                                  .fontSize),
+                        ),
                       ),
                     ),
                   ],
@@ -274,11 +311,15 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
           child: const Text("확인"),
           onPressed: () {
             if (_formKey.currentState!.validate()) {
-              context.read<Sheet>().updateSheetInfo(SheetInfo(
-                    title: _controllerForTitle.text,
-                    singer: _controllerForSinger.text,
-                    songKey: _selectedKey,
-                  ));
+              context.read<Sheet>().updateSheetInfo(
+                    SheetInfo(
+                      title: _controllerForTitle.text,
+                      singer: _controllerForSinger.text,
+                      songKey: _selectedKey,
+                      genre: selectedSongGenre,
+                      level: selectedSongLevel,
+                    ),
+                  );
               context.read<Sheet>().isReadOnly = false;
               Navigator.of(context).pushReplacement(MaterialPageRoute(
                   builder: (_) => const SheetViewer(
@@ -290,9 +331,9 @@ class _NewSheetDialogState extends State<NewSheetDialog> {
       ],
     );
   }
-  // @override
-  // void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-  //   super.debugFillProperties(properties);
-  //   properties.add(DiagnosticsProperty<TextEditingController>('_controllerForSinger', _controllerForSinger));
-  // }
+// @override
+// void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+//   super.debugFillProperties(properties);
+//   properties.add(DiagnosticsProperty<TextEditingController>('_controllerForSinger', _controllerForSinger));
+// }
 }

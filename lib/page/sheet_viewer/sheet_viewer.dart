@@ -380,8 +380,8 @@ class _SheetViewerState extends State<SheetViewer> {
     data["title"] = sheetInfo.title;
     data["singer"] = sheetInfo.singer;
     data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
-    data["level"] = sheetInfo.level.code;
-    data["genre"] = sheetInfo.genre.code;
+    data["level"] = sheetInfo.level.name;
+    data["genre"] = sheetInfo.genre.name;
     data["block_names"] = context.read<Sheet>().blockNames;
     if (widget.sheetID.isNotEmpty) {
       await FirebaseFirestore.instance
@@ -400,8 +400,8 @@ class _SheetViewerState extends State<SheetViewer> {
     data["title"] = sheetInfo.title;
     data["singer"] = sheetInfo.singer;
     data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
-    data["level"] = sheetInfo.level.code;
-    data["genre"] = sheetInfo.genre.code;
+    data["level"] = sheetInfo.level.name;
+    data["genre"] = sheetInfo.genre.name;
     data["block_names"] = context.read<Sheet>().blockNames;
     await FirebaseFirestore.instance.collection('sheet_list').add(data);
   }
