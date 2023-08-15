@@ -15,12 +15,6 @@ class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
   double scrollSpeed = 1;
 
   @override
-  void dispose() {
-    widget.scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     int songKey = context.watch<Sheet>().sheetKey;//context.select((Sheet sheet) => sheet.songKey);
     return Container(

@@ -1,5 +1,7 @@
 import 'package:chord_everdu/data_class/sheet_data.dart';
 import 'package:chord_everdu/data_class/sheet_info.dart';
+import 'package:chord_everdu/data_class/tag_content.dart';
+import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keyboard.dart';
 import 'package:flutter/material.dart';
 
 import 'chord.dart';
@@ -8,6 +10,7 @@ class Sheet with ChangeNotifier {
   int sheetKey = 0;
   int selectedBlockIndex = -1;
   int selectedCellIndex = -1;
+  InputMode inputMode = InputMode.root;
   bool isReadOnly = true;
 
   List<String> blockNames = [];
@@ -18,6 +21,8 @@ class Sheet with ChangeNotifier {
     songKey: 0,
     singer: "",
     title: "",
+    level: TagContent.noTag,
+    genre: TagContent.noTag,
   );
 
   void copyFromData(SheetData sheetData) {
@@ -55,46 +60,41 @@ class Sheet with ChangeNotifier {
     notifyListeners();
   }
 
-  void unsetSelectedCellIndex() {
+  void unsetSelectedCellAndBlockIndex() {
     selectedCellIndex = -1;
+    selectedBlockIndex = -1;
     notifyListeners();
   }
 
-  void addCell({
-    required int blockID,
-    int? cellID,
-    required Chord chord,
-    required String lyric
-  }) {
-    if (cellID == null || cellID == chords[blockID].length - 1) {
-      chords[blockID].add(chord);
-      lyrics[blockID].add(lyric);
-    } else {
-      chords[blockID].insert(cellID+1, chord);
-      lyrics[blockID].insert(cellID+1, lyric);
-    }
+  void addNewCell() {
+    assert (isValidBlockAndCell(blockID: selectedBlockIndex, cellID: selectedCellIndex));
+    chords[selectedBlockIndex].insert(selectedCellIndex+1, Chord());
+    lyrics[selectedBlockIndex].insert(selectedCellIndex+1, "");
+    selectedCellIndex += 1;
     notifyListeners();
   }
 
-  void addNewLineCell({required int blockID, required int cellID}) {
-    chords[blockID].insert(cellID, null);
-    lyrics[blockID].insert(cellID, null);
+  void addNewLineCell() {
+    assert (isValidBlockAndCell(blockID: selectedBlockIndex, cellID: selectedCellIndex));
+    chords[selectedBlockIndex].insert(selectedCellIndex, null);
+    lyrics[selectedBlockIndex].insert(selectedCellIndex, null);
+    selectedCellIndex += 1;
     notifyListeners();
   }
 
-  void removeCell({required int blockID, required int cellID}) {
-    chords[blockID].removeAt(cellID);
-    lyrics[blockID].removeAt(cellID);
+  void removeCell() {
+    assert (isValidBlockAndCell(blockID: selectedBlockIndex, cellID: selectedCellIndex));
+    chords[selectedBlockIndex].removeAt(selectedCellIndex);
+    lyrics[selectedBlockIndex].removeAt(selectedCellIndex);
     notifyListeners();
   }
 
-  void removePreviousCell({required int blockID, required int cellID}) {
-    if (cellID == 0) return;
-    chords[blockID].removeAt((cellID-1));
-    lyrics[blockID].removeAt((cellID-1));
-    if (selectedCellIndex > 0) {
-      selectedCellIndex -= 1;
-    }
+  void removePreviousCell() {
+    assert (isValidBlockAndCell(blockID: selectedBlockIndex, cellID: selectedCellIndex));
+    assert (selectedCellIndex > 0);
+    chords[selectedBlockIndex].removeAt((selectedCellIndex-1));
+    lyrics[selectedBlockIndex].removeAt((selectedCellIndex-1));
+    selectedCellIndex -= 1;
     notifyListeners();
   }
 
@@ -102,6 +102,7 @@ class Sheet with ChangeNotifier {
     chords.add([Chord()]);
     lyrics.add([""]);
     blockNames.add("블럭 이름을 설정하세요.");
+    selectedBlockIndex = blockNames.length-1;
     notifyListeners();
   }
 
@@ -210,5 +211,30 @@ class Sheet with ChangeNotifier {
     chords.add([Chord.fromString("C")]);
     lyrics.add([""]);
     blockNames.add("블럭 이름을 설정하세요.");
+  }
+
+  bool isValidBlockAndCell({required int blockID, required int cellID}) {
+    if (chords.length != lyrics.length) {
+      return false;
+    }
+    if (selectedBlockIndex < 0 || chords.length <= selectedBlockIndex ) {
+      return false;
+    }
+    if (selectedCellIndex < 0 || chords[selectedBlockIndex].length <= selectedCellIndex) {
+      return false;
+    }
+    return true;
+  }
+
+  bool isPreviousCellIsNewLineCell() {
+    assert (isValidBlockAndCell(blockID: selectedBlockIndex, cellID: selectedCellIndex));
+    if (selectedCellIndex == 0) {
+      return false;
+    }
+    if (chords[selectedBlockIndex][selectedCellIndex-1] == null &&
+        lyrics[selectedBlockIndex][selectedCellIndex-1] == null) {
+      return true;
+    }
+    return false;
   }
 }

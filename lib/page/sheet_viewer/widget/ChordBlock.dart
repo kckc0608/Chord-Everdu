@@ -28,6 +28,8 @@ class _ChordBlockState extends State<ChordBlock> {
     List<ChordCell> cellList = [];
 
     /// 이렇게 하면 sheet.chords[blockID] 가 아니라 sheet.chords 를 추적하는 것 같음.
+    int selectedBlockID = context.select((Sheet sheet) => sheet.selectedBlockIndex);
+    isSelected = selectedBlockID == widget.blockID;
     List<Chord?> chordList = context.select((Sheet sheet) => sheet.chords[widget.blockID]);
     List<String?> lyricList = context.select((Sheet sheet) => sheet.lyrics[widget.blockID]);
 
@@ -38,100 +40,79 @@ class _ChordBlockState extends State<ChordBlock> {
       ));
     }
 
-    return Focus(
-      onFocusChange: (hasFocus) {
-        if (hasFocus) {
-          context.read<Sheet>().selectedBlockIndex = widget.blockID;
-        }
-
-        /// setState를 호출하면 기존에 선택했던 블록과, 새로 선택된 블록을 통으로 리빌드함.
-        setState(() {
-          isSelected = hasFocus;
-        });
-      },
-      child: Builder(builder: (context) {
-        FocusNode focusNode = Focus.of(context);
-        return GestureDetector(
-          onTap: () {
-            if (focusNode.hasFocus) {
-              focusNode.unfocus();
-            } else {
-              focusNode.requestFocus();
-            }
-          },
-          child: Container(
-            color: isSelected ? Colors.yellow : Colors.white,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Row(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
-                        child: Text(
-                          blockName ?? "",
-                          style: const TextStyle(fontStyle: FontStyle.italic),
-                        ),
-                      ),
-                      if (isReadOnly)
-                        const SizedBox.shrink()
-                      else
-                        InkWell(
-                          child: const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 4.0),
-                            child: Icon(Icons.edit_outlined),
-                          ),
-                          onTap: () {
+    return Builder(builder: (context) {
+      return GestureDetector(
+        onTap: () {
+          if (!isSelected) {
+            context.read<Sheet>().setSelectedBlockIndex(widget.blockID);
+            context.read<Sheet>().setSelectedCellIndex(0); // selected cell index 가 이전 블록 index 로 남아 있어 초기화
+          }
+        },
+        child: Container(
+          color: isSelected ? Colors.yellow : Colors.white,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Text(
+                      blockName ?? "",
+                      style: const TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                  !isReadOnly && isSelected
+                      ? IconButton(
+                          onPressed: () {
                             showDialog(
                                 context: context, builder: (context) => BlockNameEditDialog(blockID: widget.blockID));
                           },
-                        ),
-                      isReadOnly
-                          ? const SizedBox.shrink()
-                          : InkWell(
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                child: Icon(Icons.copy),
-                              ),
-                              onTap: () {
-                                context.read<Sheet>().copyBlock(blockID: widget.blockID);
-                              },
-                            ),
-                      isReadOnly
-                          ? const SizedBox.shrink()
-                          : InkWell(
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 4.0),
-                                child: Icon(
-                                  Icons.delete_forever_outlined,
-                                  color: Colors.red,
-                                ),
-                              ),
-                              onTap: () {
-                                showDialog(
-                                  context: context,
-                                  builder: (context) =>
-                                      const CommonCheckDialog(title: "블럭 삭제", content: "블럭을 삭제하시겠습니까?"),
-                                ).then((isYes) {
-                                  if(isYes) {
-                                    context.read<Sheet>().removeBlock(blockID: widget.blockID);
-                                  }
-                                });
-                              },
-                            ),
-                    ],
-                  ),
-                ),
-                Wrap(
-                  children: cellList,
-                )
-              ],
-            ),
+                          iconSize: 24.0,
+                          icon: const Icon(Icons.edit_outlined),
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          constraints: const BoxConstraints(),
+                        )
+                      : const SizedBox.shrink(),
+                  !isReadOnly && isSelected
+                      ? IconButton(
+                          onPressed: () {
+                            context.read<Sheet>().copyBlock(blockID: widget.blockID);
+                          },
+                          iconSize: 20.0,
+                          icon: const Icon(Icons.copy),
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                          constraints: const BoxConstraints(),
+                        )
+                      : const SizedBox.shrink(),
+                  !isReadOnly && isSelected
+                      ? IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const CommonCheckDialog(title: "블럭 삭제", content: "블럭을 삭제하시겠습니까?"),
+                            ).then((isYes) {
+                              if (isYes) {
+                                context.read<Sheet>().removeBlock(blockID: widget.blockID);
+                              }
+                            });
+                          },
+                          iconSize: 26.0,
+                          icon: const Icon(Icons.delete_forever_outlined),
+                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                          constraints: const BoxConstraints(),
+                          color: Colors.red,
+                        )
+                      : const SizedBox.shrink(),
+                ],
+              ),
+              Wrap(
+                children: cellList,
+              )
+            ],
           ),
-        );
-      }),
-    );
+        ),
+      );
+    });
   }
 }

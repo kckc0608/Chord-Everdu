@@ -31,7 +31,7 @@ class _ChordCellState extends State<ChordCell> {
     Chord? chord = context.watch<Sheet>().chords[widget.blockID][widget.cellID];
     String? lyric = context.watch<Sheet>().lyrics[widget.blockID][widget.cellID];
 
-    Logger().d("build cell : ${widget.blockID} ${widget.cellID}");
+    //Logger().d("build cell : ${widget.blockID} ${widget.cellID}");
     isSelected = selectedCellID == widget.cellID && selectedBlockID == widget.blockID;
     return Focus(
       onFocusChange: (hasFocus) {
@@ -43,10 +43,11 @@ class _ChordCellState extends State<ChordCell> {
           onTap: () {
             if (focusNode.hasFocus) {
               focusNode.unfocus();
-              context.read<Sheet>().unsetSelectedCellIndex();
+              context.read<Sheet>().unsetSelectedCellAndBlockIndex();
             } else {
               focusNode.requestFocus();
               context.read<Sheet>().setSelectedCellIndex(widget.cellID);
+              context.read<Sheet>().setSelectedBlockIndex(widget.blockID);
             }
           },
           child: (chord == null && lyric == null)
