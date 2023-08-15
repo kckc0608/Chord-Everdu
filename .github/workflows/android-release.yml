@@ -12,5 +12,7 @@ jobs:
   build:
     runs-on: self-hosted
     steps:
+      - name: Run Unit Test
+        run: flutter test
       - name: Start release build
         run: flutter build appbundle
