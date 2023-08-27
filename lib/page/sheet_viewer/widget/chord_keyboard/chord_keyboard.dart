@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 import 'package:chord_everdu/data_class/chord.dart';
 import 'package:chord_everdu/data_class/sheet.dart';
 
-enum InputMode {root, asda, base, tension}
 class ChordKeyboard extends StatefulWidget {
   const ChordKeyboard({Key? key,}) : super(key: key);
 
@@ -23,7 +22,6 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   late int _songKey;
   String? nowInput; // 현재 입력 중인 부분 체크
   bool isRootInput = true;
-  InputMode inputMode = InputMode.root;
 
   // currentCell 이 null 이 아닐 때 이 위젯이 생성 되기 때문에, 코드는 항상 존재함.
   late Chord _chord;
@@ -57,9 +55,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     var logger = Logger();
 
     // TODO : 현재 코드 조합에 따라 now Input 설정
-    // TODO : block 을 터치해서 포커스를 껐을 때 셀 포커스가 해제됐음에도 키보드 포커스가 그대로인 문제 수정 필요
     logger.i(_chord);
-    logger.i(inputMode);
+    Logger().i(context.read<Sheet>().inputMode);
 
     return Container(
       height: 300,
@@ -90,7 +87,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             onPressed: (_) {
               setState(() {
                 if (index == _chord.root) {
-                  inputMode = InputMode.root;
+                  context.read<Sheet>().inputMode = InputMode.root;
                   _rootAndBaseSelection[index][0] = false;
                   _chord = Chord();
                   context.read<Sheet>().updateChord(
@@ -99,14 +96,14 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 }
 
                 if (index == _chord.base) {
-                  inputMode = InputMode.base;
+                  context.read<Sheet>().inputMode = InputMode.base;
                 }
 
-                if (inputMode != InputMode.base && inputMode != InputMode.root) {
-                    inputMode = (index == _chord.base) ? InputMode.base : InputMode.root;
+                if (context.read<Sheet>().inputMode != InputMode.base && context.read<Sheet>().inputMode != InputMode.root) {
+                  context.read<Sheet>().inputMode = (index == _chord.base) ? InputMode.base : InputMode.root;
                 }
 
-                switch (inputMode) {
+                switch (context.read<Sheet>().inputMode) {
                   case InputMode.base:
                     if (_chord.base > -1) {
                       _rootAndBaseSelection[_chord.base][0] = false;
@@ -121,7 +118,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                     }
                     _rootAndBaseSelection[index][0] = true;
                     _chord.root = index;
-                    inputMode = InputMode.root;
+                    context.read<Sheet>().inputMode = InputMode.root;
                     break;
                   default:
                     throw Exception("input 모드가 잘못 되었습니다.");
@@ -147,7 +144,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             type: ChordKeyboard.typeASDA,
             onPressed: (index) {
               setState(() {
-                inputMode = InputMode.asda;
+                context.read<Sheet>().inputMode = InputMode.asda;
                 if (_chord.asda.isNotEmpty) {
                   _asdaSelection[asdaTensionList.indexOf(_chord.asda)] = false;
                 }
@@ -234,7 +231,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
               onPressed: (_) {
                 setState(() {
                   _numberSelection[index][0] = !_numberSelection[index][0];
-                  switch (inputMode) {
+                  switch (context.read<Sheet>().inputMode) {
                     case InputMode.root:
                       _chord.rootTension = _numberSelection[index][0] == true ? index : -1;
                       break;
@@ -291,7 +288,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             type: ChordKeyboard.typeTens,
             onPressed: (index) {
               setState(() {
-                inputMode = InputMode.tension;
+                context.read<Sheet>().inputMode = InputMode.tension;
                 _tensionSharpSelection[index] = !_tensionSharpSelection[index];
                 if (_tensionSharpSelection[0] && _tensionSharpSelection[1]) {
                   _tensionSharpSelection[0] = false;
@@ -319,20 +316,22 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             onPressed: (index) {
               setState(() {
                 _baseSharpSelection[index] = !_baseSharpSelection[index];
-                if (_tensionSharpSelection[1] && _tensionSharpSelection[2]) {
-                  _tensionSharpSelection[1] = false;
-                  _tensionSharpSelection[2] = false;
-                  _tensionSharpSelection[index] = true;
+                if (_baseSharpSelection[1] && _baseSharpSelection[2]) {
+                  _baseSharpSelection[1] = false;
+                  _baseSharpSelection[2] = false;
+                  _baseSharpSelection[index] = true;
                 }
                 if (_baseSharpSelection[0] == true) {
-                  inputMode = InputMode.base;
+                  context.read<Sheet>().inputMode = InputMode.base;
                   if (_chord.root > -1) {
                     _chord.base = (_chord.root + 2) % 7;
                   }
                 } else {
-                  inputMode = InputMode.root;
+                  context.read<Sheet>().inputMode = InputMode.root;
                   _chord.base = -1;
                   _chord.baseSharp = 0;
+                  _baseSharpSelection[1] = false;
+                  _baseSharpSelection[2] = false;
                 }
 
                 if (_baseSharpSelection[1] == true) {

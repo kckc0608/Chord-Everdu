@@ -13,6 +13,7 @@ class NewChordBlockButton extends StatelessWidget {
       child: InkWell(
         onTap: () {
           context.read<Sheet>().addBlock();
+          context.read<Sheet>().inputMode = InputMode.root;
         },
         child: DottedBorder(
           padding: const EdgeInsets.all(8.0),

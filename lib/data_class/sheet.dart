@@ -5,7 +5,7 @@ import 'package:chord_everdu/page/sheet_viewer/widget/chord_keyboard/chord_keybo
 import 'package:flutter/material.dart';
 
 import 'chord.dart';
-
+enum InputMode {root, asda, base, tension}
 class Sheet with ChangeNotifier {
   int sheetKey = 0;
   int selectedBlockIndex = -1;
@@ -103,6 +103,7 @@ class Sheet with ChangeNotifier {
     lyrics.add([""]);
     blockNames.add("블럭 이름을 설정하세요.");
     selectedBlockIndex = blockNames.length-1;
+    selectedCellIndex = 0;
     notifyListeners();
   }
 
