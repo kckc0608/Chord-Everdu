@@ -220,6 +220,7 @@ class _SheetViewerState extends State<SheetViewer> {
                                       ? () {
                                           setState(() {
                                             context.read<Sheet>().addNewCell();
+                                            context.read<Sheet>().inputMode = InputMode.root;
                                           });
                                         }
                                       : null,
