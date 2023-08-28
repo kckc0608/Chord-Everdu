@@ -76,7 +76,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   Widget buildRowRootAndBase(BuildContext context) {
     int songKey = context.read<Sheet>().sheetInfo.songKey;
     int sheetKey = context.watch<Sheet>().sheetKey;
-    List<List<String>> rootButtonTextList = List.generate(7, (index) => [Chord(root: index).toStringChord(sheetKey: (songKey + sheetKey) % 12)]);
+    List<List<String>> rootButtonTextList = List.generate(7, (index) => [Chord(root: index).toStringChord(key: (songKey + sheetKey) % 12)]);
     return Expanded(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -454,11 +454,11 @@ class Chord {
     return data;
   }
 
-  String toStringChord({int sheetKey = 0}) {
+  String toStringChord({int key = 0}) {
     String chord = "";
     if (root > -1) {
       int rootKey =
-          (sheetKey + global.indexToKeyOffset[root] + rootSharp + 12) % 12;
+          (key + global.indexToKeyOffset[root] + rootSharp + 12) % 12;
       if (rootKey == 1 || rootKey == 3 || rootKey == 6 || rootKey == 8 || rootKey == 10) {
         if (rootSharp == 1) {
           chord += global.chordKeyList[rootKey][0];
@@ -466,7 +466,7 @@ class Chord {
           chord += global.chordKeyList[rootKey][1];
         } else {
           /// 현재 키에 따라서 #, b을 적절하게 고르도록 했는데, b,# 이 둘다 가능할 경우 #을 표시하도록 하고 있음.
-          chord += global.chordKeyList[rootKey][global.keyWithSharpOrFlat[sheetKey]];
+          chord += global.chordKeyList[rootKey][global.keyWithSharpOrFlat[key]];
         }
       } else {
         chord += global.chordKeyList[rootKey];
@@ -494,14 +494,14 @@ class Chord {
 
     if (base > -1) {
       chord += "/";
-      int baseKey = (sheetKey + global.indexToKeyOffset[base] + baseSharp + 12) % 12;
+      int baseKey = (key + global.indexToKeyOffset[base] + baseSharp + 12) % 12;
       if (baseKey == 1 || baseKey == 3 || baseKey == 6 || baseKey == 8 || baseKey == 10) {
         if (baseSharp == 1)
           chord += global.chordKeyList[baseKey][0];
         else if (baseSharp == -1)
           chord += global.chordKeyList[baseKey][1];
         else /// 현재 키에 따라서 #, b을 적절하게 고르도록 했는데, b,# 이 둘다 가능할 경우 #을 표시하도록 하고 있음.
-          chord += global.chordKeyList[baseKey][global.keyWithSharpOrFlat[sheetKey]];
+          chord += global.chordKeyList[baseKey][global.keyWithSharpOrFlat[key]];
       } else {
         chord += global.chordKeyList[baseKey];
       }
