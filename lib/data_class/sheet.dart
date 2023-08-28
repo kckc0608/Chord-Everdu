@@ -212,6 +212,7 @@ class Sheet with ChangeNotifier {
     chords.add([Chord.fromString("C")]);
     lyrics.add([""]);
     blockNames.add("블럭 이름을 설정하세요.");
+    sheetKey = 0;
   }
 
   bool isValidBlockAndCell({required int blockID, required int cellID}) {

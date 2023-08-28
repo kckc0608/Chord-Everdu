@@ -26,6 +26,7 @@ class _ChordCellState extends State<ChordCell> {
   @override
   Widget build(BuildContext context) {
     int sheetKey = context.watch<Sheet>().sheetKey;
+    int songKey = context.read<Sheet>().sheetInfo.songKey;
     int selectedCellID = context.select((Sheet sheet) => sheet.selectedCellIndex);
     int selectedBlockID = context.select((Sheet sheet) => sheet.selectedBlockIndex);
     Chord? chord = context.watch<Sheet>().chords[widget.blockID][widget.cellID];
@@ -67,7 +68,7 @@ class _ChordCellState extends State<ChordCell> {
                       SizedBox(
                         height: 18,
                         child: Text(
-                          chord?.toStringChord(sheetKey: sheetKey) ?? "",
+                          chord?.toStringChord(key: sheetKey) ?? "",
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -91,7 +92,7 @@ class _ChordCellState extends State<ChordCell> {
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(minWidth: 36.0, minHeight: 18),
                           child: Text(
-                            chord!.toStringChord(sheetKey: sheetKey),
+                            chord!.toStringChord(key: (sheetKey + songKey)%12),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
