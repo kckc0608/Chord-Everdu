@@ -153,11 +153,7 @@ class _SheetViewerState extends State<SheetViewer> {
                           ),
                         ).then((isYes) {
                           if (isYes) {
-                            if (widget.sheetID.isNotEmpty) {
-                              saveSheet();
-                            } else {
-                              addSheet();
-                            }
+                            saveSheet();
                             Navigator.of(context).pop();
                           }
                         });
@@ -314,46 +310,22 @@ class _SheetViewerState extends State<SheetViewer> {
     );
   }
 
-  /// TODO fetch 를 두번 하지 말고 한번만 하도록 수정하는 것이 나아보임.
-
-  Future<SheetInfo> fetchSheetInfo() {
+  Future<Map<String, dynamic>> fetchRawSheetData() {
     assert(widget.sheetID.isNotEmpty);
     return FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).get().then((doc) {
       if (doc.exists) {
         var data = doc.data()!;
-        return SheetInfo.fromMap(data);
+        return data;
       } else {
         throw Exception("${widget.sheetID}의 데이터가 없습니다.");
       }
     });
   }
 
-  Future<SheetData> fetchSheetData() {
-    assert(widget.sheetID.isNotEmpty);
-    return FirebaseFirestore.instance.collection('sheet_list').doc(widget.sheetID).get().then((doc) {
-      List<String> chords = [];
-      List<String> lyrics = [];
-      List<String> blockNames = [];
-      if (doc.exists) {
-        var data = doc.data();
-        Logger().d(data);
-        for (String chordData in data!["chords"]) {
-          chords.add(chordData);
-        }
-        for (String lyricData in data["lyrics"]) {
-          lyrics.add(lyricData);
-        }
-        for (String blockName in data["block_names"]) {
-          blockNames.add(blockName);
-        }
-      }
-      return SheetData(lyricData: lyrics, chordData: chords, blockNames: blockNames);
-    });
-  }
-
   void fetchAndSetSheetToProvider() async {
-    SheetInfo sheetInfo = await fetchSheetInfo();
-    SheetData sheetData = await fetchSheetData();
+    Map<String, dynamic> rawData = await fetchRawSheetData();
+    SheetInfo sheetInfo = SheetInfo.fromMap(rawData);
+    SheetData sheetData = SheetData.fromMap(rawData);
     if (context.mounted) {
       context.read<Sheet>().chords.clear();
       context.read<Sheet>().lyrics.clear();
@@ -389,20 +361,9 @@ class _SheetViewerState extends State<SheetViewer> {
           .set(data, SetOptions(merge: true))
           .onError((error, stackTrace) => Logger().e(error));
     } else {
-      throw Exception("${widget.sheetID}이 비어있습니다.");
+      data["editor_email"] = FirebaseAuth.instance.currentUser!.email;
+      await FirebaseFirestore.instance.collection('sheet_list').add(data);
     }
-  }
-
-  void addSheet() async {
-    Map<String, dynamic> data = convertSheetToSaveData();
-    data["editor_email"] = FirebaseAuth.instance.currentUser!.email;
-    data["title"] = sheetInfo.title;
-    data["singer"] = sheetInfo.singer;
-    data["song_key"] = (sheetInfo.songKey + context.read<Sheet>().sheetKey + 12) % 12;
-    data["level"] = sheetInfo.level.name;
-    data["genre"] = sheetInfo.genre.name;
-    data["block_names"] = context.read<Sheet>().blockNames;
-    await FirebaseFirestore.instance.collection('sheet_list').add(data);
   }
 
   void initializeSheet() {
