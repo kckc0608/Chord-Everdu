@@ -1,4 +1,4 @@
-import 'package:chord_everdu/page/common_widget/common_check_dialog.dart';
+import 'package:chord_everdu/page/common_widget/common_yes_no_dialog.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/ChordCell.dart';
 import 'package:chord_everdu/page/sheet_viewer/widget/dialog/block_name_edit_dialog.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +56,7 @@ class _ChordBlockState extends State<ChordBlock> {
               Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    padding: EdgeInsets.symmetric(vertical: isReadOnly ? 8.0 : 12.0, horizontal: isReadOnly ? 0 : 4.0),
                     child: Text(
                       blockName ?? "",
                       style: const TextStyle(fontStyle: FontStyle.italic),
@@ -70,18 +70,7 @@ class _ChordBlockState extends State<ChordBlock> {
                           },
                           iconSize: 24.0,
                           icon: const Icon(Icons.edit_outlined),
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          constraints: const BoxConstraints(),
-                        )
-                      : const SizedBox.shrink(),
-                  !isReadOnly && isSelected
-                      ? IconButton(
-                          onPressed: () {
-                            context.read<Sheet>().copyBlock(blockID: widget.blockID);
-                          },
-                          iconSize: 20.0,
-                          icon: const Icon(Icons.copy),
-                          padding: const EdgeInsets.symmetric(horizontal: 2.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 6.0),
                           constraints: const BoxConstraints(),
                         )
                       : const SizedBox.shrink(),
@@ -90,7 +79,25 @@ class _ChordBlockState extends State<ChordBlock> {
                           onPressed: () {
                             showDialog(
                               context: context,
-                              builder: (context) => const CommonCheckDialog(title: "블럭 삭제", content: "블럭을 삭제하시겠습니까?"),
+                              builder: (context) => const CommonYesNoDialog(title: "블럭 복사", content: "선택한 블럭을 맨 뒤에 복사하시겠습니까?"),
+                            ).then((isYes) {
+                              if (isYes) {
+                                context.read<Sheet>().copyBlock(blockID: widget.blockID);
+                              }
+                            });
+                          },
+                          iconSize: 20.0,
+                          icon: const Icon(Icons.copy),
+                          padding: const EdgeInsets.symmetric(horizontal: 6.0),
+                          constraints: const BoxConstraints(),
+                        )
+                      : const SizedBox.shrink(),
+                  !isReadOnly && isSelected
+                      ? IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => const CommonYesNoDialog(title: "블럭 삭제", content: "블럭을 삭제하시겠습니까?"),
                             ).then((isYes) {
                               if (isYes) {
                                 context.read<Sheet>().removeBlock(blockID: widget.blockID);

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-class CommonCheckDialog extends StatelessWidget {
+class CommonYesNoDialog extends StatelessWidget {
   final String title, content;
-  const CommonCheckDialog({super.key, required this.title, required this.content});
+  const CommonYesNoDialog({super.key, required this.title, required this.content});
 
   @override
   Widget build(BuildContext context) {

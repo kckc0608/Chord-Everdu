@@ -175,9 +175,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 } else {
                   _chord.minor = '';
                 }
-
+                /// TODO : major tension 과 minor tension 을 굳이 나눌 필요가 있는지 고민해보기
                 if (_minorMajorSelection[1] == true) {
-                  /// root 코드에 바로 7 넣고 나서 M 누르면 7 뒤에 M 가 생김 ( root tension 에서 Major tension 으로 옮겨야함 )
                   _chord.major = 'M';
                   if (_chord.minorTension == 7) {
                     _chord.minorTension = -1;
