@@ -74,9 +74,9 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   }
 
   Widget buildRowRootAndBase(BuildContext context) {
-    const List<List<String>> rootButtonTextList = [
-      ['C'], ['D'], ['E'], ['F'], ['G'], ['A'], ['B']
-    ];
+    int songKey = context.read<Sheet>().sheetInfo.songKey;
+    int sheetKey = context.watch<Sheet>().sheetKey;
+    List<List<String>> rootButtonTextList = List.generate(7, (index) => [Chord(root: index).toStringChord(sheetKey: (songKey + sheetKey) % 12)]);
     return Expanded(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -175,12 +175,19 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 } else {
                   _chord.minor = '';
                 }
-
+                /// TODO : major tension 과 minor tension 을 굳이 나눌 필요가 있는지 고민해보기
                 if (_minorMajorSelection[1] == true) {
-                  /// root 코드에 바로 7 넣고 나서 M 누르면 7 뒤에 M 가 생김 ( root tension 에서 Major tension 으로 옮겨야함 )
                   _chord.major = 'M';
+                  if (_chord.minorTension == 7) {
+                    _chord.minorTension = -1;
+                    _chord.majorTension = 7;
+                  }
                 } else {
                   _chord.major = '';
+                  if (_chord.majorTension == 7) {
+                    _chord.majorTension = -1;
+                    _chord.minorTension = 7;
+                  }
                 }
                 context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
               });
@@ -197,15 +204,13 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                 if (_seventhSelection[0] == true) {
                   if (_chord.major.isNotEmpty) {
                     _chord.majorTension = 7;
-                  } else if (_chord.minor.isNotEmpty) {
-                    _chord.minorTension = 7;
                   } else {
-                    _chord.rootTension = 7;
+                    _chord.minorTension = 7;
                   }
                 } else {
                   _chord.majorTension = -1;
                   _chord.minorTension = -1;
-                  _chord.rootTension = -1;
+                  _chord.major = '';
                 }
                 context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
               });
@@ -219,6 +224,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
   Expanded buildRowTension() {
     return Expanded(
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(7, (index) =>
             ChordToggleButton(
               buttonTextList: [global.tensionList[index]],

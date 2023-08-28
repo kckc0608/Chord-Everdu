@@ -50,6 +50,159 @@ class Chord {
         base = chordMap["base"],
         baseSharp = chordMap["baseSharp"];
 
+  factory Chord.fromData(String chordData) {
+    assert(chordData.isNotEmpty);
+
+    int root = 0;
+    int rootSharp = 0;
+    int base = -1;
+    int baseSharp = 0;
+    String rootTension = "";
+    String minor = "";
+    String major = "";
+    String minorTension = "";
+    String majorTension = "";
+    String tensionSharp = "";
+    String tension = "";
+    String asda = "";
+    String asdaTension = "";
+
+    ChordAnalyzeMode mode = ChordAnalyzeMode.root;
+    int index = 0;
+    while (index < chordData.length) {
+      switch (mode) {
+        case ChordAnalyzeMode.root:
+          root = int.tryParse(chordData[index]) ?? -1;
+          if (root > 6) {
+            throw Exception("root value is out of range. root value should be 0..6");
+          }
+          if (root > -1) {
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.rootSharp;
+          break;
+        case ChordAnalyzeMode.rootSharp:
+          if (chordData[index] == '#') {
+            rootSharp = 1;
+            index += 1;
+          } else if (chordData[index] == 'b') {
+            rootSharp = -1;
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.rootTension;
+          break;
+        case ChordAnalyzeMode.rootTension:
+          if (chordData[index].contains(RegExp(r'[24569]'))) {
+            rootTension = chordData[index];
+            index += 1;
+          } else if (chordData[index] == '1') {
+            rootTension = chordData.substring(index, index + 2);
+            index += 2;
+          }
+          mode = ChordAnalyzeMode.minor;
+          break;
+        case ChordAnalyzeMode.minor:
+          if (chordData[index] == 'm') {
+            minor = "m";
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.minorTension;
+          break;
+        case ChordAnalyzeMode.minorTension:
+          if (chordData[index] == '7') {
+            minorTension = '7';
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.major;
+          break;
+        case ChordAnalyzeMode.major:
+          if (chordData[index] == 'M') {
+            minor = "M";
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.majorTension;
+          break;
+        case ChordAnalyzeMode.majorTension:
+          if (chordData[index] == '7') {
+            majorTension = '7';
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.tensionSharp;
+          break;
+        case ChordAnalyzeMode.tensionSharp:
+          if (chordData[index].contains(RegExp(r'[#b]'))) {
+            tensionSharp = chordData[index];
+            index += 1;
+          }
+          mode = ChordAnalyzeMode.tension;
+          break;
+        case ChordAnalyzeMode.tension:
+          if (chordData[index].contains(RegExp(r'[24569]'))) {
+            tension = chordData[index];
+            index += 1;
+          } else if (chordData[index] == '1') {
+            tension = chordData.substring(index, index + 2);
+            index += 2;
+          }
+          mode = ChordAnalyzeMode.asda;
+          break;
+        case ChordAnalyzeMode.asda:
+          if (chordData.length > index + 2 &&
+              chordData.substring(index, index + 3).contains(RegExp(r'add|sus|dim|aug'))) {
+            asda = chordData.substring(index, index + 3);
+            index += 3;
+          }
+          mode = ChordAnalyzeMode.asdaTension;
+          break;
+        case ChordAnalyzeMode.asdaTension:
+          if (chordData[index].contains(RegExp(r'[24569]'))) {
+            asdaTension = chordData[index];
+            index += 1;
+          } else if (chordData[index] == '1') {
+            asdaTension = chordData.substring(index, index + 2);
+            index += 2;
+          }
+          mode = ChordAnalyzeMode.base;
+          break;
+        case ChordAnalyzeMode.base:
+          if (chordData[index] == '/' && index + 1 < chordData.length) {
+            base = int.tryParse(chordData[index+1]) ?? -1;
+            if (base > 6) {
+              throw Exception("base value is out of range. root value should be 0..6");
+            }
+            if (index + 2 < chordData.length) {
+              if (chordData[index+2] == '#') {
+                baseSharp = 1;
+              } else if (chordData[index+2] == 'b') {
+                baseSharp = -1;
+              }
+            }
+          }
+          index += 3;
+        default:
+          break;
+      }
+    }
+
+    Chord chord = Chord(
+      root: root,
+      rootSharp: rootSharp,
+      minor: minor,
+      major: major,
+      asda: asda,
+      asdaTension: global.tensionList.indexOf(asdaTension),
+      majorTension: global.tensionList.indexOf(majorTension),
+      minorTension: global.tensionList.indexOf(minorTension),
+      rootTension: global.tensionList.indexOf(rootTension),
+      tension: global.tensionList.indexOf(tension),
+      tensionSharp: tensionSharp == '#' ? 1 : tensionSharp == 'b' ? -1 : 0,
+      base: base,
+      baseSharp: baseSharp,
+    );
+
+    return chord;
+  }
+
   factory Chord.fromString(String chordString, {int songKey = 0}) {
     assert(chordString.isNotEmpty);
 
@@ -256,6 +409,49 @@ class Chord {
     );
 
     return chord;
+  }
+
+  String toStringDataForSave() {
+    String data = "";
+    if (root > -1) {
+      data += root.toString();
+      if (rootSharp == 1) {
+        data += '#';
+      } else if (rootSharp == -1) {
+        data += 'b';
+      }
+
+      if (rootTension > -1) data += global.tensionList[rootTension];
+
+      data += minor;
+      if (minorTension > -1) data += global.tensionList[minorTension];
+
+      data += major;
+      if (majorTension > -1) data += global.tensionList[majorTension];
+
+      if (tensionSharp == 1) {
+        data += '#';
+      } else if (tensionSharp == -1) {
+        data += "b";
+      }
+
+      if (tension > -1) data += global.tensionList[tension];
+
+      data += asda;
+      if (asdaTension > -1) data += global.tensionList[asdaTension];
+    }
+
+    if (base > -1) {
+      data += "/";
+      data += base.toString();
+      if (baseSharp == 1) {
+        data += '#';
+      } else if (baseSharp == -1) {
+        data += 'b';
+      }
+    }
+
+    return data;
   }
 
   String toStringChord({int sheetKey = 0}) {
