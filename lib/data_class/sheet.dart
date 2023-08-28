@@ -28,13 +28,13 @@ class Sheet with ChangeNotifier {
   void copyFromData(SheetData sheetData) {
     for (String chords in sheetData.chordData) {
       List<Chord?> chordList = [];
-      for (String chord in chords.split("|")) {
+      for (String chordData in chords.split("|")) {
         chordList.add(
-            chord == '\n'
+            chordData == '\n'
             ? null
-            : chord.isEmpty
+            : chordData.isEmpty
                 ? Chord()
-                : Chord.fromString(chord));
+                : Chord.fromData(chordData));
       }
       this.chords.add(chordList);
     }
@@ -179,7 +179,7 @@ class Sheet with ChangeNotifier {
         if (chords[i][j] == null) {
           block += '\n';
         } else {
-          block += chords[i][j]!.toStringChord(sheetKey: sheetKey);
+          block += chords[i][j]!.toStringDataForSave();
         }
         if (j < chords[i].length - 1) block += '|';
       }
