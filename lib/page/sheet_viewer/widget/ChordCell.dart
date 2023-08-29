@@ -68,7 +68,7 @@ class _ChordCellState extends State<ChordCell> {
                       SizedBox(
                         height: 18,
                         child: Text(
-                          chord?.toStringChord(key: sheetKey) ?? "",
+                          chord?.toStringChord(key: (sheetKey + songKey)%12) ?? "",
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
