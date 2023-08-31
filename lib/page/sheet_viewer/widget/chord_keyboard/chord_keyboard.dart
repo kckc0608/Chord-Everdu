@@ -30,8 +30,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
   List<List<bool>> _rootAndBaseSelection = [[false], [false], [false], [false], [false], [false], [false]];
   List<bool> _asdaSelection = [false, false, false, false];
-  List<bool> _minorMajorSelection = [false, false];
-  List<bool> _seventhSelection = [false];
+  List<bool> _minorSelection = [false];
+  List<bool> _seventhSelection = [false, false];
   List<List<bool>> _numberSelection = [[false], [false], [false], [false], [false], [false], [false]];
   List<bool> _rootSharpSelection = [false, false];
   List<bool> _tensionSharpSelection = [false, false];
@@ -116,6 +116,30 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
                       _rootAndBaseSelection[_chord.root][0] = false;
                       _chord.root = -1;
                     }
+                    switch (index) {
+                      case 0:
+                      case 3:
+                      case 4:
+                        _chord.minor = '';
+                        _chord.tensionSharp = 0;
+                        _chord.tension = -1;
+                        _chord.seventh = '';
+                        break;
+                      case 1:
+                      case 2:
+                      case 5:
+                        _chord.minor = 'm';
+                        _chord.seventh = '7';
+                        _chord.tensionSharp = 0;
+                        _chord.tension = -1;
+                        break;
+                      case 6:
+                        _chord.minor = 'm';
+                        _chord.tensionSharp = -1;
+                        _chord.tension = 2;
+                        _chord.seventh = '7';
+                        break;
+                    }
                     _rootAndBaseSelection[index][0] = true;
                     _chord.root = index;
                     context.read<Sheet>().inputMode = InputMode.root;
@@ -165,30 +189,17 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
             },
           ),
           ChordToggleButton(
-            buttonTextList: const ['m', 'M'],
-            isSelected: _minorMajorSelection,
+            buttonTextList: const ['m'],
+            isSelected: _minorSelection,
             onPressed: (index) {
               setState(() {
-                _minorMajorSelection[index] = !_minorMajorSelection[index];
-                if (_minorMajorSelection[0] == true) {
+                _minorSelection[0] = !_minorSelection[0];
+                if (_minorSelection[0] == true) {
                   _chord.minor = 'm';
                 } else {
                   _chord.minor = '';
                 }
                 /// TODO : major tension 과 minor tension 을 굳이 나눌 필요가 있는지 고민해보기
-                if (_minorMajorSelection[1] == true) {
-                  _chord.major = 'M';
-                  if (_chord.minorTension == 7) {
-                    _chord.minorTension = -1;
-                    _chord.majorTension = 7;
-                  }
-                } else {
-                  _chord.major = '';
-                  if (_chord.majorTension == 7) {
-                    _chord.majorTension = -1;
-                    _chord.minorTension = 7;
-                  }
-                }
                 context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
               });
             },
@@ -196,21 +207,28 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
           // 7 입력
           // asda input 인 상황에서, 루트 텐션 / mM 텐션이 7이 아니거나, asda 텐션이 7인 경우
           ChordToggleButton(
-            buttonTextList: const ['7'],
+            buttonTextList: const ['M', '7'],
             isSelected: _seventhSelection,
             onPressed: (index) {
               setState(() {
-                _seventhSelection[0] = !_seventhSelection[0];
-                if (_seventhSelection[0] == true) {
-                  if (_chord.major.isNotEmpty) {
-                    _chord.majorTension = 7;
+                if (index == 0) {
+                  if (_seventhSelection[0] == true) {
+                    _seventhSelection[0] = false;
+                    _chord.seventh = '7';
                   } else {
-                    _chord.minorTension = 7;
+                    _seventhSelection[0] = true;
+                    _seventhSelection[1] = true;
+                    _chord.seventh = 'M7';
                   }
-                } else {
-                  _chord.majorTension = -1;
-                  _chord.minorTension = -1;
-                  _chord.major = '';
+                } else { // index == 1
+                  if (_seventhSelection[1] == true) {
+                    _seventhSelection[0] = false;
+                    _seventhSelection[1] = false;
+                    _chord.seventh = '';
+                  } else {
+                    _seventhSelection[1] = true;
+                    _chord.seventh = '7';
+                  }
                 }
                 context.read<Sheet>().updateChord(_selectedBlockIndex, _selectedCellIndex, _chord);
               });
@@ -384,8 +402,8 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
 
   void setButtonWithChord() {
     _rootAndBaseSelection = [[false], [false], [false], [false], [false], [false], [false]];
-    _minorMajorSelection = [false, false];
-    _seventhSelection = [false];
+    _minorSelection = [false];
+    _seventhSelection = [false, false];
     _asdaSelection = [false, false, false, false];
     _rootSharpSelection = [false, false];
     _tensionSharpSelection = [false, false];
@@ -403,17 +421,14 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     } else if (_chord.rootTension > -1) {
       _numberSelection[_chord.rootTension][0] = true;
     }
-    if (_chord.minor.isNotEmpty) _minorMajorSelection[0] = true;
-    if (_chord.major.isNotEmpty) _minorMajorSelection[1] = true;
-    if (_chord.minorTension == 7) {
-      _seventhSelection[0] = true;
-    } else if (_chord.minorTension > -1) {
-      _numberSelection[_chord.minorTension][0] = true;
-    }
-    if (_chord.majorTension == 7) {
-      _seventhSelection[0] = true;
-    } else if (_chord.majorTension > -1) {
-      _numberSelection[_chord.majorTension][0] = true;
+    if (_chord.minor.isNotEmpty) _minorSelection[0] = true;
+    if (_chord.seventh.isNotEmpty) {
+      if (_chord.seventh[0] == 'M') {
+        _seventhSelection[0] = true;
+        _seventhSelection[1] = true;
+      } else if (_chord.seventh[0] == '7') {
+        _seventhSelection[1] = true;
+      }
     }
     if (_chord.tensionSharp == 1) {
       _tensionSharpSelection[0] = true;
