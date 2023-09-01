@@ -39,6 +39,7 @@ class _SheetViewerState extends State<SheetViewer> {
   late ScrollController scrollController;
   final _textController = TextEditingController();
   bool isAutoScroll = false;
+  int cursorPos = 0;
 
   @override
   void initState() {
@@ -74,6 +75,9 @@ class _SheetViewerState extends State<SheetViewer> {
 
     if (selectedCell > -1 && selectedBlock > -1) {
       _textController.text = context.read<Sheet>().lyrics[selectedBlock][selectedCell] ?? "";
+      if (cursorPos <= _textController.text.length) {
+        _textController.selection = TextSelection(baseOffset: cursorPos, extentOffset: cursorPos);
+      }
     } else {
       _textController.text = "";
     }
@@ -281,6 +285,9 @@ class _SheetViewerState extends State<SheetViewer> {
                                           focusNode: lyricFocusNode,
                                           controller: _textController,
                                           enabled: selectedCell > -1,
+                                          onTap: () {
+                                            cursorPos = _textController.selection.base.offset;
+                                          },
                                           onChanged: (text) {
                                             context.read<Sheet>().updateLyric(selectedBlock, selectedCell, text);
                                           },
