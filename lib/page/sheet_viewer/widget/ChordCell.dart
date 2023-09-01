@@ -47,6 +47,7 @@ class _ChordCellState extends State<ChordCell> {
               context.read<Sheet>().unsetSelectedCellAndBlockIndex();
             } else {
               focusNode.requestFocus();
+              context.read<Sheet>().inputMode = InputMode.root;
               context.read<Sheet>().setSelectedCellIndex(widget.cellID);
               context.read<Sheet>().setSelectedBlockIndex(widget.blockID);
             }

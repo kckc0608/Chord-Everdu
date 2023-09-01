@@ -52,10 +52,7 @@ class _ChordKeyboardState extends State<ChordKeyboard> {
     }
     setButtonWithChord();
 
-    var logger = Logger();
-
-    // TODO : 현재 코드 조합에 따라 now Input 설정
-    logger.i(_chord);
+    Logger().i(_chord);
     Logger().i(context.read<Sheet>().inputMode);
 
     return Container(
