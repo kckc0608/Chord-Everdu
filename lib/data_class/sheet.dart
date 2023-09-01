@@ -138,6 +138,10 @@ class Sheet with ChangeNotifier {
 
   void moveLyricToNextCell({required int blockID, required int cellID, required int selectPosition}) {
     String lyric = lyrics[blockID][cellID]!;
+    if (cellID == lyrics[blockID].length-1) {
+      lyrics[blockID].add("");
+      chords[blockID].add(Chord());
+    }
     lyrics[blockID][cellID+1] = lyric.substring(selectPosition) + lyrics[blockID][cellID+1]!;
     lyrics[blockID][cellID] = lyric.substring(0, selectPosition);
     notifyListeners();
