@@ -2,7 +2,7 @@ import 'package:chord_everdu/environment/global.dart' as global;
 
 enum ChordAnalyzeMode {
   root, rootSharp, rootTension,
-  minor, minorTension, major, majorTension,
+  minor, seventh,
   tensionSharp, tension,
   asda, asdaTension,
   base, baseSharp
@@ -11,23 +11,19 @@ class Chord {
   int root, // 해당 song key 에서 상대적인 위치 (계이름 기준이다.)
       rootSharp,
       rootTension,
-      minorTension,
-      majorTension,
       tension,
       tensionSharp,
       asdaTension,
       base,
       baseSharp;
-  String minor, major, asda;
+  String minor, seventh, asda;
 
   Chord(
       {this.root = -1,
         this.rootSharp = 0,
         this.rootTension = -1,
         this.minor = "",
-        this.minorTension = -1,
-        this.major = "",
-        this.majorTension = -1,
+        this.seventh = "",
         this.tensionSharp = 0,
         this.tension = -1,
         this.asda = "",
@@ -40,9 +36,7 @@ class Chord {
         rootSharp = chordMap["rootSharp"],
         rootTension = chordMap["rootTension"],
         minor = chordMap["minor"],
-        minorTension = chordMap["minorTension"],
-        major = chordMap["major"],
-        majorTension = chordMap["majorTension"],
+        seventh = chordMap["seventh"],
         tensionSharp = chordMap["tensionSharp"],
         tension = chordMap["tension"],
         asda = chordMap["asda"],
@@ -59,9 +53,7 @@ class Chord {
     int baseSharp = 0;
     String rootTension = "";
     String minor = "";
-    String major = "";
-    String minorTension = "";
-    String majorTension = "";
+    String seventh = "";
     String tensionSharp = "";
     String tension = "";
     String asda = "";
@@ -106,26 +98,15 @@ class Chord {
             minor = "m";
             index += 1;
           }
-          mode = ChordAnalyzeMode.minorTension;
+          mode = ChordAnalyzeMode.seventh;
           break;
-        case ChordAnalyzeMode.minorTension:
+        case ChordAnalyzeMode.seventh:
           if (chordData[index] == '7') {
-            minorTension = '7';
+            seventh = '7';
             index += 1;
-          }
-          mode = ChordAnalyzeMode.major;
-          break;
-        case ChordAnalyzeMode.major:
-          if (chordData[index] == 'M') {
-            minor = "M";
-            index += 1;
-          }
-          mode = ChordAnalyzeMode.majorTension;
-          break;
-        case ChordAnalyzeMode.majorTension:
-          if (chordData[index] == '7') {
-            majorTension = '7';
-            index += 1;
+          } else if (chordData[index] == 'M') {
+            seventh = 'M7';
+            index += 2;
           }
           mode = ChordAnalyzeMode.tensionSharp;
           break;
@@ -188,11 +169,9 @@ class Chord {
       root: root,
       rootSharp: rootSharp,
       minor: minor,
-      major: major,
       asda: asda,
       asdaTension: global.tensionList.indexOf(asdaTension),
-      majorTension: global.tensionList.indexOf(majorTension),
-      minorTension: global.tensionList.indexOf(minorTension),
+      seventh: seventh,
       rootTension: global.tensionList.indexOf(rootTension),
       tension: global.tensionList.indexOf(tension),
       tensionSharp: tensionSharp == '#' ? 1 : tensionSharp == 'b' ? -1 : 0,
@@ -210,9 +189,7 @@ class Chord {
     int baseKey = -10;
     String rootTension = "";
     String minor = "";
-    String major = "";
-    String minorTension = "";
-    String majorTension = "";
+    String seventh = "";
     String tensionSharp = "";
     String tension = "";
     String asda = "";
@@ -268,26 +245,15 @@ class Chord {
             minor = "m";
             index += 1;
           }
-          mode = ChordAnalyzeMode.minorTension;
+          mode = ChordAnalyzeMode.seventh;
           break;
-        case ChordAnalyzeMode.minorTension:
+        case ChordAnalyzeMode.seventh:
           if (chordString[index] == '7') {
-            minorTension = '7';
+            seventh = '7';
             index += 1;
-          }
-          mode = ChordAnalyzeMode.major;
-          break;
-        case ChordAnalyzeMode.major:
-          if (chordString[index] == 'M') {
-            minor = "M";
-            index += 1;
-          }
-          mode = ChordAnalyzeMode.majorTension;
-          break;
-        case ChordAnalyzeMode.majorTension:
-          if (chordString[index] == '7') {
-            majorTension = '7';
-            index += 1;
+          } else if (chordString[index] == 'M') {
+            seventh = 'M7';
+            index += 2;
           }
           mode = ChordAnalyzeMode.tensionSharp;
           break;
@@ -396,11 +362,9 @@ class Chord {
       root: root,
       rootSharp: rootSharp,
       minor: minor,
-      major: major,
+      seventh: seventh,
       asda: asda,
       asdaTension: global.tensionList.indexOf(asdaTension),
-      majorTension: global.tensionList.indexOf(majorTension),
-      minorTension: global.tensionList.indexOf(minorTension),
       rootTension: global.tensionList.indexOf(rootTension),
       tension: global.tensionList.indexOf(tension),
       tensionSharp: tensionSharp == '#' ? 1 : tensionSharp == 'b' ? -1 : 0,
@@ -424,10 +388,7 @@ class Chord {
       if (rootTension > -1) data += global.tensionList[rootTension];
 
       data += minor;
-      if (minorTension > -1) data += global.tensionList[minorTension];
-
-      data += major;
-      if (majorTension > -1) data += global.tensionList[majorTension];
+      data += seventh;
 
       if (tensionSharp == 1) {
         data += '#';
@@ -472,13 +433,9 @@ class Chord {
         chord += global.chordKeyList[rootKey];
       }
 
-      if (rootTension > -1) chord += global.tensionList[rootTension];
-
       chord += minor;
-      if (minorTension > -1) chord += global.tensionList[minorTension];
-
-      chord += major;
-      if (majorTension > -1) chord += global.tensionList[majorTension];
+      if (rootTension > -1) chord += global.tensionList[rootTension];
+      chord += seventh;
 
       if (tensionSharp == 1) {
         chord += '#';
@@ -509,42 +466,8 @@ class Chord {
     return chord;
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      "root": root,
-      "rootSharp": rootSharp,
-      "rootTension": rootTension,
-      "minor": minor,
-      "minorTension": minorTension,
-      "major": major,
-      "majorTension": majorTension,
-      "tensionSharp": tensionSharp,
-      "tension": tension,
-      "asda": asda,
-      "asdaTension": asdaTension,
-      "base": base,
-      "baseSharp": baseSharp,
-    };
-  }
-
   bool isEmpty() {
     return (root == -1 && base == -1);
-  }
-
-  void setByMap(Map<String, dynamic> chordMap) {
-    root = chordMap["root"];
-    rootSharp = chordMap["rootSharp"];
-    rootTension = chordMap["rootTension"];
-    minor = chordMap["minor"];
-    minorTension = chordMap["minorTension"];
-    major = chordMap["major"];
-    majorTension = chordMap["majorTension"];
-    tensionSharp = chordMap["tensionSharp"];
-    tension = chordMap["tension"];
-    asda = chordMap["asda"];
-    asdaTension = chordMap["asdaTension"];
-    base = chordMap["base"];
-    baseSharp = chordMap["baseSharp"];
   }
 
   @override
