@@ -57,8 +57,9 @@ class _ChordCellState extends State<ChordCell> {
                 color: isSelected ? Colors.yellow : Colors.white,
               )
               : Container(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 4.0, horizontal: 4.0),
+                  padding: context.read<Sheet>().isReadOnly && lyric!.isNotEmpty
+                      ? const EdgeInsets.symmetric(vertical: 10.0, horizontal: 2.0)
+                      : const EdgeInsets.symmetric(vertical: 10.0, horizontal: 4.0),
                   decoration: context.read<Sheet>().isReadOnly ? null : BoxDecoration(
                     color: isSelected ? Colors.yellow : Colors.white,
                     border: Border.all(),
