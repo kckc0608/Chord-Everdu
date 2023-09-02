@@ -1,6 +1,7 @@
 import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:chord_everdu/environment/global.dart' as global;
 
 class SheetViewerControlBar extends StatefulWidget {
   final ScrollController scrollController;
@@ -16,7 +17,8 @@ class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
 
   @override
   Widget build(BuildContext context) {
-    int songKey = context.watch<Sheet>().sheetKey;//context.select((Sheet sheet) => sheet.songKey);
+    int songKey = context.read<Sheet>().sheetInfo.songKey;
+    int sheetKey = context.watch<Sheet>().sheetKey;//context.select((Sheet sheet) => sheet.songKey);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -32,39 +34,58 @@ class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            Column(
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.exposure_minus_1),
-                      iconSize: 24,
-                      onPressed: isAutoScroll ? null : () {
-                        context.read<Sheet>().decreaseSheetKey();
-                      },
-                    ),
-                    Text(
-                      songKey.toString(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
+            Expanded(
+              flex: 1,
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.remove),
+                        iconSize: 20,
+                        onPressed: isAutoScroll ? null : () {
+                          context.read<Sheet>().decreaseSheetKey();
+                        },
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.exposure_plus_1),
-                      iconSize: 24,
-                      onPressed: isAutoScroll ? null : () {
-                        context.read<Sheet>().increaseSheetKey();
-                      },
-                    ),
-                  ],
-                ),
-                const Text("노래 키"),
-              ],
+                      Expanded(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.max,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          textBaseline: TextBaseline.ideographic,
+                          crossAxisAlignment: CrossAxisAlignment.baseline,
+                          children: [
+                            Text(
+                              "${global.sheetKeyList[(songKey+sheetKey)%12]}",
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                            Text(
+                              "(+${sheetKey.toString()})",
+                              style: const TextStyle(
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add),
+                        iconSize: 20,
+                        onPressed: isAutoScroll ? null : () {
+                          context.read<Sheet>().increaseSheetKey();
+                        },
+                      ),
+                    ],
+                  ),
+                  const Text("노래 키"),
+                ],
+              ),
             ),
             IconButton(
               icon: Icon(isAutoScroll ? Icons.pause : Icons.play_arrow),
-              iconSize: 36,
+              iconSize: 34,
               onPressed: () {
                 setState(() {
                   isAutoScroll = !isAutoScroll;
@@ -89,44 +110,57 @@ class _SheetViewerControlBarState extends State<SheetViewerControlBar> {
                 }
               },
             ),
-            Column(
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.exposure_minus_1),
-                      iconSize: 24,
-                      onPressed: isAutoScroll ? null : () {
-                        setState(() {
-                          if (scrollSpeed > 1) {
-                            scrollSpeed -= 1;
-                          }
-                        });
-                      },
-                    ),
-                    Text(
-                      scrollSpeed.toInt().toString(),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 24,
+            Expanded(
+              flex: 1,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: IconButton(
+                          icon: const Icon(Icons.exposure_minus_1),
+                          iconSize: 24,
+                          onPressed: isAutoScroll ? null : () {
+                            setState(() {
+                              if (scrollSpeed > 1) {
+                                scrollSpeed -= 1;
+                              }
+                            });
+                          },
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.exposure_plus_1),
-                      iconSize: 24,
-                      onPressed: isAutoScroll ? null : () {
-                        setState(() {
-                          if (scrollSpeed < 10) {
-                            scrollSpeed += 1;
-                          }
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                const Text("스크롤 속도"),
-              ],
+                      Expanded(
+                        child: Text(
+                          scrollSpeed.toInt().toString(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 24,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                        child: IconButton(
+                          icon: const Icon(Icons.exposure_plus_1),
+                          iconSize: 24,
+                          onPressed: isAutoScroll ? null : () {
+                            setState(() {
+                              if (scrollSpeed < 10) {
+                                scrollSpeed += 1;
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Text("스크롤 속도"),
+                ],
+              ),
             ),
           ],
         ),
