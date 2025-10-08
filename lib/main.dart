@@ -1,5 +1,6 @@
 import 'package:chord_everdu/data_class/sheet.dart';
 import 'package:chord_everdu/delegate/sheet_search_delegate.dart';
+import 'package:chord_everdu/page/common_widget/loading_circle.dart';
 import 'package:chord_everdu/page/group/group.dart';
 import 'package:chord_everdu/page/group/widget/group_add_floating_button.dart';
 import 'package:chord_everdu/page/my_page/my_page.dart';
@@ -12,33 +13,42 @@ import 'package:firebase_core/firebase_core.dart';
 import 'environment/firebase_options.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (_) => Sheet()),
     ],
-    child: const MyApp(),
+    child: MyApp(
+      firebaseApp: Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      ),
+    ),
   ));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final Future<FirebaseApp> firebaseApp;
+  const MyApp({super.key, required this.firebaseApp});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Chord Everdu',
-      theme: ThemeData(
-        textTheme: const TextTheme(
-          displayLarge: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
-          titleSmall: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
-        )
-      ),
-      home: const MainFrame(),
+    return FutureBuilder(
+      future: firebaseApp,
+      builder: (context, snapshot) => snapshot.hasData ? MaterialApp(
+        title: 'Chord Everdu',
+        theme: ThemeData(
+          textTheme: const TextTheme(
+            displayLarge: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+            ),
+            titleSmall: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)
+          )
+        ),
+        home: const MainFrame(),
+      ) : const LoadingCircle(),
     );
   }
 }
@@ -55,12 +65,7 @@ class _MainFrameState extends State<MainFrame> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      ),
-      builder: (context, snapshot) =>
-      (snapshot.hasData) ? Scaffold(
+    return Scaffold(
         appBar: [
           AppBar(
             title: Builder(builder: (context) {
@@ -137,8 +142,6 @@ class _MainFrameState extends State<MainFrame> {
           FirebaseAuth.instance.currentUser == null ? null : const GroupAddFloatingButton(),
           null
         ][_selectedIndex],
-      )
-      : const Text("loading firebase"),
-    );
+      );
   }
 }
